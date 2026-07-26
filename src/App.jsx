@@ -28,6 +28,7 @@ const GuideDetail  = lazy(() => import('./pages/Library/GuideDetail'))
 
 import UpgradeModal from './components/UpgradeModal'
 import InstallPrompt from './components/InstallPrompt'
+import NotificationPrompt from './components/NotificationPrompt'
 
 function loadMessages(userId) {
   if (!userId) return []
@@ -510,6 +511,7 @@ export default function App() {
       />
     )}
     <InstallPrompt user={user} />
+    <NotificationPrompt user={user} />
     {pushToast && (
       <div
         onClick={() => {
