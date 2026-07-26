@@ -347,13 +347,23 @@ export default async function handler(req, res) {
       try {
         // Skip kalau sudah ada sesi chat hari ini — jangan ganggu user yang
         // memang sudah balik sendiri tanpa diingatkan.
-        const { data: chatToday } = await supabase
-          .from('user_session_notes')
-          .select('id')
+        // FIX: tabel sebelumnya salah — 'user_session_notes' dipakai buat
+        // ringkasan AI (lihat coach-hub.js baris ~978, insert-nya bahkan
+        // tidak punya kolom session_date sama sekali). Tabel yang benar buat
+        // cek histori chat harian adalah 'user_chat_history' (lihat
+        // coach-hub.js endpoint GET/POST chat-history). Query lama ke tabel
+        // salah ini gagal diam-diam (Supabase return {data:null, error},
+        // tapi errornya tidak pernah dicek) — chatToday jadi selalu null,
+        // yang justru bikin logic-nya SALAH ARAH sebaliknya (harusnya malah
+        // ke-skip-terus, bukan hilang total notifnya — tapi tetap bug nyata
+        // yang harus dibenerin, bukan cuma dibiarkan).
+        const { data: chatToday, error: chatTodayErr } = await supabase
+          .from('user_chat_history')
+          .select('user_id')
           .eq('user_id', profile.user_id)
           .eq('session_date', today)
-          .limit(1)
           .maybeSingle()
+        if (chatTodayErr) console.error(`[morning-nudge chatToday check failed for ${profile.user_id}]`, chatTodayErr.message)
         if (chatToday) continue
 
         const fcmToken = await getUserFcmToken(profile.user_id)
