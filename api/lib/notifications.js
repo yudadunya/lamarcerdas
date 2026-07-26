@@ -36,21 +36,40 @@ let firebaseAdminInitError = null
 let messaging = null
 try {
   if (!getApps().length) {
-    const serviceAccount = {
-      type: 'service_account',
-      project_id: process.env.FIREBASE_PROJECT_ID || 'verneks-notif',
-      private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-      private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      client_email: process.env.FIREBASE_CLIENT_EMAIL,
-      client_id: process.env.FIREBASE_CLIENT_ID,
-      auth_uri: 'https://accounts.google.com/o/oauth2/auth',
-      token_uri: 'https://oauth2.googleapis.com/token',
-      auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
+    // FIX: cara lama (5 env var terpisah, private key di-paste manual
+    // sebagai teks dengan \n literal) TERLALU rawan salah — gampang ke-mix
+    // sama tanda kutip nyasar, newline literal yang keburu jadi Enter
+    // beneran pas paste ke form Vercel, dsb ("Failed to parse private
+    // key"). Cara baru: SATU env var (FIREBASE_SERVICE_ACCOUNT_BASE64)
+    // isinya seluruh file JSON service account, di-encode base64 dulu.
+    // Base64 cuma A-Z/a-z/0-9/+//= — tidak ada newline atau karakter
+    // spesial apapun yang bisa rusak pas dipaste ke form manapun, jadi
+    // kelas bug ini hilang total. 5 var lama tetap didukung sebagai
+    // fallback (kalau base64-nya belum di-set), supaya tidak langsung
+    // breaking change.
+    let serviceAccount = null
+
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
+      serviceAccount = JSON.parse(
+        Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf-8')
+      )
+    } else {
+      serviceAccount = {
+        type: 'service_account',
+        project_id: process.env.FIREBASE_PROJECT_ID || 'verneks-notif',
+        private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+        private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        client_email: process.env.FIREBASE_CLIENT_EMAIL,
+        client_id: process.env.FIREBASE_CLIENT_ID,
+        auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+        token_uri: 'https://oauth2.googleapis.com/token',
+        auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
+      }
     }
 
     initializeApp({
       credential: cert(serviceAccount),
-      projectId: process.env.FIREBASE_PROJECT_ID || 'verneks-notif'
+      projectId: serviceAccount.project_id || process.env.FIREBASE_PROJECT_ID || 'verneks-notif'
     })
   }
   messaging = getMessaging()
