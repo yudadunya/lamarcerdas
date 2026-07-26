@@ -275,6 +275,7 @@ export async function sendPushNotification(fcmToken, title, body, data = {}) {
 
   try {
     const message = {
+      token: fcmToken, // FIX: field wajib ini tidak pernah ada sebelumnya — FCM selalu nolak kirim karena nggak tahu ini ditujukan ke device mana (error: "Exactly one of fid, topic, token or condition is required")
       notification: { title, body },
       data: { ...data, timestamp: new Date().toISOString() },
       webpush: {
