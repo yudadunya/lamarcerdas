@@ -331,6 +331,12 @@ export default async function handler(req, res) {
   // HARI INI, supaya tidak terasa spam ke user yang sebenarnya sudah aktif.
   if (job === 'morning-nudge') {
     const today = new Date().toISOString().slice(0, 10)
+    // Bypass khusus testing manual: ?force=1 skip pengecekan "sudah chat
+    // hari ini" — supaya kamu bisa re-test job ini berkali-kali di hari
+    // yang sama tanpa nunggu besok. Aman dipakai publik-tanpa-abuse karena
+    // endpoint ini sudah di-gate CRON_SECRET di atas (baris ~24) — orang
+    // luar tidak bisa panggil ini sama sekali tanpa secret itu.
+    const forceTest = req.query.force === '1'
 
     const { data: users, error: usersErr } = await supabase
       .from('user_career_profiles')
@@ -346,17 +352,20 @@ export default async function handler(req, res) {
     for (const profile of users) {
       try {
         // Skip kalau sudah ada sesi chat hari ini — jangan ganggu user yang
-        // memang sudah balik sendiri tanpa diingatkan.
-        const { data: chatToday, error: chatTodayErr } = await supabase
-          .from('user_chat_history')
-          .select('user_id')
-          .eq('user_id', profile.user_id)
-          .eq('session_date', today)
-          .maybeSingle()
-        if (chatTodayErr) console.error(`[morning-nudge chatToday check failed for ${profile.user_id}]`, chatTodayErr.message)
-        if (chatToday) {
-          results.push({ userId: profile.user_id, status: 'skipped', reason: 'already_chatted_today' })
-          continue
+        // memang sudah balik sendiri tanpa diingatkan. (Di-skip kalau
+        // forceTest aktif, khusus buat testing manual.)
+        if (!forceTest) {
+          const { data: chatToday, error: chatTodayErr } = await supabase
+            .from('user_chat_history')
+            .select('user_id')
+            .eq('user_id', profile.user_id)
+            .eq('session_date', today)
+            .maybeSingle()
+          if (chatTodayErr) console.error(`[morning-nudge chatToday check failed for ${profile.user_id}]`, chatTodayErr.message)
+          if (chatToday) {
+            results.push({ userId: profile.user_id, status: 'skipped', reason: 'already_chatted_today' })
+            continue
+          }
         }
 
         const fcmToken = await getUserFcmToken(profile.user_id)
