@@ -23,6 +23,7 @@ const emailTransporter = nodemailer.createTransport({
 // itu bikin SELURUH cron job (weekly-review, send-chat-reminders, dst) ikut
 // mati, bukan cuma fitur push notification-nya saja.
 let firebaseAdminReady = false
+let firebaseAdminInitError = null
 try {
   if (!admin.apps?.length) {
     const serviceAccount = {
@@ -44,6 +45,7 @@ try {
   }
   firebaseAdminReady = true
 } catch (e) {
+  firebaseAdminInitError = e.message
   console.warn('[notifications] Firebase Admin init gagal/skip:', e.message)
 }
 
@@ -239,7 +241,7 @@ async function deactivateFcmToken(fcmToken) {
 
 export async function sendPushNotification(fcmToken, title, body, data = {}) {
   if (!fcmToken) return { error: 'FCM token missing' }
-  if (!firebaseAdminReady) return { error: 'Firebase Admin belum siap (config/env belum lengkap)' }
+  if (!firebaseAdminReady) return { error: `Firebase Admin belum siap: ${firebaseAdminInitError || 'penyebab tidak diketahui'}` }
 
   try {
     const message = {
@@ -410,7 +412,7 @@ export async function sendPushToMultiple(fcmTokens, title, body, data = {}) {
   if (!fcmTokens || fcmTokens.length === 0) {
     return { error: 'No FCM tokens provided' }
   }
-  if (!firebaseAdminReady) return { error: 'Firebase Admin belum siap (config/env belum lengkap)' }
+  if (!firebaseAdminReady) return { error: `Firebase Admin belum siap: ${firebaseAdminInitError || 'penyebab tidak diketahui'}` }
 
   try {
     const message = {
