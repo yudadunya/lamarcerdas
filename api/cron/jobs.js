@@ -11,7 +11,7 @@ import { createClient } from '@supabase/supabase-js'
 // — bikin seluruh file ini gagal di-load (jadi SEMUA cron job di sini mati,
 // bukan cuma notifikasi). Fungsi email sebenarnya ada di notifications.js,
 // digabung dengan push (FCM) lewat notifyChatReminder/notifyWeeklyReview.
-import { notifyChatReminder, notifyWeeklyReview, notifyOnboardingNudge, notifyMorningNudge, getUserFcmToken } from '../lib/notifications.js'
+import { notifyChatReminder, notifyWeeklyReview, notifyOnboardingNudge, notifyMorningNudge, notifyPremiumExpiry, notifyUpgradeNudge, getUserFcmToken } from '../lib/notifications.js'
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
@@ -417,6 +417,190 @@ ATURAN PENTING:
       skipped: results.filter(r => r.status === 'skipped').length,
       failed: results.filter(r => r.status === 'failed').length,
       details: results, // breakdown per user — hapus/kecilkan ini kalau user-base sudah besar, buat sekarang berguna buat debug
+    })
+  }
+
+  // ── PREMIUM EXPIRY REMINDER — persuasif tapi halus, loss-aversion framing.
+  // Kirim pada titik spesifik (3 hari sebelum, 1 hari sebelum, 2 hari setelah
+  // expired) — BUKAN tiap hari selama user belum perpanjang, supaya nggak
+  // berubah jadi spam yang justru bikin user makin males balik.
+  if (job === 'premium-expiry-reminder') {
+    const forceTest = req.query.force === '1'
+
+    const { data: subs, error: subsErr } = await supabase
+      .from('subscriptions')
+      .select('user_id, expires_at, status')
+      .eq('plan', 'premium')
+      .eq('status', 'active')
+      .not('expires_at', 'is', null)
+      .limit(200)
+
+    if (subsErr) return res.status(500).json({ error: subsErr.message })
+    if (!subs?.length) return res.status(200).json({ success: true, processed: 0 })
+
+    const now = Date.now()
+    const results = []
+
+    for (const sub of subs) {
+      try {
+        const daysUntilExpiry = Math.ceil((new Date(sub.expires_at).getTime() - now) / 86400000)
+
+        // Titik kirim: H-3, H-1, atau H+2 (win-back setelah expired).
+        // Testing (?force=1) bypass ini, kirim ke siapapun premium yang lolos query di atas.
+        const isTargetDay = [3, 1, -2].includes(daysUntilExpiry)
+        if (!forceTest && !isTargetDay) {
+          results.push({ userId: sub.user_id, status: 'skipped', reason: `not_target_day(${daysUntilExpiry})` })
+          continue
+        }
+
+        const fcmToken = await getUserFcmToken(sub.user_id)
+        if (!fcmToken) {
+          results.push({ userId: sub.user_id, status: 'skipped', reason: 'no_active_fcm_token' })
+          continue
+        }
+
+        const { data: profile } = await supabase
+          .from('user_career_profiles')
+          .select('nama, gps_steps, career_readiness')
+          .eq('user_id', sub.user_id)
+          .maybeSingle()
+
+        const doneSteps  = (profile?.gps_steps || []).filter(s => s.done).length
+        const totalSteps = (profile?.gps_steps || []).length
+
+        let personalLine = null
+        try {
+          personalLine = await generateText({
+            system: `Kamu Diah Anna, AI career coach. Tulis SATU kalimat pendek (maks 20 kata) untuk notifikasi push soal Premium yang ${daysUntilExpiry < 0 ? 'baru saja habis masa aktifnya' : 'akan segera habis masa aktifnya'}.
+
+ATURAN PENTING — PERSUASIF TAPI HALUS:
+- Fokus ke apa yang akan/sudah HILANG (loss aversion) — progress, akses Journey/Peluang, momentum — BUKAN daftar fitur atau harga.
+- JANGAN pakai bahasa hard-sell ("promo terbatas!", "jangan lewatkan!", tanda seru berlebihan, huruf kapital semua).
+- JANGAN pakai kata "harus" atau menekan — framingnya "sayang kalau", bukan "wajib".
+- Kalau ada data progress spesifik, sebut itu (contoh: "udah selesai 4 dari 6 langkah") — konkret jauh lebih persuasif dari generik.
+- Satu emoji opsional, tidak wajib.`,
+            prompt: totalSteps > 0
+              ? `User sudah menyelesaikan ${doneSteps}/${totalSteps} langkah GPS Karier (career readiness ${profile?.career_readiness || 0}%). Tulis 1 kalimat yang merujuk progress ini.`
+              : `Belum ada data progress spesifik. Tulis 1 kalimat umum yang tetap halus soal Journey & Peluang yang akan/sudah tidak bisa diakses.`,
+            maxTokens: 60, tier: 'fast',
+          })
+          personalLine = personalLine?.trim().replace(/^"|"$/g, '') || null
+        } catch (aiErr) {
+          console.error(`[premium-expiry-reminder personalLine failed for ${sub.user_id}]`, aiErr)
+        }
+
+        const notifyResult = await notifyPremiumExpiry(fcmToken, profile?.nama || 'Teman', personalLine, daysUntilExpiry)
+        const ok = notifyResult.push?.success
+        results.push({
+          userId: sub.user_id, daysUntilExpiry,
+          status: ok ? 'sent' : 'failed',
+          reason: ok ? undefined : (notifyResult.push?.error || 'unknown_push_error'),
+        })
+      } catch (e) {
+        results.push({ userId: sub.user_id, status: 'failed', reason: e.message })
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      processed: results.length,
+      sent: results.filter(r => r.status === 'sent').length,
+      skipped: results.filter(r => r.status === 'skipped').length,
+      failed: results.filter(r => r.status === 'failed').length,
+      details: results,
+    })
+  }
+
+  // ── FREE UPGRADE NUDGE — value/progress framing (beda dari loss-aversion
+  // di atas, karena user ini belum pernah punya akses Premium sama sekali).
+  // Jadwal MINGGUAN (bukan harian) — sengaja jarang, supaya halus dan tidak
+  // berubah jadi tekanan terus-menerus yang bisa bikin user malah defensif.
+  if (job === 'free-upgrade-nudge') {
+    const { data: users, error: usersErr } = await supabase
+      .from('user_career_profiles')
+      .select('user_id, nama, gps_steps, career_readiness, depth_score')
+      .not('career_readiness', 'is', null) // sudah selesai Discovery
+      .limit(150)
+
+    if (usersErr) return res.status(500).json({ error: usersErr.message })
+    if (!users?.length) return res.status(200).json({ success: true, processed: 0 })
+
+    const results = []
+
+    for (const profile of users) {
+      try {
+        // Skip user yang sedang/pernah premium — job ini KHUSUS free murni.
+        const { data: sub } = await supabase
+          .from('subscriptions')
+          .select('plan, status, expires_at')
+          .eq('user_id', profile.user_id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        const isPremiumNow = sub?.plan === 'premium' && sub?.status === 'active'
+          && (!sub.expires_at || new Date(sub.expires_at) > new Date())
+        if (isPremiumNow) {
+          results.push({ userId: profile.user_id, status: 'skipped', reason: 'currently_premium' })
+          continue
+        }
+
+        // Cuma target user yang cukup engaged (depth_score >= 20) — nudge ke
+        // user yang baru daftar & belum aktif sama sekali biasanya konversinya
+        // rendah dan terasa lebih kayak spam ke user yang belum kenal produknya.
+        if ((profile.depth_score || 0) < 20) {
+          results.push({ userId: profile.user_id, status: 'skipped', reason: 'not_engaged_enough' })
+          continue
+        }
+
+        const fcmToken = await getUserFcmToken(profile.user_id)
+        if (!fcmToken) {
+          results.push({ userId: profile.user_id, status: 'skipped', reason: 'no_active_fcm_token' })
+          continue
+        }
+
+        const doneSteps  = (profile.gps_steps || []).filter(s => s.done).length
+        const totalSteps = (profile.gps_steps || []).length
+
+        let personalLine = null
+        try {
+          personalLine = await generateText({
+            system: `Kamu Diah Anna, AI career coach. Tulis SATU kalimat pendek (maks 20 kata) untuk notifikasi push mengajak user FREE upgrade ke Premium.
+
+ATURAN PENTING — PERSUASIF TAPI HALUS:
+- Framing-nya VALUE/PROGRESS — apa yang bisa mereka DAPAT dan bagaimana itu mempercepat progress mereka SEKARANG, bukan daftar fitur generik atau harga.
+- JANGAN hard-sell, JANGAN tanda seru berlebihan, JANGAN kata "harus"/"wajib".
+- Kalau ada data progress, jadikan itu jembatan (contoh: "udah 60% menuju target — Journey bisa bantu percepat sisanya").
+- Satu emoji opsional.`,
+            prompt: totalSteps > 0
+              ? `User career readiness ${profile.career_readiness || 0}%, sudah selesai ${doneSteps}/${totalSteps} langkah GPS Karier. Tulis 1 kalimat ajakan upgrade yang merujuk progress ini.`
+              : `Belum ada progress spesifik. Tulis 1 kalimat ajakan upgrade yang halus dan umum.`,
+            maxTokens: 60, tier: 'fast',
+          })
+          personalLine = personalLine?.trim().replace(/^"|"$/g, '') || null
+        } catch (aiErr) {
+          console.error(`[free-upgrade-nudge personalLine failed for ${profile.user_id}]`, aiErr)
+        }
+
+        const notifyResult = await notifyUpgradeNudge(fcmToken, profile.nama || 'Teman', personalLine)
+        const ok = notifyResult.push?.success
+        results.push({
+          userId: profile.user_id,
+          status: ok ? 'sent' : 'failed',
+          reason: ok ? undefined : (notifyResult.push?.error || 'unknown_push_error'),
+        })
+      } catch (e) {
+        results.push({ userId: profile.user_id, status: 'failed', reason: e.message })
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      processed: results.length,
+      sent: results.filter(r => r.status === 'sent').length,
+      skipped: results.filter(r => r.status === 'skipped').length,
+      failed: results.filter(r => r.status === 'failed').length,
+      details: results,
     })
   }
 

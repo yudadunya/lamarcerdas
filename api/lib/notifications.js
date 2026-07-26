@@ -340,6 +340,53 @@ export async function notifyMorningNudge(fcmToken, userName, personalLine) {
   return { push: await sendMorningNudgePush(fcmToken, userName, personalLine) }
 }
 
+/**
+ * Push reminder buat premium yang mau/sudah expired. Nada-nya persuasif
+ * tapi HALUS — bukan hard-sell "BELI SEKARANG!!1!". Loss-aversion framing
+ * (fokus ke apa yang akan/sudah hilang), bukan feature-dumping.
+ * daysUntilExpiry negatif = sudah lewat expired (win-back).
+ */
+export async function sendPremiumExpiryPush(fcmToken, userName, personalLine, daysUntilExpiry) {
+  const firstName = userName?.split(' ')[0] || 'Teman'
+  const title = daysUntilExpiry < 0
+    ? `${firstName}, akses Premium kamu sudah nonaktif`
+    : daysUntilExpiry <= 1
+      ? `${firstName}, Premium kamu berakhir besok`
+      : `${firstName}, Premium kamu berakhir ${daysUntilExpiry} hari lagi`
+  return sendPushNotification(
+    fcmToken,
+    title,
+    personalLine || 'Journey dan Peluang kamu masih nunggu kalau mau lanjut.',
+    { type: 'premium-expiry', action: 'open-upgrade' }
+  )
+}
+
+export async function notifyPremiumExpiry(fcmToken, userName, personalLine, daysUntilExpiry) {
+  if (!fcmToken) return { push: { error: 'No FCM token' } }
+  return { push: await sendPremiumExpiryPush(fcmToken, userName, personalLine, daysUntilExpiry) }
+}
+
+/**
+ * Push nudge buat user FREE yang belum pernah upgrade. Beda dari
+ * premium-expiry (loss aversion), ini framing-nya value/progress —
+ * nunjukkin apa yang bisa mereka DAPAT, bukan apa yang hilang, karena
+ * mereka belum pernah punya akses itu sama sekali.
+ */
+export async function sendUpgradeNudgePush(fcmToken, userName, personalLine) {
+  const firstName = userName?.split(' ')[0] || 'Teman'
+  return sendPushNotification(
+    fcmToken,
+    `${firstName}, ada langkah lebih cepat 🚀`,
+    personalLine || 'Premium buka Journey & Peluang kerja yang cocok sama progress kamu sekarang.',
+    { type: 'upgrade-nudge', action: 'open-upgrade' }
+  )
+}
+
+export async function notifyUpgradeNudge(fcmToken, userName, personalLine) {
+  if (!fcmToken) return { push: { error: 'No FCM token' } }
+  return { push: await sendUpgradeNudgePush(fcmToken, userName, personalLine) }
+}
+
 
 export async function sendOnboardingNudgeEmail(userEmail, userName) {
   if (!userEmail) return { error: 'Email not found' }

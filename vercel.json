@@ -116,6 +116,14 @@
     {
       "path": "/api/cron/jobs?job=morning-nudge",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/jobs?job=premium-expiry-reminder",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/jobs?job=free-upgrade-nudge",
+      "schedule": "0 3 * * 3"
     }
   ]
 }

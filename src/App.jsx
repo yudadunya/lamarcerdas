@@ -206,6 +206,20 @@ export default function App() {
     return () => window.removeEventListener('verneks:manual-logout', onManualLogout)
   }, [])
 
+  // Trigger UpgradeModal kalau app dibuka dari notifikasi push
+  // premium-expiry/upgrade-nudge (lihat firebase-messaging-sw.js —
+  // notificationclick untuk action 'open-upgrade' buka URL ini).
+  useEffect(() => {
+    if (!user?.id) return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('upgrade') === '1') {
+      window.dispatchEvent(new CustomEvent('show-upgrade'))
+      params.delete('upgrade')
+      const cleanUrl = window.location.pathname + (params.toString() ? `?${params}` : '')
+      window.history.replaceState({}, '', cleanUrl)
+    }
+  }, [user?.id])
+
   // Global upgrade modal trigger
   useEffect(() => {
     const handler = (e) => {
@@ -518,6 +532,7 @@ export default function App() {
           const action = pushToast.data?.action
           if (action === 'open-chat') window.location.href = '/chat'
           else if (action === 'open-journey') window.location.href = '/journey'
+          else if (action === 'open-upgrade') window.dispatchEvent(new CustomEvent('show-upgrade'))
           setPushToast(null)
         }}
         style={{

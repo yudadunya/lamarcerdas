@@ -50,8 +50,23 @@ messaging.onBackgroundMessage((payload) => {
 self.addEventListener('notificationclick', (event) => {
   console.log('[firebase-messaging-sw] Notification clicked:', event.notification)
   event.notification.close()
-  
-  // Buka tab/window verneks
+
+  // FIX: sebelumnya SELALU buka '/dashboard' apapun action-nya — data.action
+  // yang dikirim dari backend (open-chat, open-journey, dst) tidak pernah
+  // dibaca sama sekali. Sekarang di-route sesuai action-nya.
+  const action = event.notification.data?.action
+  const targetPath = {
+    'open-chat':    '/chat',
+    'open-journey': '/journey',
+    // open-upgrade: bukan route halaman biasa — /profile?upgrade=1 dibaca
+    // oleh App.jsx untuk men-trigger UpgradeModal begitu app kebuka
+    // (lihat useEffect 'upgrade' query param di App.jsx), karena service
+    // worker tidak bisa langsung memanggil fungsi React di halaman yang
+    // belum ter-load.
+    'open-upgrade': '/profile?upgrade=1',
+  }[action] || '/dashboard'
+  const targetUrl = `https://verneks.my.id${targetPath}`
+
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (let client of clientList) {
@@ -60,7 +75,7 @@ self.addEventListener('notificationclick', (event) => {
         }
       }
       if (clients.openWindow) {
-        return clients.openWindow('https://verneks.my.id/dashboard')
+        return clients.openWindow(targetUrl)
       }
     })
   )
