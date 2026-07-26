@@ -347,16 +347,6 @@ export default async function handler(req, res) {
       try {
         // Skip kalau sudah ada sesi chat hari ini — jangan ganggu user yang
         // memang sudah balik sendiri tanpa diingatkan.
-        // FIX: tabel sebelumnya salah — 'user_session_notes' dipakai buat
-        // ringkasan AI (lihat coach-hub.js baris ~978, insert-nya bahkan
-        // tidak punya kolom session_date sama sekali). Tabel yang benar buat
-        // cek histori chat harian adalah 'user_chat_history' (lihat
-        // coach-hub.js endpoint GET/POST chat-history). Query lama ke tabel
-        // salah ini gagal diam-diam (Supabase return {data:null, error},
-        // tapi errornya tidak pernah dicek) — chatToday jadi selalu null,
-        // yang justru bikin logic-nya SALAH ARAH sebaliknya (harusnya malah
-        // ke-skip-terus, bukan hilang total notifnya — tapi tetap bug nyata
-        // yang harus dibenerin, bukan cuma dibiarkan).
         const { data: chatToday, error: chatTodayErr } = await supabase
           .from('user_chat_history')
           .select('user_id')
@@ -364,10 +354,16 @@ export default async function handler(req, res) {
           .eq('session_date', today)
           .maybeSingle()
         if (chatTodayErr) console.error(`[morning-nudge chatToday check failed for ${profile.user_id}]`, chatTodayErr.message)
-        if (chatToday) continue
+        if (chatToday) {
+          results.push({ userId: profile.user_id, status: 'skipped', reason: 'already_chatted_today' })
+          continue
+        }
 
         const fcmToken = await getUserFcmToken(profile.user_id)
-        if (!fcmToken) continue // morning-nudge cuma push, skip user tanpa token — jangan email tiap pagi, kepenuhan
+        if (!fcmToken) {
+          results.push({ userId: profile.user_id, status: 'skipped', reason: 'no_active_fcm_token' })
+          continue
+        }
 
         const pendingStep = (profile.gps_steps || []).find(s => !s.done && s.title && s.title !== '—')
         const contextText = await getPersonalContext(profile.user_id, pendingStep?.title)
@@ -395,9 +391,13 @@ ATURAN PENTING:
 
         const notifyResult = await notifyMorningNudge(fcmToken, profile.nama || 'Teman', personalLine)
         const ok = notifyResult.push?.success
-        results.push({ userId: profile.user_id, status: ok ? 'sent' : 'failed', detail: notifyResult })
+        results.push({
+          userId: profile.user_id,
+          status: ok ? 'sent' : 'failed',
+          reason: ok ? undefined : (notifyResult.push?.error || 'unknown_push_error'),
+        })
       } catch (e) {
-        results.push({ userId: profile.user_id, status: 'failed', error: e.message })
+        results.push({ userId: profile.user_id, status: 'failed', reason: e.message })
       }
     }
 
@@ -405,6 +405,9 @@ ATURAN PENTING:
       success: true,
       processed: results.length,
       sent: results.filter(r => r.status === 'sent').length,
+      skipped: results.filter(r => r.status === 'skipped').length,
+      failed: results.filter(r => r.status === 'failed').length,
+      details: results, // breakdown per user — hapus/kecilkan ini kalau user-base sudah besar, buat sekarang berguna buat debug
     })
   }
 
