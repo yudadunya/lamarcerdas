@@ -3,7 +3,16 @@
 // Menggabungkan: email.js + firebase-admin.js
 
 import nodemailer from 'nodemailer'
-import admin from 'firebase-admin'
+// FIX: `import admin from 'firebase-admin'` (namespace/default import lama)
+// tidak reliable di project ESM ("type": "module" di package.json) untuk
+// firebase-admin v14 — hasilnya admin.credential bisa undefined tergantung
+// gimana Node resolve interop CJS→ESM paket ini, bikin
+// `admin.credential.cert(...)` throw "Cannot read properties of undefined
+// (reading 'cert')". Firebase secara resmi merekomendasikan modular import
+// (dari 'firebase-admin/app' dan 'firebase-admin/messaging') untuk ESM,
+// bukan namespace import — ini yang dipakai sekarang.
+import { initializeApp, getApps, cert } from 'firebase-admin/app'
+import { getMessaging } from 'firebase-admin/messaging'
 import { createClient } from '@supabase/supabase-js'
 
 // ────── NODEMAILER SETUP ──────────────────────────────────────────────────
@@ -24,8 +33,9 @@ const emailTransporter = nodemailer.createTransport({
 // mati, bukan cuma fitur push notification-nya saja.
 let firebaseAdminReady = false
 let firebaseAdminInitError = null
+let messaging = null
 try {
-  if (!admin.apps?.length) {
+  if (!getApps().length) {
     const serviceAccount = {
       type: 'service_account',
       project_id: process.env.FIREBASE_PROJECT_ID || 'verneks-notif',
@@ -38,11 +48,12 @@ try {
       auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
     }
 
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
+    initializeApp({
+      credential: cert(serviceAccount),
       projectId: process.env.FIREBASE_PROJECT_ID || 'verneks-notif'
     })
   }
+  messaging = getMessaging()
   firebaseAdminReady = true
 } catch (e) {
   firebaseAdminInitError = e.message
@@ -257,7 +268,7 @@ export async function sendPushNotification(fcmToken, title, body, data = {}) {
       }
     }
 
-    const response = await admin.messaging().send(message)
+    const response = await messaging.send(message)
     console.log('[sendPushNotification] Success:', response)
     return { success: true, messageId: response }
   } catch (error) {
@@ -428,7 +439,10 @@ export async function sendPushToMultiple(fcmTokens, title, body, data = {}) {
       }
     }
 
-    const response = await admin.messaging().sendMulticast({
+    // FIX: sendMulticast() sudah DIHAPUS di firebase-admin v12+ (project ini
+    // pakai v14) — diganti sendEachForMulticast(), signature & response
+    // shape-nya sama persis (successCount/failureCount/responses[]).
+    const response = await messaging.sendEachForMulticast({
       ...message,
       tokens: fcmTokens
     })
