@@ -427,11 +427,18 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
     
     supabase
       .from('user_career_profiles')
-      .select('user_id')
+      .select('user_id, income_situation')
       .eq('user_id', user.id)
       .maybeSingle()
       .then(({ data }) => {
-        if (data) {
+        // Onboarding.jsx sekarang jadi FALLBACK — user baru yang lewat
+        // Discovery dulu (jalur normal) sudah ditanya soal situasi income
+        // di sana secara natural, jadi income_situation sudah keisi duluan
+        // sebelum sampai sini. Popup ini cuma muncul buat user LAMA yang
+        // profile-nya sudah ada dari sebelum pertanyaan ini ditambahkan
+        // (income_situation masih kosong) — supaya data itu ke-backfill
+        // tanpa perlu re-Discovery dari nol.
+        if (data?.income_situation) {
           localStorage.setItem(key, '1')
           setShowOnboarding(false)
         } else {
@@ -516,8 +523,114 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
     return false
   }
 
-  const handleSend = () => {
-    const msg = input.trim()
+  // ── VOICE MODE: rekam-lalu-kirim ────────────────────────────────────────
+  const [isRecording, setIsRecording] = useState(false)
+  const [voiceBusy, setVoiceBusy] = useState(false) // true selama upload+transcribe berlangsung, setelah tombol dilepas
+  const [playingMsgId, setPlayingMsgId] = useState(null)
+  const mediaRecorderRef = useRef(null)
+  const audioChunksRef = useRef([])
+  const recordTimeoutRef = useRef(null)
+  const currentAudioRef = useRef(null)
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4'
+      const recorder = new MediaRecorder(stream, { mimeType })
+      audioChunksRef.current = []
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data) }
+      recorder.start()
+      mediaRecorderRef.current = recorder
+      setIsRecording(true)
+
+      // Auto-stop di 90 detik — sejalan dengan batas ukuran di backend
+      // (api/voice.js), supaya user tidak ngomong panjang lalu kena reject
+      // percuma setelah selesai ngomong.
+      recordTimeoutRef.current = setTimeout(() => stopRecording(), 90000)
+    } catch (e) {
+      console.error('[voice] Gagal akses microphone:', e)
+      pushBot('Aku butuh izin microphone buat dengerin kamu — cek izin browser/app dulu ya 🙏')
+    }
+  }
+
+  const stopRecording = () => {
+    clearTimeout(recordTimeoutRef.current)
+    const recorder = mediaRecorderRef.current
+    if (!recorder || recorder.state === 'inactive') return
+    setIsRecording(false)
+    setVoiceBusy(true)
+
+    recorder.onstop = async () => {
+      recorder.stream.getTracks().forEach(t => t.stop()) // matikan indikator mic browser
+      const blob = new Blob(audioChunksRef.current, { type: recorder.mimeType })
+
+      if (blob.size < 1000) { // rekaman kelewat pendek (< ~1KB), kemungkinan cuma tap tidak sengaja
+        setVoiceBusy(false)
+        return
+      }
+
+      try {
+        const audioBase64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result.split(',')[1])
+          reader.onerror = reject
+          reader.readAsDataURL(blob)
+        })
+
+        const resp = await fetch('/api/voice?action=transcribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ audioBase64, mimeType: recorder.mimeType }),
+        })
+        const data = await resp.json()
+        if (!resp.ok || data.error) throw new Error(data.error || 'Gagal transkripsi')
+
+        if (data.text?.trim()) {
+          handleSend(data.text.trim(), true) // true = viaVoice, biar balasannya auto-play
+        }
+      } catch (e) {
+        console.error('[voice] transcribe gagal:', e)
+        pushBot('Rekamannya gagal diproses, coba ngomong lagi ya 🙏')
+      } finally {
+        setVoiceBusy(false)
+      }
+    }
+    recorder.stop()
+  }
+
+  const playMessageAudio = async (msgId, text) => {
+    // Toggle: kalau lagi main audio yang sama, stop aja
+    if (playingMsgId === msgId) {
+      currentAudioRef.current?.pause()
+      setPlayingMsgId(null)
+      return
+    }
+    currentAudioRef.current?.pause()
+    setPlayingMsgId(msgId)
+    try {
+      const resp = await fetch('/api/voice?action=speak', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      })
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => ({}))
+        throw new Error(data.error || 'Gagal generate suara')
+      }
+      const audioBlob = await resp.blob()
+      const audio = new Audio(URL.createObjectURL(audioBlob))
+      currentAudioRef.current = audio
+      audio.onended = () => setPlayingMsgId(null)
+      audio.onerror = () => setPlayingMsgId(null)
+      await audio.play()
+    } catch (e) {
+      console.error('[voice] play gagal:', e)
+      setPlayingMsgId(null)
+    }
+  }
+
+  const handleSend = (overrideText = null, viaVoice = false) => {
+    const msg = (overrideText ?? input).trim()
     if (!msg || loading) return
     setInput(''); pushUser(msg)
     const msgId = Date.now()
@@ -541,6 +654,12 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
       setCoachHistory(fullHistory)
       // Save langsung dengan fullHistory yang sudah pasti lengkap
       saveHistoryToSupabase(fullHistory, false)
+      // Kalau user tadi ngirim lewat suara, balas Diah Anna juga otomatis
+      // diucapkan — ini yang bikin kerasa "ngobrol", bukan cuma "ngetik
+      // pakai mic". Kalau user ngetik biasa, TIDAK auto-play (biaya TTS
+      // per karakter, dan kebanyakan orang ngetik justru pas lagi di tempat
+      // yang kurang nyaman buat dengerin suara keluar dari HP).
+      if (viaVoice) playMessageAudio(replyId, data.reply)
       if (plan !== 'premium' && data.persuasiAktif) {
         setWaitingForPositive(true)
       }
@@ -665,6 +784,19 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
             <div style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
               <div style={{ maxWidth: '82%', background: isUser ? '#DCF8C6' : '#fff', borderRadius: isUser ? '14px 3px 14px 14px' : '3px 14px 14px 14px', padding: '9px 13px 5px', fontSize: '0.875rem', lineHeight: 1.55, boxShadow: '0 1px 2px rgba(0,0,0,0.1)', color: '#111B21', wordBreak: 'break-word' }}>
                 <div dangerouslySetInnerHTML={{ __html: renderMd(msg.text) }} />
+                {!isUser && (
+                  <button
+                    onClick={() => playMessageAudio(msg.id, msg.text)}
+                    title={playingMsgId === msg.id ? 'Hentikan' : 'Dengarkan'}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer', padding: '4px 2px 0',
+                      color: playingMsgId === msg.id ? 'var(--wa-green-dark)' : 'rgba(0,0,0,0.35)',
+                      fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: 4,
+                    }}
+                  >
+                    {playingMsgId === msg.id ? '⏸' : '🔊'}
+                  </button>
+                )}
               </div>
             </div>
             {msg.quickReplies && (
@@ -690,10 +822,32 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
       <div style={{ background: '#f0f2f5', padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, borderTop: '1px solid #e0e0e0' }}>
         <input value={input} onChange={e => setInput(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !loading) { e.preventDefault(); handleSend() } }}
-          placeholder="Ketik progres strategismu..." disabled={loading}
+          placeholder={isRecording ? 'Mendengarkan...' : 'Ketik progres strategismu...'} disabled={loading || isRecording}
           style={{ flex: 1, background: '#fff', border: 'none', borderRadius: 24, padding: '10px 16px', fontSize: '0.9rem', outline: 'none' }}
         />
-        <button onClick={handleSend} disabled={loading || !input.trim()}
+        {/* Tombol mic: tekan-tahan buat rekam, lepas buat kirim — voice cuma
+            muncul kalau input teks kosong, biar tidak dobel sama tombol kirim */}
+        {!input.trim() && (
+          <button
+            onMouseDown={startRecording}
+            onMouseUp={stopRecording}
+            onMouseLeave={() => { if (isRecording) stopRecording() }}
+            onTouchStart={(e) => { e.preventDefault(); startRecording() }}
+            onTouchEnd={(e) => { e.preventDefault(); stopRecording() }}
+            disabled={loading || voiceBusy}
+            title="Tahan untuk bicara"
+            style={{
+              width: 38, height: 38, borderRadius: '50%', border: 'none', flexShrink: 0,
+              background: isRecording ? '#ff4444' : (voiceBusy ? '#ccc' : '#25D366'),
+              color: '#fff', fontSize: '1.1rem',
+              transform: isRecording ? 'scale(1.15)' : 'scale(1)',
+              transition: 'transform 0.15s, background 0.15s',
+            }}
+          >
+            {voiceBusy ? '⋯' : '🎙️'}
+          </button>
+        )}
+        <button onClick={() => handleSend()} disabled={loading || !input.trim()}
           style={{ width: 38, height: 38, borderRadius: '50%', background: !loading && input.trim() ? '#25D366' : '#ccc', border: 'none', color: '#fff' }}>➤</button>
       </div>
     </div>

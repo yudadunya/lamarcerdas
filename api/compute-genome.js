@@ -49,7 +49,8 @@ KEMBALIKAN JSON VALID BERIKUT (tanpa backtick markdown, tanpa teks pengantar/pen
     "motivasi": "motivasi terdalam yang tersirat dari percakapan — apa yang sebenarnya mereka kejar",
     "kekuatan_tersembunyi": "1 kekuatan yang mungkin belum mereka sadari sepenuhnya berdasarkan percakapan",
     "gaya_kerja": "gaya kerja yang terdeteksi dari percakapan",
-    "urgensi_finansial": "true jika dari percakapan ada tanda user baru di-PHK / menganggur / butuh penghasilan cepat / cemas soal biaya hidup, false jika tidak ada tanda seperti itu"
+    "urgensi_finansial": "true jika dari percakapan ada tanda user baru di-PHK / menganggur / butuh penghasilan cepat / cemas soal biaya hidup, false jika tidak ada tanda seperti itu",
+    "income_situation": "klasifikasikan ke SALAH SATU dari tiga nilai ini persis (tanpa variasi): belum_penghasilan (belum punya penghasilan tetap, butuh kerja/income) | nambah_penghasilan (sudah kerja, mau nambah penghasilan) | ganti_arah (sudah punya karier tapi kurang menjamin/mau ganti arah). Kalau dari percakapan tidak cukup jelas, tebak yang paling mendekati berdasarkan konteks — JANGAN null."
   },
   "genome_scores": {
     "analytical": 0,

@@ -72,6 +72,7 @@ async function syncDiscoveryData(u, setChatMessages) {
         const { error: profileErr } = await supabase.from('user_career_profiles').upsert({
           user_id:          u.id,
           nama:             p.nama             || null,
+          income_situation: p.income_situation || null,
           target_posisi:    p.target_posisi    || null,
           posisi_saat_ini:  p.posisi_saat_ini  || null,
           industri:         p.industri         || null,

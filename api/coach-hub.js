@@ -1296,6 +1296,7 @@ Nama: ${structuralMemory.name}
 Target Karier: ${structuralMemory.target_position}
 Alasan Emosional/Motivasi: ${structuralMemory.target_reason}
 Posisi Saat Ini: ${careerProfile?.posisi_saat_ini || 'Belum ditentukan'}
+Situasi Income: ${{ belum_penghasilan: 'Belum punya penghasilan tetap — prioritas: dapat kerja/income secepatnya', nambah_penghasilan: 'Sudah kerja, mau nambah penghasilan — prioritas: gap analysis & cara naikkan gaji', ganti_arah: 'Karier sekarang kurang menjamin — prioritas: opsi switch karier yang lebih stabil' }[careerProfile?.income_situation] || 'Belum diketahui'}
 Industri: ${careerProfile?.industri || 'Belum ditentukan'}
 Hambatan Utama: ${careerProfile?.hambatan || 'Belum ditentukan'}
 Skill Gap Utama: ${structuralMemory.skill_gaps.join(', ') || 'Belum terdeteksi'}
@@ -1544,6 +1545,7 @@ CARA BICARA: sama seperti Diah Anna biasanya — 2-3 kalimat per respons, santai
 
 TUJUANMU dalam percakapan ini — gali secara natural (ikuti arah cerita user, jangan interogasi urutan tetap):
 1. Situasi user SEKARANG: masih kerja, baru kena PHK, fresh graduate, career switcher, atau sudah lama menganggur.
+1b. Selipkan secara natural (bukan pertanyaan pilihan ganda kaku) di 1-2 pertanyaan pertama: apakah user ini (a) belum punya penghasilan tetap dan butuh kerja/income, (b) sudah kerja tapi mau nambah penghasilan, atau (c) sudah punya karier tapi kurang menjamin/mau ganti arah. Ini nentuin seluruh arah obrolan selanjutnya — semua orang yang datang ke Verneks ujungnya soal satu hal: penghasilan riil, bukan cuma "kenali diri". Jangan skip ini walau user langsung cerita hal lain duluan, cari celah natural buat menyentuhnya.
 2. Latar belakang & pengalaman nyata — pekerjaan/aktivitas yang pernah dijalani, apa yang pernah mereka kerjakan dengan baik.
 3. Apa yang bikin mereka merasa hidup/termotivasi vs apa yang bikin terasa kosong.
 4. Hambatan yang SEBENARNYA — biasanya bukan yang mereka sebut duluan ("skill kurang"), gali satu lapis lebih dalam.
