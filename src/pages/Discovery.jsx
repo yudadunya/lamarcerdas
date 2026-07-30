@@ -470,7 +470,25 @@ export default function Discovery() {
   }, [])
 
   // Restore chat dari localStorage
+  // FIX: sebelumnya restore APAPUN yang ada di localStorage tanpa cek basi
+  // atau nggak — kalau ada sisa sesi Discovery lama (misal dari bulan lalu,
+  // sempat ditinggal belum selesai) di browser user, itu dibangkitkan lagi
+  // dan DILANJUTKAN dengan system prompt yang SEKARANG (yang sudah beda,
+  // sekarang nanya soal situasi income di awal) — bikin alur kerasa
+  // "acak-acakan" karena AI tiba-tiba nanya hal yang nggak nyambung sama
+  // histori lama yang lagi ditampilin. Sekarang: data lebih dari 24 jam
+  // dianggap basi/ditinggal, dihapus, mulai bersih dari nol.
   useEffect(() => {
+    const savedAt = localStorage.getItem('lc_discovery_saved_at')
+    const isStale = savedAt && (Date.now() - Number(savedAt)) > 24 * 60 * 60 * 1000
+
+    if (isStale) {
+      localStorage.removeItem('lc_discovery_messages')
+      localStorage.removeItem('lc_discovery_result')
+      localStorage.removeItem('lc_discovery_saved_at')
+      return
+    }
+
     const savedMsgs = localStorage.getItem('lc_discovery_messages')
     const savedResult = localStorage.getItem('lc_discovery_result')
     if (savedResult) {
@@ -504,7 +522,7 @@ export default function Discovery() {
 
     const newMessages = [...messages, { role: 'user', text, id: Date.now() }]
     setMessages(newMessages)
-    try { localStorage.setItem('lc_discovery_messages', JSON.stringify(newMessages)) } catch {}
+    try { localStorage.setItem('lc_discovery_messages', JSON.stringify(newMessages)); localStorage.setItem('lc_discovery_saved_at', String(Date.now())) } catch {}
     setLoading(true)
 
     try {
@@ -517,7 +535,7 @@ export default function Discovery() {
       if (!res.ok || !data.reply) throw new Error(data.error || 'Reply kosong')
       const withReply = [...newMessages, { role: 'bot', text: data.reply, id: Date.now() + 1 }]
       setMessages(withReply)
-      try { localStorage.setItem('lc_discovery_messages', JSON.stringify(withReply)) } catch {}
+      try { localStorage.setItem('lc_discovery_messages', JSON.stringify(withReply)); localStorage.setItem('lc_discovery_saved_at', String(Date.now())) } catch {}
       if (data.showResultButton) setShowResultBtn(true)
     } catch (err) {
       setMessages(prev => [...prev, {
@@ -541,7 +559,7 @@ export default function Discovery() {
       })
       const data = await res.json()
       if (data.success) {
-        localStorage.setItem('lc_discovery_result', JSON.stringify(data.result))
+        localStorage.setItem('lc_discovery_result', JSON.stringify(data.result)); localStorage.setItem('lc_discovery_saved_at', String(Date.now()))
         setResult(data.result)
         setPhase('result')  // ← tampilkan hasil, BUKAN redirect
       } else {
