@@ -197,9 +197,14 @@ export default function Home({ user }) {
             <div style={{ background: C.grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontSize: '0.58rem', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>Karier Jangan Asal.</div>
           </div>
         </div>
-        <button onClick={handleGoogle} style={{ background: 'transparent', border: `1px solid rgba(255,255,255,0.1)`, color: 'rgba(255,255,255,0.65)', borderRadius: 20, padding: '7px 18px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
-          Masuk
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <button onClick={() => navigate('/blog')} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.65)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+            Blog
+          </button>
+          <button onClick={handleGoogle} style={{ background: 'transparent', border: `1px solid rgba(255,255,255,0.1)`, color: 'rgba(255,255,255,0.65)', borderRadius: 20, padding: '7px 18px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+            Masuk
+          </button>
+        </div>
       </nav>
 
       {/* ════════════════════════════════════════════════════════════════════
@@ -659,6 +664,10 @@ export default function Home({ user }) {
         <p style={{ color: 'rgba(255,255,255,0.18)', fontSize: '0.72rem', margin: '0 0 10px' }}>
           Membantu manusia mengenal dirinya, menentukan arahnya, dan membangun masa depannya.
         </p>
+        <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 12 }}>
+          <button onClick={() => navigate('/blog')} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.35)', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'inherit' }}>Blog Karier</button>
+          <button onClick={() => navigate('/library')} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.35)', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'inherit' }}>Career Library</button>
+        </div>
         <p style={{ color: 'rgba(255,255,255,0.12)', fontSize: '0.7rem', margin: 0 }}>
           © Verneks · Dibangun untuk membantu lebih banyak orang mengambil keputusan karier dengan lebih sadar.
         </p>
