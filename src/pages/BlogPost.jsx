@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { BLOG_POSTS } from '../data/blogPosts'
+import { BLOG_POSTS as STATIC_POSTS } from '../data/blogPosts'
+import { supabase } from '../lib/supabase'
 
 const Logo = () => (
   <svg width="26" height="26" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
@@ -100,10 +101,49 @@ export default function BlogPost({ user }) {
   const { slug } = useParams()
   const [visible, setVisible] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [dbPost, setDbPost] = useState(null)
+  const [dbChecked, setDbChecked] = useState(false)
   const articleRef = useRef(null)
 
-  const post = BLOG_POSTS.find(p => p.slug === slug)
-  const related = BLOG_POSTS.filter(p => p.slug !== slug && p.category === post?.category).slice(0, 2)
+  const staticPost = STATIC_POSTS.find(p => p.slug === slug)
+
+  // FIX: sebelumnya cuma cari di STATIC_POSTS — artikel hasil generate
+  // harian (tersimpan di tabel blog_articles, cron generate-daily-article)
+  // MUNCUL di list /blog, tapi begitu diklik ke halaman detail ini, SELALU
+  // "Artikel tidak ditemukan" karena tidak pernah di-query ke Supabase sama
+  // sekali. Ini serius buat SEO — search engine/AI crawler yang ikutin link
+  // dari halaman list bakal ketemu link mati tiap hari. Sekarang: cek
+  // STATIC_POSTS dulu (instant, tidak perlu network), kalau tidak ketemu
+  // baru fetch dari blog_articles by slug.
+  useEffect(() => {
+    setDbPost(null)
+    setDbChecked(false)
+    if (staticPost) { setDbChecked(true); return }
+
+    supabase
+      .from('blog_articles')
+      .select('slug, title, excerpt, category, emoji, keywords, faq, content, read_time, published_at')
+      .eq('slug', slug)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) console.warn('[BlogPost] fetch db article gagal:', error.message)
+        if (data) {
+          setDbPost({
+            slug: data.slug, title: data.title, excerpt: data.excerpt, category: data.category,
+            emoji: data.emoji, date: data.published_at, readTime: data.read_time,
+            keywords: data.keywords || [], faq: data.faq || [], content: data.content,
+          })
+        }
+        setDbChecked(true)
+      })
+  }, [slug]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const post = staticPost || dbPost
+  // FIX: sebelumnya BLOG_POSTS (bukan STATIC_POSTS) — identifier itu tidak
+  // pernah didefinisikan di file ini sama sekali, jadi ini ReferenceError
+  // yang bikin SELURUH halaman detail artikel crash total saat render,
+  // buat artikel manapun (statis maupun dari DB).
+  const related = STATIC_POSTS.filter(p => p.slug !== slug && p.category === post?.category).slice(0, 2)
 
   useEffect(() => {
     if (!post) return
@@ -205,6 +245,12 @@ export default function BlogPost({ user }) {
       })
     }
   }, [post, slug])
+
+  if (!post && !dbChecked) return (
+    <div style={{ minHeight: '100vh', background: '#0a1628', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem' }}>Memuat artikel...</div>
+    </div>
+  )
 
   if (!post) return (
     <div style={{ minHeight: '100vh', background: '#0a1628', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: 20 }}>

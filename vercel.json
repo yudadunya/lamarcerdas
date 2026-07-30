@@ -77,7 +77,11 @@
     },
     {
       "src": "/sitemap.xml",
-      "dest": "/sitemap.xml"
+      "dest": "/api/sitemap"
+    },
+    {
+      "src": "/llms.txt",
+      "dest": "/llms.txt"
     },
     {
       "src": "/robots.txt",
@@ -124,6 +128,10 @@
     {
       "path": "/api/cron/jobs?job=free-upgrade-nudge",
       "schedule": "0 3 * * 3"
+    },
+    {
+      "path": "/api/cron/jobs?job=generate-daily-article",
+      "schedule": "0 23 * * *"
     }
   ]
 }

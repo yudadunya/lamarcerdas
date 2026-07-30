@@ -2,11 +2,51 @@ User-agent: *
 Allow: /
 Allow: /blog
 Allow: /blog/
+Allow: /library
+Allow: /library/
 Disallow: /chat
 Disallow: /dashboard
 Disallow: /login
 Disallow: /register
 Disallow: /forgot-password
 Disallow: /reset-password
+Disallow: /profile
+Disallow: /journey
+Disallow: /opportunities
+
+# ── AI search & AI training crawlers — eksplisit diizinkan ──────────────────
+# Verneks INGIN dikutip di ChatGPT/Perplexity/Google AI Overview/Claude, jadi
+# bot-bot ini sengaja diizinkan eksplisit (bukan cuma ikut wildcard di atas),
+# supaya jelas tidak ada niat memblokir mereka.
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
 
 Sitemap: https://verneks.my.id/sitemap.xml
