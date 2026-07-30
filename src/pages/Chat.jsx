@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import { useNavigate, useLocation } from 'react-router-dom'
-import Onboarding from '../components/Onboarding'
 import ShareCard from '../components/ShareCard'
 import ShareAppModal from '../components/ShareAppModal'
 import BottomNav from '../components/BottomNav'
@@ -278,7 +277,6 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
     })
   }, [coachKey, saveHistoryToSupabase])
   
-  const [showOnboarding, setShowOnboarding] = useState(false)
   const [shareCard, setShareCard] = useState(null)
   const [showShareApp, setShowShareApp] = useState(false)
 
@@ -419,42 +417,9 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
     }
   }, [location.state, user?.id]);
 
-  // 2. Onboarding Flow
-  useEffect(() => {
-    if (!user?.id) return
-    const key = `onboarded_${user.id}`
-    if (localStorage.getItem(key)) { setShowOnboarding(false); return }
-    
-    supabase
-      .from('user_career_profiles')
-      .select('user_id, income_situation')
-      .eq('user_id', user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        // Onboarding.jsx sekarang jadi FALLBACK — user baru yang lewat
-        // Discovery dulu (jalur normal) sudah ditanya soal situasi income
-        // di sana secara natural, jadi income_situation sudah keisi duluan
-        // sebelum sampai sini. Popup ini cuma muncul buat user LAMA yang
-        // profile-nya sudah ada dari sebelum pertanyaan ini ditambahkan
-        // (income_situation masih kosong) — supaya data itu ke-backfill
-        // tanpa perlu re-Discovery dari nol.
-        if (data?.income_situation) {
-          localStorage.setItem(key, '1')
-          setShowOnboarding(false)
-        } else {
-          setShowOnboarding(true)
-        }
-      })
-  }, [user?.id])
-
-  const handleOnboardingDone = (data) => {
-    if (ONBOARDING_KEY) localStorage.setItem(ONBOARDING_KEY, '1')
-    setShowOnboarding(false)
-    if (data?.nama) {
-      const firstName = data.nama.split(' ')[0]
-      pushBot(`Halo ${firstName}! 👋\n\nAku sudah mempelajari profil dan target spesifikmu untuk menjadi **${data.target || 'Profesional Unggul'}**.\n\nSebelum kita menyusun taktik pergerakan, aku ingin tahu satu hal penting:\n\n*Apa alasan terbesar yang membuat target ini begitu penting bagimu?*`)
-    }
-  }
+  // 2. (Onboarding popup dihapus — situasi income sekarang ditanya natural
+  // oleh Diah Anna di dalam obrolan biasa, lihat instruksi system prompt di
+  // api/coach-hub.js, bukan lewat popup/form terpisah lagi.)
 
   // 3. Proactive greeting — 1x per hari
   // Trigger hanya kalau historyLoaded=true DAN greetingFiredRef masih false
@@ -585,7 +550,6 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
   return (
     <>
     <div ref={containerRef} style={{ position: 'fixed', top: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 480, height: 'calc(100vh - 65px)', display: 'flex', flexDirection: 'column', background: 'var(--wa-chat-bg)', overflow: 'hidden' }}>
-      {showOnboarding && <Onboarding onDone={handleOnboardingDone} user={user} />}
       {showRedeemModal && <RedeemCodeModal userId={user?.id} onClose={() => setShowRedeemModal(false)} />}
 
       <div style={{ background: 'var(--wa-header)', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0, zIndex: 10 }}>

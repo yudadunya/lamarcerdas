@@ -1230,7 +1230,16 @@ ${learnedPatterns.map((p, i) => `${i + 1}. ${p.pattern_category}: ${p.pattern_de
         openingMessage += `💡 Yang aku pelajari tentangmu:\n${structuralMemory.running_insight}\n\n`;
       }
 
-      openingMessage += `${coaching.daily_question}`;
+      // FIX: sebelumnya ada popup Onboarding terpisah buat nanya "situasi
+      // income" ke user lama yang belum pernah ditanya (profile mereka
+      // dibuat sebelum field ini ada). Sekarang dipindah ke sini — Diah
+      // Anna nanya natural di greeting harian, sekali saja, bukan lewat
+      // form/popup terpisah yang kerasa lepas dari alur ngobrol biasa.
+      if (!careerProfile?.income_situation) {
+        openingMessage += `Btw, sebelum lanjut — boleh aku tanya satu hal? Situasi kamu sekarang lebih ke: udah punya penghasilan tetap tapi pengen nambah, belum punya penghasilan tetap, atau karier sekarang kurang menjamin dan pengen ganti arah?`;
+      } else {
+        openingMessage += `${coaching.daily_question}`;
+      }
 
       return res.status(200).json({ success: true, openingMessage });
     } catch (error) {
@@ -1432,11 +1441,68 @@ ${learnedPatterns.length > 0 ? `\n\n[RSI ACTIVE] Kamu sudah belajar dari ${learn
       }
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // KLASIFIKASI SITUASI INCOME DARI CHAT — pengganti popup Onboarding lama.
+    // Diah Anna sudah nanya soal ini natural di greeting harian (init-chat)
+    // kalau income_situation masih kosong. Begitu user balas apapun, coba
+    // klasifikasikan dari jawaban itu — non-blocking, tidak nunda balasan
+    // Diah Anna ke user.
+    // ═══════════════════════════════════════════════════════════════════════
+    if (userId && !careerProfile?.income_situation) {
+      classifyIncomeSituation(userId, messages, supabase).catch(e =>
+        console.error('[income-situation-classify] error:', e.message)
+      )
+    }
+
     return res.status(200).json({ reply, persuasiAktif, strategy, strategyLimitReached })
   } catch (error) {
     console.error('[career-coach] chat error:', error)
     return res.status(500).json({ error: 'Diah Anna lagi bersiap, tunggu sebentar ya!' })
   }
+}
+
+/**
+ * Coba klasifikasikan income_situation dari beberapa pesan terakhir chat.
+ * Dipanggil tiap giliran SELAMA income_situation masih kosong — begitu
+ * berhasil diklasifikasi dengan yakin, langsung disimpan dan berhenti
+ * dipanggil lagi (karena career-coach.js cuma masuk blok ini kalau field-nya
+ * masih null).
+ */
+async function classifyIncomeSituation(userId, messages, supabase) {
+  const recentText = messages.slice(-6).map(m => `${m.role === 'user' ? 'User' : 'Diah Anna'}: ${(m.content || '').slice(0, 300)}`).join('\n')
+
+  const schema = {
+    type: 'object',
+    properties: {
+      income_situation: {
+        type: 'string',
+        enum: ['belum_penghasilan', 'nambah_penghasilan', 'ganti_arah', 'belum_jelas'],
+        description: 'belum_jelas kalau dari percakapan ini belum cukup informasi untuk yakin — JANGAN menebak paksa.',
+      },
+    },
+    required: ['income_situation'],
+  }
+
+  let result
+  try {
+    result = await generateStructured({
+      system: 'Kamu mesin klasifikasi. Baca percakapan, tentukan situasi income user: belum_penghasilan (belum punya penghasilan tetap, butuh kerja/income), nambah_penghasilan (sudah kerja, mau nambah penghasilan), ganti_arah (sudah punya karier tapi kurang menjamin/mau ganti arah), atau belum_jelas kalau memang belum cukup jelas dari percakapan.',
+      prompt: recentText,
+      schema,
+      maxTokens: 40, tier: 'fast', plan: 'free',
+    })
+  } catch (e) {
+    console.error('[classifyIncomeSituation] AI gagal:', e.message)
+    return
+  }
+
+  if (!result?.income_situation || result.income_situation === 'belum_jelas') return
+
+  const { error } = await supabase
+    .from('user_career_profiles')
+    .update({ income_situation: result.income_situation })
+    .eq('user_id', userId)
+  if (error) console.error('[classifyIncomeSituation] save gagal:', error.message)
 }
 
 
