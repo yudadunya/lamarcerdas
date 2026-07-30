@@ -11,7 +11,15 @@ export default function Login() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/chat`
+        // FIX: sebelumnya hardcode ke '/chat' — user BARU (belum punya
+        // career_readiness) jadi selalu mendarat di /chat duluan, baru
+        // ke-redirect ke /discovery belakangan (race condition dengan
+        // trigger Onboarding.jsx fallback di Chat.jsx — kadang popup
+        // Onboarding sempat kepicu duluan sebelum redirect ke /discovery
+        // selesai). Redirect ke root '/' supaya App.jsx yang nentuin
+        // tujuan akhir (hasCareerData ? '/chat' : '/discovery') SEBELUM
+        // Chat.jsx sempat mount sama sekali — bukan lagi race.
+        redirectTo: `${window.location.origin}/`
       }
     })
     if (error) {

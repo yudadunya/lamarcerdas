@@ -11,7 +11,11 @@ import { supabase } from '../../lib/supabase'
 import ReactMarkdown from 'react-markdown'
 import '../../styles/Library.css'
 
-export default function GuideDetail() {
+const Logo = () => (
+  <img src="/verneks_icon_1.png" alt="Verneks" width="28" height="28" style={{ objectFit: 'contain', flexShrink: 0 }} />
+)
+
+export default function GuideDetail({ user }) {
   const { slug } = useParams()
   const navigate = useNavigate()
   const [guide, setGuide] = useState(null)
@@ -102,15 +106,47 @@ export default function GuideDetail() {
   }, [slug, navigate])
 
   if (loading) {
-    return <div className="guide-loading">Loading guide...</div>
+    return <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #075E54 0%, #0a1628 55%, #0d1f1a 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-body)' }}>Loading guide...</div>
   }
 
   if (!guide) {
-    return <div className="guide-error">Guide not found</div>
+    return <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #075E54 0%, #0a1628 55%, #0d1f1a 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-body)' }}>Guide not found</div>
   }
 
   return (
-    <div className="guide-detail-container">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(160deg, #075E54 0%, #0a1628 55%, #0d1f1a 100%)',
+      fontFamily: 'var(--font-body)',
+    }}>
+      {/* ── NAVBAR (konsisten sama Blog.jsx & Library list — sebelumnya
+           halaman ini sama sekali nggak punya navbar) ── */}
+      <nav style={{
+        position: 'sticky', top: 0, zIndex: 100,
+        background: 'rgba(7,94,84,0.92)', backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        padding: '12px 16px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <div onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+          <Logo />
+          <span style={{ color: '#fff', fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.3px' }}>Verneks</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <button onClick={() => navigate('/blog')} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.65)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+            Blog
+          </button>
+          <button onClick={() => navigate(user ? '/chat' : '/login')} style={{
+            background: '#25D366', color: '#fff', border: 'none',
+            borderRadius: 10, padding: '8px 16px',
+            fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer',
+          }}>
+            {user ? 'Buka Aplikasi' : 'Coba Gratis →'}
+          </button>
+        </div>
+      </nav>
+
+      <div className="guide-detail-container">
       {/* Back button */}
       <Link to="/library" className="guide-back">
         ← Kembali ke Library
@@ -220,6 +256,7 @@ export default function GuideDetail() {
         <Link to="/chat" className="nav-link primary">
           Chat Sekarang 🎯
         </Link>
+      </div>
       </div>
     </div>
   )

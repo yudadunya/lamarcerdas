@@ -145,10 +145,15 @@ export default function Home({ user }) {
 
   if (user) return null
 
-  // ── Auth handlers (tidak diubah secara fungsional) ─────────────────────────
+  // ── Auth handlers ────────────────────────────────────────────────────────
   const handleGoogle = async () => {
     setAuthLoading(true)
-    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/chat` } })
+    // FIX: sebelumnya hardcode ke '/chat' — user yang klik "Masuk" tapi
+    // ternyata belum pernah Discovery (career_readiness kosong) jadi
+    // mendarat di /chat duluan, baru App.jsx mengoreksi belakangan — bisa
+    // race dengan Onboarding fallback di Chat.jsx. Redirect ke root '/'
+    // supaya App.jsx yang nentuin tujuan akhir sebelum Chat.jsx sempat mount.
+    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/` } })
     setAuthLoading(false)
   }
   const handleCTA = async () => {

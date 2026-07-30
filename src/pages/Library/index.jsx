@@ -6,11 +6,16 @@
  */
 
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import '../../styles/Library.css'
 
-export default function LibraryList() {
+const Logo = () => (
+  <img src="/verneks_icon_1.png" alt="Verneks" width="28" height="28" style={{ objectFit: 'contain', flexShrink: 0 }} />
+)
+
+export default function LibraryList({ user }) {
+  const navigate = useNavigate()
   const [guides, setGuides] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
@@ -62,7 +67,39 @@ export default function LibraryList() {
   }, [searchTerm])
 
   return (
-    <div className="library-container">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(160deg, #075E54 0%, #0a1628 55%, #0d1f1a 100%)',
+      fontFamily: 'var(--font-body)',
+    }}>
+      {/* ── NAVBAR (konsisten sama Blog.jsx & Home.jsx — sebelumnya halaman ini
+           sama sekali nggak punya navbar, kerasa lepas dari brand Verneks) ── */}
+      <nav style={{
+        position: 'sticky', top: 0, zIndex: 100,
+        background: 'rgba(7,94,84,0.92)', backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        padding: '12px 16px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <div onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+          <Logo />
+          <span style={{ color: '#fff', fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.3px' }}>Verneks</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <button onClick={() => navigate('/blog')} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.65)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+            Blog
+          </button>
+          <button onClick={() => navigate(user ? '/chat' : '/login')} style={{
+            background: '#25D366', color: '#fff', border: 'none',
+            borderRadius: 10, padding: '8px 16px',
+            fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer',
+          }}>
+            {user ? 'Buka Aplikasi' : 'Coba Gratis →'}
+          </button>
+        </div>
+      </nav>
+
+      <div className="library-container">
       {/* Header */}
       <div className="library-header">
         <h1>Career Library</h1>
@@ -135,6 +172,7 @@ export default function LibraryList() {
           Ingin diskusi lebih dalam tentang karier kamu?{' '}
           <Link to="/chat">Chat dengan Diah Anna 🎯</Link>
         </p>
+      </div>
       </div>
     </div>
   )

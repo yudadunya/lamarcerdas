@@ -504,8 +504,8 @@ export default function App() {
         <Route path="/blog/:slug"    element={<BlogPost user={user} />} />
         
         {/* NEW: Career Library Routes */}
-        <Route path="/library"           element={<LibraryList />} />
-        <Route path="/library/:slug"     element={<GuideDetail />} />
+        <Route path="/library"           element={<LibraryList user={user} />} />
+        <Route path="/library/:slug"     element={<GuideDetail user={user} />} />
         
         <Route path="/adm-lc"        element={<AdminPanel />} />
 
