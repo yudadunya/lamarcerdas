@@ -60,11 +60,18 @@ async function syncDiscoveryData(u, setChatMessages) {
 
       const { data: existing } = await supabase
         .from('user_career_profiles')
-        .select('career_readiness')
+        .select('career_readiness, target_posisi')
         .eq('user_id', u.id)
         .maybeSingle()
 
-      if (existing?.career_readiness == null) {
+      // FIX: sebelumnya cuma cek career_readiness == null — user dengan
+      // profile "setengah jadi" (career_readiness ada, tapi target_posisi
+      // kosong karena onboarding lama sempat crash/gagal) jadi TIDAK PERNAH
+      // bisa nyimpen hasil Discovery baru yang lebih lengkap, walau mereka
+      // sudah diizinkan balik ke /discovery lewat fix di atas. Sekarang
+      // kondisinya: simpan kalau salah satu dari career_readiness ATAU
+      // target_posisi masih kosong (belum benar-benar lengkap).
+      if (existing?.career_readiness == null || !existing?.target_posisi) {
         const p  = result.profile_preview || {}
         const gs = result.genome_scores   || {}
         const gw = result.growth_state    || {}
@@ -151,10 +158,16 @@ async function syncDiscoveryData(u, setChatMessages) {
     try {
       const { data: cp } = await supabase
         .from('user_career_profiles')
-        .select('career_readiness')
+        .select('career_readiness, target_posisi')
         .eq('user_id', u.id)
         .maybeSingle()
-      hasCareerData = cp?.career_readiness != null
+      // FIX: sebelumnya cuma cek career_readiness != null — user yang
+      // profile-nya "setengah jadi" (career_readiness sempat tersimpan tapi
+      // target_posisi/genome gagal, misal karena onboarding sempat crash di
+      // tengah jalan) dianggap "sudah lengkap" dan dikunci ke /chat, padahal
+      // fitur lain (Opportunity Matching, dst) tetap gagal karena butuh
+      // target_posisi. Sekarang keduanya harus ada baru dianggap lengkap.
+      hasCareerData = cp?.career_readiness != null && !!cp?.target_posisi
     } catch (err) {
       console.warn('[App redirect] cek career_readiness gagal:', err.message)
     }

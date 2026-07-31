@@ -454,17 +454,19 @@ export default function Discovery() {
       if (session?.user) {
         const { data: cp } = await supabase
           .from('user_career_profiles')
-          .select('career_readiness')
+          .select('career_readiness, target_posisi')
           .eq('user_id', session.user.id)
           .maybeSingle()
-        // Sudah punya data → ke /chat
-        // Belum ada data tapi sudah login → tetap di /discovery (bisa re-do onboarding)
+        // Sudah punya data LENGKAP → ke /chat
+        // Belum ada data / data setengah jadi (career_readiness ada tapi
+        // target_posisi kosong — bisa kejadian kalau onboarding lama sempat
+        // gagal di tengah jalan) → tetap di /discovery, biar bisa dituntaskan
         // Tapi kalau premium dan tidak sengaja masuk sini → langsung balik
-        if (cp?.career_readiness != null) {
-          // Sudah punya data Discovery → ke /chat
+        if (cp?.career_readiness != null && cp?.target_posisi) {
+          // Sudah punya data Discovery lengkap → ke /chat
           navigate('/chat')
         }
-        // Belum ada data (cp null atau career_readiness null) → tetap di /discovery
+        // Belum lengkap → tetap di /discovery
       }
     })
   }, [])
