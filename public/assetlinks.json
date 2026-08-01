@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "id.my.verneks.app",
+    "sha256_cert_fingerprints": ["6F:63:26:43:C8:17:0D:13:B0:C5:C0:20:19:FB:64:16:3D:CB:D8:EE:DC:34:C9:79:1C:20:2D:27:09:B5:8B:ED"]
+  }
+}]
