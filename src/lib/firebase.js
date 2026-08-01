@@ -81,19 +81,28 @@ export async function requestNotificationPermission(userId) {
   try {
     if (!('serviceWorker' in navigator)) {
       console.warn('Service Worker tidak didukung')
-      return null
+      return { permission: 'unsupported', token: null }
     }
 
     const permission = await Notification.requestPermission()
     if (permission !== 'granted') {
       console.log('User denied notification permission')
-      return null
+      return { permission, token: null }
     }
 
-    return await fetchAndSaveFcmToken(userId)
+    // FIX: sebelumnya caller (Profile.jsx) baca ulang `Notification.permission`
+    // secara terpisah SETELAH fungsi ini selesai, buat update UI tombolnya.
+    // Di beberapa TWA/WebView, nilai itu belum tentu langsung ke-sync balik
+    // ke JS meski izinnya udah beneran granted di level Android — jadi
+    // tombolnya kelihatan "balik lagi kayak belum diklik" walau izinnya
+    // sebenarnya berhasil. Sekarang `permission` yang otoritatif (hasil
+    // langsung dari requestPermission() di atas) dikembalikan eksplisit,
+    // caller tinggal pakai ini, tidak perlu baca ulang state yang bisa basi.
+    const token = await fetchAndSaveFcmToken(userId)
+    return { permission, token }
   } catch (error) {
     console.error('Error requesting notification permission:', error)
-    return null
+    return { permission: 'error', token: null }
   }
 }
 

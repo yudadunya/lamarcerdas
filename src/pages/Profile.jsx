@@ -112,10 +112,10 @@ export default function Profile({ user, loading = false, subscription = DEFAULT_
     if (!user?.id) return
     setNotifLoading(true)
     try {
-      const token = await requestNotificationPermission(user.id)
-      setNotifStatus(typeof Notification !== 'undefined' ? Notification.permission : 'unsupported')
-      if (!token) {
-        console.warn('[Profile] Gagal aktifkan notifikasi — cek console untuk detail error dari firebase.js')
+      const { permission, token } = await requestNotificationPermission(user.id)
+      setNotifStatus(permission)
+      if (!token && permission === 'granted') {
+        console.warn('[Profile] Izin sudah granted tapi gagal ambil FCM token — cek console untuk detail error dari firebase.js')
       }
     } finally {
       setNotifLoading(false)
