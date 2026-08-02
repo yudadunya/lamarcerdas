@@ -1400,11 +1400,29 @@ ${learnedPatterns.length > 0 ? `\n\n[RSI ACTIVE] Kamu sudah belajar dari ${learn
     // dari 99% user premium yang pemakaiannya wajar.
     const isExtremeVolume = (usage.used || 0) > 60
     const optimalTier = isExtremeVolume ? 'fast' : (shouldUseSmart ? 'smart' : 'fast')
-    
+
+    // FIX: maxTokens sebelumnya flat 900 buat SEMUA balasan, padahal output
+    // token biasanya lebih mahal per-unit daripada input token. Pertanyaan
+    // simpel/faktual ("berapa gaji rata-rata X", "apa itu ATS") nggak butuh
+    // ruang 900 token buat dijawab dengan baik — kalau dikasih ruang segitu,
+    // model cenderung "mengisi" ruang itu (jadi bertele-tele), bukan cuma
+    // makan biaya lebih tapi jawabannya malah kurang padat. Heuristik ini
+    // PAKAI ULANG sinyal yang udah dihitung di atas (shouldUseSmart) — tidak
+    // nambah panggilan AI ekstra buat "mikir dulu berapa token yang pas",
+    // itu sendiri akan menghilangkan tujuan hematnya.
+    const lastMsgLen = (messages[messages.length - 1]?.content || '').length
+    const looksLikeSimpleQuestion = lastMsgLen < 80 && /^(apa|berapa|kapan|dimana|di mana|siapa|gimana|bagaimana|kenapa|mengapa)\b/i.test((messages[messages.length - 1]?.content || '').trim())
+
+    const dynamicMaxTokens = shouldUseSmart
+      ? 900                                   // Sinyal kompleks/emosional/percakapan panjang — butuh ruang penuh
+      : looksLikeSimpleQuestion
+        ? 350                                 // Pertanyaan faktual pendek — jawaban ringkas lebih pas & lebih murah
+        : 600                                 // Default sedang — tetap lebih hemat dari flat 900 sebelumnya
+
     const rawReply = await generateChat({
       system: systemContent,
       messages,
-      maxTokens: 900,  // Increased from 700 to prevent truncation for long responses
+      maxTokens: dynamicMaxTokens,
       tier: optimalTier,
       plan,
     })
