@@ -120,7 +120,7 @@ export default function UpgradeModal({ user, onClose, initialData = null }) {
   const mentorMsg = profile?.mentor_message
     || `Berdasarkan percakapan kita, aku sudah melihat pola yang jelas di situasi karir kamu — dan ada jalur spesifik yang bisa mempercepat perjalananmu ke ${target}. Aku pengen bantu kamu eksekusi step by step, bukan cuma kasih insight sekali lalu hilang. Ini yang bisa kita lakukan bareng kalau kamu mau lanjut lebih serius.`
 
-  const discountPercentage = Math.round(((599000 - 199000) / 599000) * 100)
+  const discountPercentage = Math.round(((599000 - 99000) / 599000) * 100)
   const timeFormatted = timeRemaining ? formatTimeRemaining(timeRemaining) : null
 
   return (
@@ -299,7 +299,7 @@ export default function UpgradeModal({ user, onClose, initialData = null }) {
             {/* Current price */}
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 6 }}>
               <span style={{ color: isPromoActive ? '#FFB74D' : '#EF5350', fontWeight: 900, fontSize: '1.6rem' }}>
-                Rp{isPromoActive ? '199.000' : '599.000'}
+                Rp{isPromoActive ? '99.000' : '599.000'}
               </span>
               <span style={{ 
                 background: isPromoActive ? 'rgba(255,183,77,0.15)' : 'rgba(239,83,80,0.15)',

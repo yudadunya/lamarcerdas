@@ -28,7 +28,7 @@ const PLANS = [
   {
     id: 'premium',
     name: 'Premium',
-    priceDisplay: 'Rp 199rb',
+    priceDisplay: 'Rp 99rb',
     priceOri: 'Rp 599rb',
     period: 'akses 1 bulan',
     color: 'rgba(37,211,102,0.07)',
@@ -66,7 +66,7 @@ export default function Pricing({ user }) {
 
   useSEO({
     title: 'Harga & Paket Verneks Premium',
-    description: 'Verneks Premium Rp199.000 sekali bayar — akses penuh 30 hari: coaching unlimited, CV Review, ATS Check, Mock Interview, dan roadmap karir personal bersama Diah Anna.',
+    description: 'Verneks Premium Rp99.000 sekali bayar — akses penuh 30 hari: coaching unlimited, CV Review, ATS Check, Mock Interview, dan roadmap karir personal bersama Diah Anna.',
     path: '/pricing',
     breadcrumb: generateBreadcrumb([{ name: 'Harga', path: '/pricing' }]),
     faq: FAQ.map(item => ({ question: item.q, answer: item.a })),
@@ -197,7 +197,7 @@ export default function Pricing({ user }) {
             { label: 'Sesi career coach 1 jam', price: 'Rp 500rb–1jt' },
             { label: 'Review CV profesional', price: 'Rp 150rb–300rb' },
             { label: 'Kursus mock interview', price: 'Rp 300rb–500rb' },
-            { label: 'Verneks Premium/bulan', price: 'Rp 199rb', highlight: true },
+            { label: 'Verneks Premium/bulan', price: 'Rp 99rb', highlight: true },
           ].map(item => (
             <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
               <span style={{ color: item.highlight ? '#fff' : 'rgba(255,255,255,0.45)', fontSize: '0.8rem', fontWeight: item.highlight ? 700 : 400 }}>{item.label}</span>

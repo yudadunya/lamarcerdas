@@ -307,12 +307,38 @@ async function getRealPlan(userId) {
 
 async function checkAndLogUsage(userId, plan, feature) {
   const limit = LIMITS[plan]?.[feature] ?? 0
-  if (limit === 0) return { allowed: false, remaining: 0 }
+  if (limit === 0) return { allowed: false, remaining: 0, used: 0 }
+
+  // FIX: sebelumnya limit>=999 (unlimited) short-circuit tanpa pernah
+  // ngitung berapa kali sebenarnya dipakai hari ini — jadi nggak ada cara
+  // tau kalau ada user (biasanya premium) yang chat ratusan kali sehari
+  // (kemungkinan besar bukan pemakaian wajar, bisa bot/abuse). Sekarang
+  // tetap dihitung, cuma nggak dipakai buat nge-block — dipakai buat
+  // soft-downgrade tier model kalau kepakenya udah ekstrem (lihat
+  // getVolumeAwareTier di bawah).
   if (limit >= 999) {
-    if (userId) supabase.from('usage_logs').insert({ user_id: userId, feature }).then(() => {}).catch(() => {})
-    return { allowed: true, remaining: 999 }
+    let used = 0
+    if (userId) {
+      try {
+        const since = feature === 'chat'
+          ? new Date(new Date().setHours(0, 0, 0, 0)).toISOString()
+          : new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
+        const { count } = await supabase
+          .from('usage_logs')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .eq('feature', feature)
+          .gte('created_at', since)
+        used = count ?? 0
+        supabase.from('usage_logs').insert({ user_id: userId, feature }).then(() => {}).catch(() => {})
+      } catch (e) {
+        console.error('[checkAndLogUsage] hitung used gagal (unlimited plan):', e.message)
+      }
+    }
+    return { allowed: true, remaining: 999, used }
   }
-  if (!userId) return { allowed: false, remaining: 0 }
+
+  if (!userId) return { allowed: false, remaining: 0, used: 0 }
 
   try {
     const since = feature === 'chat'
@@ -327,13 +353,13 @@ async function checkAndLogUsage(userId, plan, feature) {
       .gte('created_at', since)
 
     const used = count ?? 0
-    if (used >= limit) return { allowed: false, remaining: 0 }
+    if (used >= limit) return { allowed: false, remaining: 0, used }
 
     await supabase.from('usage_logs').insert({ user_id: userId, feature })
-    return { allowed: true, remaining: limit - used - 1 }
+    return { allowed: true, remaining: limit - used - 1, used: used + 1 }
   } catch (e) {
     console.error('[checkAndLogUsage] error:', e.message)
-    return { allowed: false, remaining: 0 }
+    return { allowed: false, remaining: 0, used: 0 }
   }
 }
 
@@ -1363,8 +1389,17 @@ ${learnedPatterns.length > 0 ? `\n\n[RSI ACTIVE] Kamu sudah belajar dari ${learn
       messages.length > 10 ||  // Very long conversation = butuh context + nuance
       /bingung|stuck|dilema|keputusan|sulit|ragu|ambiguous|complicated|depresi|ansietas/i.test(messages[messages.length-1]?.content || '') ||  // High emotional complexity only
       depthScore > 75         // Only well-known users with high trust get smart tier
-    
-    const optimalTier = shouldUseSmart ? 'smart' : 'fast'
+
+    // FIX: "unlimited" premium (LIMITS.premium.chat = 999) sebelumnya betul-betul
+    // tanpa langit-langit sama sekali — user (atau bot/abuse) yang chat ratusan
+    // kali sehari tetap bisa kena tier 'smart' (model paling mahal) berkali-kali,
+    // padahal usage seekstrem itu jarang representasi user asli yang wajar.
+    // Ini BUKAN pembatasan akses (tetap allowed:true, tetap unlimited, tidak
+    // pernah diblokir) — cuma soft-downgrade ke tier lebih murah kalau volume
+    // hari itu sudah sangat ekstrem, supaya 1% outlier tidak menggerus margin
+    // dari 99% user premium yang pemakaiannya wajar.
+    const isExtremeVolume = (usage.used || 0) > 60
+    const optimalTier = isExtremeVolume ? 'fast' : (shouldUseSmart ? 'smart' : 'fast')
     
     const rawReply = await generateChat({
       system: systemContent,

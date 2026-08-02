@@ -248,7 +248,7 @@ export default function Paywall() {
             <span style={{ background:'#EF5350', color:'#fff', fontSize:'0.65rem', fontWeight:800, padding:'2px 7px', borderRadius:99 }}>HEMAT 67%</span>
           </div>
           <div style={{ display:'flex', alignItems:'baseline', justifyContent:'center', gap:4 }}>
-            <span style={{ color:'#FFB74D', fontWeight:900, fontSize:'1.5rem' }}>Rp199.000</span>
+            <span style={{ color:'#FFB74D', fontWeight:900, fontSize:'1.5rem' }}>Rp99.000</span>
             <span style={{ color:'rgba(255,255,255,0.35)', fontSize:'0.8rem' }}>akses 1 bulan </span>
           </div>
           <div style={{ color:'rgba(255,255,255,0.25)', fontSize:'0.7rem', marginTop:1 }}>
