@@ -79,38 +79,35 @@ export default function UpgradeModal({ user, onClose, initialData = null }) {
   }, [user?.id])
 
   // Handle promo timer
+  // FIX: sebelumnya deadline-nya disimpan di localStorage dan REGENERATE
+  // diri sendiri kalau sudah lewat/dihapus — jadi "harga spesial berakhir
+  // dalam 24 jam" itu nggak pernah beneran berakhir buat hampir semua user
+  // (fake urgency, disadari sendiri sebagai pola yang problematik). Sekarang
+  // deadline-nya dihitung dari user.created_at (tanggal akun BENERAN
+  // dibuat, dari Supabase Auth — nggak bisa direset/dimanipulasi user atau
+  // ke-generate ulang tiap buka modal). Begitu 24 jam sejak akun dibuat
+  // lewat, promo beneran berakhir permanen buat user itu, titik.
   useEffect(() => {
-    const initPromo = () => {
-      const stored = localStorage.getItem('promo_start_time')
-      let startTime = stored ? parseInt(stored, 10) : null
-
-      // Kalau tidak ada record atau sudah expired, mulai promo baru
-      if (!startTime || Date.now() - startTime > PROMO_DURATION_MS) {
-        startTime = Date.now()
-        localStorage.setItem('promo_start_time', startTime.toString())
-      }
-
-      return startTime
+    if (!user?.created_at) {
+      // Data akun tidak tersedia — jangan asumsikan promo aktif (itu yang
+      // bikin bug lama), anggap sudah tidak aktif, tampilkan harga normal.
+      setIsPromoActive(false)
+      return
     }
-
-    const startTime = initPromo()
+    const startTime = new Date(user.created_at).getTime()
 
     const updateTimer = () => {
       const elapsed = Date.now() - startTime
       const remaining = Math.max(0, PROMO_DURATION_MS - elapsed)
-      
+
       setTimeRemaining(remaining)
       setIsPromoActive(remaining > 0)
     }
 
-    // Update immediately
     updateTimer()
-
-    // Update setiap detik
     const interval = setInterval(updateTimer, 1000)
-
     return () => clearInterval(interval)
-  }, [])
+  }, [user?.created_at])
 
   const target    = profile?.target_posisi || 'Target Karier Kamu'
   const readiness = growth?.progress_percent || profile?.career_readiness || 0
