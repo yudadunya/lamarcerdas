@@ -4,7 +4,15 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { authRepository, careerProfileRepository, chatHistoryRepository } from './repository.js'
+import {
+  authRepository,
+  careerProfileRepository,
+  chatHistoryRepository,
+  genomeScoreRepository,
+  growthStateRepository,
+  milestonesRepository,
+  userRepository
+} from './repository.js'
 
 // Mock supabase client
 vi.mock('./supabase.js', () => ({
@@ -101,6 +109,40 @@ describe('Repository Pattern - P0 Implementation', () => {
       expect(result.session).toEqual(mockSession)
     })
 
+    it('should sign out successfully', async () => {
+      const { supabase } = await import('./supabase.js')
+      supabase.auth.signOut.mockResolvedValue({ error: null })
+
+      const result = await authRepository.signOut()
+
+      expect(result.success).toBe(true)
+    })
+
+    it('should get user successfully', async () => {
+      const mockUser = { id: '123', email: 'test@example.com' }
+      const { supabase } = await import('./supabase.js')
+      supabase.auth.getUser.mockResolvedValue({ 
+        data: { user: mockUser }, 
+        error: null 
+      })
+
+      const result = await authRepository.getUser()
+
+      expect(result.success).toBe(true)
+      expect(result.user).toEqual(mockUser)
+    })
+
+    it('should handle sign in with OAuth', async () => {
+      const mockData = { url: 'https://oauth.provider.com' }
+      const { supabase } = await import('./supabase.js')
+      supabase.auth.signInWithOAuth.mockResolvedValue({ data: mockData, error: null })
+
+      const result = await authRepository.signInWithOAuth('github', 'https://localhost:3000')
+
+      expect(result.success).toBe(true)
+      expect(result.data).toEqual(mockData)
+    })
+
     it('should subscribe to auth state changes', async () => {
       const callback = vi.fn()
       const { supabase } = await import('./supabase.js')
@@ -113,6 +155,56 @@ describe('Repository Pattern - P0 Implementation', () => {
     })
   })
 
+  describe('userRepository', () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+    })
+
+    it('should find user by ID', async () => {
+      const mockUser = { id: '123', email: 'test@example.com' }
+      const { supabase } = await import('./supabase.js')
+      supabase.from.mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: mockUser, error: null })
+      })
+
+      const result = await userRepository.findById('123')
+
+      expect(result).toEqual(mockUser)
+      expect(supabase.from).toHaveBeenCalledWith('users')
+    })
+
+    it('should create user', async () => {
+      const mockUser = { id: '123', email: 'test@example.com' }
+      const { supabase } = await import('./supabase.js')
+      supabase.from.mockReturnValue({
+        insert: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: mockUser, error: null })
+      })
+
+      const result = await userRepository.create({ email: 'test@example.com' })
+
+      expect(result).toEqual(mockUser)
+    })
+
+    it('should update user', async () => {
+      const mockUser = { id: '123', email: 'updated@example.com' }
+      const { supabase } = await import('./supabase.js')
+      supabase.from.mockReturnValue({
+        update: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: mockUser, error: null })
+      })
+
+      const result = await userRepository.update('123', { email: 'updated@example.com' })
+
+      expect(result).toEqual(mockUser)
+    })
+  })
+
   describe('careerProfileRepository', () => {
     beforeEach(() => {
       vi.clearAllMocks()
@@ -122,7 +214,6 @@ describe('Repository Pattern - P0 Implementation', () => {
       const mockProfile = { id: '1', user_id: '123', career_readiness: 75 }
       const { supabase } = await import('./supabase.js')
       
-      // Mock the chain of calls
       supabase.from.mockReturnValue({
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
@@ -240,6 +331,166 @@ describe('Repository Pattern - P0 Implementation', () => {
       expect(supabase.from).toHaveBeenCalledWith('chat_history')
     })
   })
+
+  describe('genomeScoreRepository', () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+    })
+
+    it('should find genome scores by user ID', async () => {
+      const mockScores = { user_id: '123', analytical: 75, leadership: 80 }
+      const { supabase } = await import('./supabase.js')
+      
+      supabase.from.mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        maybeSingle: vi.fn().mockResolvedValue({ data: mockScores, error: null })
+      })
+
+      const result = await genomeScoreRepository.findByUserId('123')
+
+      expect(result).toEqual(mockScores)
+      expect(supabase.from).toHaveBeenCalledWith('user_genome_scores')
+    })
+
+    it('should upsert genome scores', async () => {
+      const mockScores = { user_id: '123', analytical: 80, leadership: 85 }
+      const { supabase } = await import('./supabase.js')
+      
+      supabase.from.mockReturnValue({
+        upsert: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: mockScores, error: null })
+      })
+
+      const result = await genomeScoreRepository.upsert({ 
+        user_id: '123', 
+        analytical: 80,
+        leadership: 85
+      })
+
+      expect(result).toEqual(mockScores)
+    })
+  })
+
+  describe('growthStateRepository', () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+    })
+
+    it('should find growth state by user ID', async () => {
+      const mockState = { user_id: '123', career_stage: 'Career Builder' }
+      const { supabase } = await import('./supabase.js')
+      
+      supabase.from.mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        maybeSingle: vi.fn().mockResolvedValue({ data: mockState, error: null })
+      })
+
+      const result = await growthStateRepository.findByUserId('123')
+
+      expect(result).toEqual(mockState)
+      expect(supabase.from).toHaveBeenCalledWith('user_growth_state')
+    })
+
+    it('should upsert growth state', async () => {
+      const mockState = { user_id: '123', career_stage: 'Career Expert' }
+      const { supabase } = await import('./supabase.js')
+      
+      supabase.from.mockReturnValue({
+        upsert: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: mockState, error: null })
+      })
+
+      const result = await growthStateRepository.upsert({ 
+        user_id: '123', 
+        career_stage: 'Career Expert' 
+      })
+
+      expect(result).toEqual(mockState)
+    })
+  })
+
+  describe('milestonesRepository', () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+    })
+
+    it('should find milestones by user ID', async () => {
+      const mockMilestones = [
+        { id: '1', user_id: '123', title: 'Learn React' },
+        { id: '2', user_id: '123', title: 'Build Project' }
+      ]
+      const { supabase } = await import('./supabase.js')
+      
+      supabase.from.mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockResolvedValue({ data: mockMilestones, error: null })
+      })
+
+      const result = await milestonesRepository.findByUserId('123')
+
+      expect(Array.isArray(result)).toBe(true)
+      expect(result.length).toBe(2)
+      expect(supabase.from).toHaveBeenCalledWith('user_milestones')
+    })
+
+    it('should return empty array when no milestones found', async () => {
+      const { supabase } = await import('./supabase.js')
+      
+      supabase.from.mockReturnValue({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockResolvedValue({ data: null, error: null })
+      })
+
+      const result = await milestonesRepository.findByUserId('123')
+
+      expect(result).toEqual([])
+    })
+
+    it('should create milestone', async () => {
+      const mockMilestone = { id: '1', user_id: '123', title: 'Learn React' }
+      const { supabase } = await import('./supabase.js')
+      
+      supabase.from.mockReturnValue({
+        insert: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: mockMilestone, error: null })
+      })
+
+      const result = await milestonesRepository.create({ 
+        user_id: '123', 
+        title: 'Learn React' 
+      })
+
+      expect(result).toEqual(mockMilestone)
+    })
+
+    it('should bulk insert milestones', async () => {
+      const mockMilestones = [
+        { id: '1', user_id: '123', title: 'Learn React' },
+        { id: '2', user_id: '123', title: 'Build Project' }
+      ]
+      const { supabase } = await import('./supabase.js')
+      
+      supabase.from.mockReturnValue({
+        insert: vi.fn().mockReturnThis(),
+        select: vi.fn().mockResolvedValue({ data: mockMilestones, error: null })
+      })
+
+      const result = await milestonesRepository.bulkInsert([
+        { user_id: '123', title: 'Learn React' },
+        { user_id: '123', title: 'Build Project' }
+      ])
+
+      expect(Array.isArray(result)).toBe(true)
+      expect(result.length).toBe(2)
+    })
+  })
 })
 
 describe('Repository Pattern Benefits', () => {
@@ -250,6 +501,10 @@ describe('Repository Pattern Benefits', () => {
     expect(authRepository).toBeDefined()
     expect(careerProfileRepository).toBeDefined()
     expect(chatHistoryRepository).toBeDefined()
+    expect(genomeScoreRepository).toBeDefined()
+    expect(growthStateRepository).toBeDefined()
+    expect(milestonesRepository).toBeDefined()
+    expect(userRepository).toBeDefined()
   })
 
   it('provides consistent error handling', async () => {
@@ -270,5 +525,10 @@ describe('Repository Pattern Benefits', () => {
     // This is crucial for achieving 70%+ test coverage
     expect(vi.isMockFunction(authRepository.signUp)).toBe(false)
     // Note: We mock the underlying supabase client, not the repository itself
+  })
+
+  it('supports GDPR compliance with delete methods', () => {
+    expect(chatHistoryRepository.deleteByUserId).toBeDefined()
+    expect(typeof chatHistoryRepository.deleteByUserId).toBe('function')
   })
 })
