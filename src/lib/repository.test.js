@@ -4,10 +4,10 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { authRepository, careerProfileRepository, chatHistoryRepository } from '../repository.js'
+import { authRepository, careerProfileRepository, chatHistoryRepository } from './repository.js'
 
 // Mock supabase client
-vi.mock('../supabase.js', () => ({
+vi.mock('./supabase.js', () => ({
   supabase: {
     auth: {
       signUp: vi.fn(),
@@ -47,7 +47,7 @@ describe('Repository Pattern - P0 Implementation', () => {
 
     it('should sign up successfully', async () => {
       const mockData = { user: { id: '123', email: 'test@example.com' } }
-      const { supabase } = await import('../supabase.js')
+      const { supabase } = await import('./supabase.js')
       supabase.auth.signUp.mockResolvedValue({ data: mockData, error: null })
 
       const result = await authRepository.signUp('test@example.com', 'password123', 'Test User')
@@ -64,7 +64,7 @@ describe('Repository Pattern - P0 Implementation', () => {
     })
 
     it('should handle sign up error', async () => {
-      const { supabase } = await import('../supabase.js')
+      const { supabase } = await import('./supabase.js')
       supabase.auth.signUp.mockResolvedValue({ 
         data: null, 
         error: { message: 'Email already exists' } 
@@ -78,7 +78,7 @@ describe('Repository Pattern - P0 Implementation', () => {
 
     it('should sign in successfully', async () => {
       const mockData = { user: { id: '123', email: 'test@example.com' }, session: { access_token: 'token' } }
-      const { supabase } = await import('../supabase.js')
+      const { supabase } = await import('./supabase.js')
       supabase.auth.signInWithPassword.mockResolvedValue({ data: mockData, error: null })
 
       const result = await authRepository.signIn('test@example.com', 'password123')
@@ -89,7 +89,7 @@ describe('Repository Pattern - P0 Implementation', () => {
 
     it('should get session successfully', async () => {
       const mockSession = { access_token: 'token', user: { id: '123' } }
-      const { supabase } = await import('../supabase.js')
+      const { supabase } = await import('./supabase.js')
       supabase.auth.getSession.mockResolvedValue({ 
         data: { session: mockSession }, 
         error: null 
@@ -103,7 +103,7 @@ describe('Repository Pattern - P0 Implementation', () => {
 
     it('should subscribe to auth state changes', async () => {
       const callback = vi.fn()
-      const { supabase } = await import('../supabase.js')
+      const { supabase } = await import('./supabase.js')
       
       const subscription = authRepository.onAuthStateChange(callback)
 
@@ -120,7 +120,7 @@ describe('Repository Pattern - P0 Implementation', () => {
 
     it('should find career profile by user ID', async () => {
       const mockProfile = { id: '1', user_id: '123', career_readiness: 75 }
-      const { supabase } = await import('../supabase.js')
+      const { supabase } = await import('./supabase.js')
       
       // Mock the chain of calls
       supabase.from.mockReturnValue({
@@ -136,7 +136,7 @@ describe('Repository Pattern - P0 Implementation', () => {
     })
 
     it('should return null when profile not found', async () => {
-      const { supabase } = await import('../supabase.js')
+      const { supabase } = await import('./supabase.js')
       
       supabase.from.mockReturnValue({
         select: vi.fn().mockReturnThis(),
@@ -151,7 +151,7 @@ describe('Repository Pattern - P0 Implementation', () => {
 
     it('should upsert career profile', async () => {
       const mockProfile = { id: '1', user_id: '123', career_readiness: 80 }
-      const { supabase } = await import('../supabase.js')
+      const { supabase } = await import('./supabase.js')
       
       supabase.from.mockReturnValue({
         upsert: vi.fn().mockReturnThis(),
@@ -178,7 +178,7 @@ describe('Repository Pattern - P0 Implementation', () => {
         { id: '1', user_id: '123', message: 'Hello', created_at: '2024-01-01' },
         { id: '2', user_id: '123', message: 'Hi', created_at: '2024-01-02' }
       ]
-      const { supabase } = await import('../supabase.js')
+      const { supabase } = await import('./supabase.js')
       
       supabase.from.mockReturnValue({
         select: vi.fn().mockReturnThis(),
@@ -194,7 +194,7 @@ describe('Repository Pattern - P0 Implementation', () => {
     })
 
     it('should return empty array when no chat history', async () => {
-      const { supabase } = await import('../supabase.js')
+      const { supabase } = await import('./supabase.js')
       
       supabase.from.mockReturnValue({
         select: vi.fn().mockReturnThis(),
@@ -210,7 +210,7 @@ describe('Repository Pattern - P0 Implementation', () => {
 
     it('should create chat message', async () => {
       const mockMessage = { id: '1', user_id: '123', message: 'Test' }
-      const { supabase } = await import('../supabase.js')
+      const { supabase } = await import('./supabase.js')
       
       supabase.from.mockReturnValue({
         insert: vi.fn().mockReturnThis(),
@@ -227,7 +227,7 @@ describe('Repository Pattern - P0 Implementation', () => {
     })
 
     it('should delete chat history for GDPR compliance', async () => {
-      const { supabase } = await import('../supabase.js')
+      const { supabase } = await import('./supabase.js')
       
       supabase.from.mockReturnValue({
         delete: vi.fn().mockReturnThis(),
@@ -253,7 +253,7 @@ describe('Repository Pattern Benefits', () => {
   })
 
   it('provides consistent error handling', async () => {
-    const { supabase } = await import('../supabase.js')
+    const { supabase } = await import('./supabase.js')
     supabase.auth.getUser.mockResolvedValue({ 
       data: { user: null }, 
       error: { message: 'Not authenticated' } 
