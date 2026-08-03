@@ -76,6 +76,17 @@
       "dest": "/api/$1"
     },
     {
+      "src": "/blog/([^/]+)",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(GPTBot|ChatGPT-User|ClaudeBot|Claude-Web|PerplexityBot|Perplexity-User|Google-Extended|Googlebot|bingbot|Bingbot|Applebot|CCBot|Bytespider|facebookexternalhit|Slackbot|Twitterbot|LinkedInBot|DuckDuckBot|YandexBot).*"
+        }
+      ],
+      "dest": "/api/bot-render?slug=$1"
+    },
+    {
       "src": "/sitemap.xml",
       "dest": "/api/sitemap"
     },
