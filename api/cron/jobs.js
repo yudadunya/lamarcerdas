@@ -5,7 +5,7 @@
  * Menggabungkan: weekly-review.js + compress-memory.js + cleanup-chat-history.js + email-reminders.js
  * vercel.json cron paths diupdate ke /api/cron/jobs?job=...
  */
-import { generateText } from '../lib/ai.js'
+import { generateText, generateStructured } from '../lib/ai.js'
 import { createClient } from '@supabase/supabase-js'
 // FIX: sebelumnya import dari '../lib/email.js' yang TIDAK ADA di project ini
 // — bikin seluruh file ini gagal di-load (jadi SEMUA cron job di sini mati,
@@ -602,6 +602,149 @@ ATURAN PENTING — PERSUASIF TAPI HALUS:
       failed: results.filter(r => r.status === 'failed').length,
       details: results,
     })
+  }
+
+  // ── GENERATE DAILY ARTICLE — auto-publish satu artikel SEO baru per hari.
+  if (job === 'generate-daily-article') {
+    // Pool topik — sengaja jauh lebih banyak dari 365 (jalan setahun tanpa
+    // pernah exact-duplicate), dikelompokkan ke 4 kategori yang sudah ada di
+    // Blog.jsx (Tips CV, Interview, Karir, LinkedIn) supaya konsisten sama
+    // desain filter yang sudah ada. Semua topik ditulis condong ke "hasilnya
+    // duit riil" — selaras dengan reposisi produk yang sudah kita bahas
+    // (bukan cuma "pengembangan diri" generik).
+    const TOPIC_POOL = [
+      // Tips CV
+      'Cara Bikin CV yang Bikin HRD Langsung Telepon Balik',
+      'Kata-Kata yang Bikin CV Kamu Otomatis Ditolak Recruiter',
+      'Cara Hitung dan Tampilkan Achievement dengan Angka di CV',
+      'CV buat Fresh Graduate Tanpa Pengalaman Kerja: Panduan Lengkap',
+      'Cara Bikin CV Bahasa Inggris yang Standar Internasional',
+      'Portofolio Online vs CV PDF: Mana yang Lebih Efektif 2026',
+      'Cara Menjelaskan Gap Tahun Kosong di CV Tanpa Terlihat Mencurigakan',
+      'CV Career Switcher: Cara Highlight Skill yang Transferable',
+      'Panjang CV Ideal: 1 Halaman atau 2 Halaman?',
+      'Cara Bikin Ringkasan Profesional (Summary) yang Menjual',
+      // Interview
+      'Jawaban Ideal untuk "Ceritakan Tentang Diri Kamu" Saat Interview',
+      'Cara Jawab "Kenapa Kamu Resign dari Kantor Lama" Tanpa Menjelekkan',
+      'Pertanyaan yang WAJIB Kamu Tanya Balik ke Interviewer',
+      'Cara Negosiasi Gaji Saat Interview Tanpa Terlihat Serakah',
+      'STAR Method: Cara Jawab Pertanyaan Interview Perilaku',
+      'Cara Interview Online yang Bikin Kamu Kelihatan Profesional',
+      'Red Flag Perusahaan yang Wajib Dikenali Saat Interview',
+      'Cara Follow Up Setelah Interview Tanpa Terkesan Desperate',
+      'Kesalahan Fatal yang Bikin Kandidat Gagal di 5 Menit Pertama',
+      'Cara Jawab Pertanyaan Soal Gaji yang Diminta Saat Interview',
+      // Karir
+      'Tanda-Tanda Kamu Harus Resign dari Pekerjaan Sekarang',
+      'Cara Naik Jabatan Tanpa Harus Pindah Perusahaan',
+      'Skill yang Paling Dicari Perusahaan Indonesia di 2026',
+      'Cara Switch Karir di Usia 30-an Tanpa Mulai dari Nol',
+      'Side Hustle yang Cocok Buat Karyawan Kantoran',
+      'Cara Tau Gaji Kamu di Bawah Standar Market atau Tidak',
+      'Personal Branding buat Karyawan yang Introvert',
+      'Cara Membangun Portofolio Tanpa Proyek Klien Nyata',
+      'Freelance vs Karyawan Tetap: Mana yang Lebih Untung 2026',
+      'Cara Menabung dari Gaji UMR Sambil Upgrade Skill',
+      'Remote Job Indonesia: Cara Cari dan Dapat Kerja dari Rumah',
+      'Cara Bikin Rencana Karir 5 Tahun yang Realistis',
+      // LinkedIn
+      'Cara Optimasi Profil LinkedIn Biar Dilirik Recruiter',
+      'Konten LinkedIn yang Bikin Kamu Kelihatan Expert di Bidangmu',
+      'Cara Networking di LinkedIn Tanpa Terlihat Sok Kenal',
+      'Headline LinkedIn yang Menarik Perhatian Recruiter dalam 3 Detik',
+      'Cara Minta Rekomendasi LinkedIn yang Efektif',
+      'Open to Work di LinkedIn: Aman atau Berisiko?',
+    ]
+
+    // Cek slug/title yang udah pernah dipakai — hindari topik double persis.
+    const { data: existingArticles } = await supabase
+      .from('blog_articles')
+      .select('title')
+      .order('created_at', { ascending: false })
+      .limit(500)
+    const usedTitles = new Set((existingArticles || []).map(a => a.title))
+    const availableTopics = TOPIC_POOL.filter(t => !usedTitles.has(t))
+
+    if (availableTopics.length === 0) {
+      return res.status(200).json({ success: true, skipped: true, reason: 'topic_pool_exhausted — tambahkan topik baru ke TOPIC_POOL' })
+    }
+
+    const topic = availableTopics[Math.floor(Math.random() * availableTopics.length)]
+    const category = TOPIC_POOL.indexOf(topic) < 10 ? 'Tips CV'
+      : TOPIC_POOL.indexOf(topic) < 20 ? 'Interview'
+      : TOPIC_POOL.indexOf(topic) < 32 ? 'Karir' : 'LinkedIn'
+
+    const ARTICLE_SCHEMA = {
+      type: 'object',
+      properties: {
+        title:    { type: 'string', description: 'Judul final artikel, boleh sedikit dipoles dari topik asal biar lebih menarik/SEO-friendly, tapi jangan ganti makna' },
+        slug:     { type: 'string', description: 'URL slug: huruf kecil, dash sebagai spasi, tanpa karakter spesial, tanpa tahun kalau tidak perlu, contoh: cara-bikin-cv-ats-friendly' },
+        excerpt:  { type: 'string', description: 'Ringkasan 1-2 kalimat, maksimal 160 karakter, buat meta description' },
+        emoji:    { type: 'string', description: 'Satu emoji yang merepresentasikan topik' },
+        readTime: { type: 'string', description: 'Estimasi waktu baca, format: "X menit"' },
+        keywords: { type: 'array', items: { type: 'string' }, description: '4-6 keyword SEO relevan dalam Bahasa Indonesia' },
+        faq: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { q: { type: 'string' }, a: { type: 'string' } },
+            required: ['q', 'a'],
+          },
+          description: '4-5 pertanyaan FAQ yang benar-benar sering dicari orang soal topik ini, jawaban 1-3 kalimat padat dan faktual (buat FAQPage schema — disukai Google & AI search engine kayak ChatGPT/Perplexity)',
+        },
+        content: {
+          type: 'string',
+          description: `Isi artikel lengkap 700-1000 kata dalam format markdown sederhana: ## buat heading, ### buat subheading, - buat bullet list, > buat blockquote/tips penting, **teks** buat bold. JANGAN pakai heading H1 (judul sudah terpisah). Tulis dengan gaya natural, contoh konkret, angka spesifik kalau relevan (persentase, kisaran gaji Rupiah, dst), dan classic pattern yang mudah dikutip AI search engine: kalimat-kalimat yang bisa berdiri sendiri sebagai jawaban faktual.`,
+        },
+      },
+      required: ['title', 'slug', 'excerpt', 'emoji', 'readTime', 'keywords', 'faq', 'content'],
+    }
+
+    try {
+      const article = await generateStructured({
+        system: `Kamu adalah content writer expert career coaching untuk audiens Indonesia (Verneks — platform AI career coach). Tulis artikel SEO yang genuinely membantu, bukan artikel tipis isi ulang generik. Gaya bahasa: profesional tapi hangat, seperti Diah Anna (AI career coach Verneks) menjelaskan ke teman — bukan kaku seperti textbook. SELALU hubungkan topik ke dampak nyata: penghasilan, peluang kerja, atau kemajuan karir konkret — bukan cuma "pengembangan diri" abstrak. Tulis SEMUA dalam Bahasa Indonesia.`,
+        prompt: `Tulis artikel lengkap dengan topik: "${topic}"\n\nKategori: ${category}\n\nPastikan konten benar-benar actionable dengan langkah konkret, bukan cuma teori umum.`,
+        schema: ARTICLE_SCHEMA,
+        maxTokens: 3000,
+        tier: 'fast',
+        plan: 'free', // Cerebras dulu (murah, cepat) — fallback Gemini → Claude Haiku kalau Cerebras gagal
+      })
+
+      const { error: insertErr } = await supabase.from('blog_articles').insert({
+        slug:        article.slug,
+        title:       article.title,
+        excerpt:     article.excerpt,
+        category,
+        emoji:       article.emoji || '📄',
+        keywords:    article.keywords || [],
+        faq:         article.faq || [],
+        content:     article.content,
+        read_time:   article.readTime || '5 menit',
+        published_at: new Date().toISOString(),
+      })
+
+      if (insertErr) {
+        // Kemungkinan besar slug bentrok (unique constraint) — tambahkan suffix & retry sekali
+        if (insertErr.message.includes('duplicate') || insertErr.code === '23505') {
+          const retrySlug = `${article.slug}-${Date.now().toString(36)}`
+          const { error: retryErr } = await supabase.from('blog_articles').insert({
+            slug: retrySlug, title: article.title, excerpt: article.excerpt, category,
+            emoji: article.emoji || '📄', keywords: article.keywords || [], faq: article.faq || [],
+            content: article.content, read_time: article.readTime || '5 menit',
+            published_at: new Date().toISOString(),
+          })
+          if (retryErr) return res.status(500).json({ error: retryErr.message })
+          return res.status(200).json({ success: true, slug: retrySlug, title: article.title, topic })
+        }
+        return res.status(500).json({ error: insertErr.message })
+      }
+
+      return res.status(200).json({ success: true, slug: article.slug, title: article.title, topic })
+    } catch (e) {
+      console.error('[generate-daily-article]', e)
+      return res.status(500).json({ error: e.message })
+    }
   }
 
   return res.status(400).json({ error: `Unknown job: ${job}` })
