@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BLOG_POSTS } from '../data/blogPosts'
+import { BLOG_POSTS as STATIC_POSTS } from '../data/blogPosts'
+import { supabase } from '../lib/supabase'
 
 const Logo = () => (
   <img src="/verneks_icon_1.png" alt="Verneks" width="28" height="28" style={{ objectFit: 'contain', flexShrink: 0 }} />
@@ -25,6 +26,28 @@ export default function Blog({ user }) {
   const [activeCategory, setActiveCategory] = useState('Semua')
   const [visible, setVisible] = useState(false)
   const [search, setSearch] = useState('')
+  const [dbPosts, setDbPosts] = useState([])
+
+  useEffect(() => {
+    // Artikel dari cron generate-daily-article — digabung dengan 6 artikel
+    // statis lama (STATIC_POSTS) supaya keduanya tampil bareng tanpa perlu
+    // migrasi manual. Gagal fetch (misal Supabase down) tidak menghalangi
+    // halaman tampil — tetap fallback ke STATIC_POSTS saja.
+    supabase
+      .from('blog_articles')
+      .select('slug, title, excerpt, category, emoji, keywords, faq, content, read_time, published_at')
+      .order('published_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (error) { console.warn('[Blog] fetch db articles gagal:', error.message); return }
+        setDbPosts((data || []).map(a => ({
+          slug: a.slug, title: a.title, excerpt: a.excerpt, category: a.category,
+          emoji: a.emoji, date: a.published_at, readTime: a.read_time,
+          keywords: a.keywords || [], faq: a.faq || [], content: a.content,
+        })))
+      })
+  }, [])
+
+  const BLOG_POSTS = [...dbPosts, ...STATIC_POSTS].sort((a, b) => new Date(b.date) - new Date(a.date))
 
   useEffect(() => {
     // SEO meta tags
