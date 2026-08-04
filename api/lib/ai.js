@@ -148,7 +148,21 @@ async function callClaudeStructured({ system, prompt, schema, maxTokens, model }
   return toolCall.input
 }
 
-async function callOpenAICompatStructured({ system, prompt, maxTokens, model, baseUrl, apiKey }) {
+async function callOpenAICompatStructured({ system, prompt, schema, maxTokens, model, baseUrl, apiKey }) {
+  // FIX: sebelumnya `schema` diterima sebagai parameter tapi TIDAK PERNAH
+  // benar-benar dipakai — response_format: json_object cuma menjamin output
+  // JSON VALID secara sintaks, bukan menjamin field/struktur yang diminta
+  // ada semua (beda dari Claude tool_use yang struktural, atau Gemini
+  // responseSchema asli). Tanpa ini, model bisa saja balikin JSON valid
+  // tapi field wajib (misal "slug") hilang begitu saja — persis bug yang
+  // bikin generate-daily-article gagal terus dengan error "null value in
+  // column slug". Sekarang schema-nya di-embed eksplisit ke system prompt
+  // sebagai instruksi tambahan, supaya modelnya benar-benar tahu struktur
+  // JSON yang diharapkan, bukan cuma "asal valid JSON".
+  const schemaInstruction = schema
+    ? `\n\nWAJIB balas HANYA dengan JSON valid yang PERSIS mengikuti struktur berikut (semua field di "required" WAJIB ada, jangan ada yang terlewat):\n${JSON.stringify(schema, null, 2)}`
+    : ''
+
   const res = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -159,10 +173,10 @@ async function callOpenAICompatStructured({ system, prompt, maxTokens, model, ba
       model,
       max_tokens: maxTokens,
       messages: [
-        { role: 'system', content: system },
+        { role: 'system', content: system + schemaInstruction },
         { role: 'user', content: prompt },
       ],
-      response_format: { type: 'json_object' }, // Cerebras & DeepSeek: API menjamin valid JSON
+      response_format: { type: 'json_object' }, // Cerebras & DeepSeek: API menjamin valid JSON (bukan menjamin struktur — itu tugas schemaInstruction di atas)
     }),
   })
   if (!res.ok) {
@@ -172,21 +186,21 @@ async function callOpenAICompatStructured({ system, prompt, maxTokens, model, ba
   const data = await res.json()
   const text = data.choices?.[0]?.message?.content
   if (!text) throw new Error(`Empty response from ${baseUrl} (model: ${model})`)
-  return JSON.parse(text) // aman: response_format json_object menjamin ini valid JSON
+  return JSON.parse(text) // aman: response_format json_object menjamin valid JSON (strukturnya dijamin oleh schemaInstruction di prompt, bukan oleh API)
 }
 
-function callCerebrasStructured({ system, prompt, maxTokens, model }) {
+function callCerebrasStructured({ system, prompt, schema, maxTokens, model }) {
   return callOpenAICompatStructured({
-    system, prompt, maxTokens,
+    system, prompt, schema, maxTokens,
     model:   model || MODELS.cerebras.fast,
     baseUrl: 'https://api.cerebras.ai/v1',
     apiKey:  process.env.CEREBRAS_API_KEY,
   })
 }
 
-function callDeepSeekStructured({ system, prompt, maxTokens, model }) {
+function callDeepSeekStructured({ system, prompt, schema, maxTokens, model }) {
   return callOpenAICompatStructured({
-    system, prompt, maxTokens,
+    system, prompt, schema, maxTokens,
     model:   model || MODELS.deepseek.fast,
     baseUrl: 'https://api.deepseek.com/v1',
     apiKey:  process.env.DEEPSEEK_API_KEY,
@@ -215,11 +229,11 @@ export async function generateStructured({ system, prompt, schema, maxTokens = 3
   const chain = plan === 'premium'
     ? [
         () => callClaudeStructured({ system, prompt, schema, maxTokens, model: MODELS.claude[tier] }),
-        () => callDeepSeekStructured({ system, prompt, maxTokens, model: MODELS.deepseek[tier] }),
+        () => callDeepSeekStructured({ system, prompt, schema, maxTokens, model: MODELS.deepseek[tier] }),
         () => callGeminiStructured({ system, prompt, schema, maxTokens, model: MODELS.gemini[tier] }),
       ]
     : [
-        () => callCerebrasStructured({ system, prompt, maxTokens, model: MODELS.cerebras[tier] }),
+        () => callCerebrasStructured({ system, prompt, schema, maxTokens, model: MODELS.cerebras[tier] }),
         () => callGeminiStructured({ system, prompt, schema, maxTokens, model: MODELS.gemini[tier] }),
         () => callClaudeStructured({ system, prompt, schema, maxTokens, model: MODELS.claude.fast }),
       ]
