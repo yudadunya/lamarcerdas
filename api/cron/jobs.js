@@ -695,7 +695,7 @@ ATURAN PENTING — PERSUASIF TAPI HALUS:
         },
         content: {
           type: 'string',
-          description: `Isi artikel lengkap 700-1000 kata dalam format markdown sederhana: ## buat heading, ### buat subheading, - buat bullet list, > buat blockquote/tips penting, **teks** buat bold. JANGAN pakai heading H1 (judul sudah terpisah). Tulis dengan gaya natural, contoh konkret, angka spesifik kalau relevan (persentase, kisaran gaji Rupiah, dst), dan classic pattern yang mudah dikutip AI search engine: kalimat-kalimat yang bisa berdiri sendiri sebagai jawaban faktual.`,
+          description: `Isi artikel lengkap 700-1000 kata dalam format markdown sederhana: ## buat heading, ### buat subheading, - buat bullet list, > buat blockquote/tips penting, **teks** buat bold. JANGAN pakai heading H1 (judul sudah terpisah). Tulis dengan gaya natural, contoh konkret, dan classic pattern yang mudah dikutip AI search engine: kalimat-kalimat yang bisa berdiri sendiri sebagai jawaban faktual. Angka/kisaran (gaji, persentase, dst) BOLEH dipakai sebagai ILUSTRASI/skenario contoh ("misalnya kalau gajimu Rp7 juta..."), TAPI JANGAN diatasnamakan ke "penelitian", "studi", atau lembaga resmi (BPS, kementerian, dst) kecuali benar-benar yakin itu data nyata — mengarang sumber/statistik itu pelanggaran serius, bukan sekadar gaya.`,
         },
       },
       required: ['title', 'slug', 'excerpt', 'emoji', 'readTime', 'keywords', 'faq', 'content'],
@@ -712,7 +712,13 @@ HINDARI TANDA-TANDA TULISAN AI (PENTING — Google punya sistem yang aktif menur
 - JANGAN pakai hedging kosong ("penting untuk diingat bahwa", "perlu dicatat bahwa", "tidak dapat dipungkiri bahwa") — langsung nyatakan faktanya.
 - HINDARI daftar tiga kata sifat yang dipaksakan ("cepat, mudah, dan efisien") kalau nggak ada dasarnya di kalimat itu — sebutkan detail spesifik (angka, contoh, skenario nyata), bukan kata sifat generik berderet.
 - VARIASIKAN panjang kalimat — jangan semua kalimat berirama sama. Selingi kalimat pendek di antara kalimat yang lebih panjang dan detail, seperti orang beneran menjelaskan, bukan pola rapi yang berulang.
-- Pakai tanda pisah (—) secukupnya, jangan jadi tongkat penopang di hampir tiap kalimat.`,
+- Pakai tanda pisah (—) secukupnya, jangan jadi tongkat penopang di hampir tiap kalimat.
+
+JANGAN MENGARANG DATA (PALING PENTING — pelanggaran ini lebih serius daripada gaya bahasa kaku): JANGAN sebut angka statistik spesifik yang diatasnamakan ke lembaga/penelitian/studi tertentu ("Data BPS 2023 menunjukkan...", "Penelitian psikologi kerja 2022 mencatat...", "Studi X menunjukkan Y%") KECUALI kamu benar-benar yakin itu fakta nyata yang umum diketahui. Kalau tidak yakin datanya nyata:
+- Jangan atasnamakan ke lembaga resmi (BPS, kementerian, universitas, dst) sama sekali kecuali benar-benar pasti.
+- Kalau mau kasih gambaran angka, pakai bahasa qualitative/perkiraan yang jujur ("umumnya", "banyak kasus menunjukkan", "sebagai gambaran kasar") — BUKAN angka presisi palsu yang diklaim dari "penelitian" yang tidak nyata.
+- Lebih baik kasih contoh skenario konkret ("misalnya kalau gaji kamu Rp7 juta tapi kebutuhan pokok sudah Rp8 juta...") daripada statistik yang diakui-akui dari sumber tidak jelas.
+- Fabrikasi data yang diatasnamakan lembaga nyata (kayak BPS) bisa jadi masalah reputasi/hukum serius kalau ketauan — ini bukan pelanggaran gaya, ini pelanggaran integritas konten.`,
         prompt: `Tulis artikel lengkap dengan topik: "${topic}"\n\nKategori: ${category}\n\nPastikan konten benar-benar actionable dengan langkah konkret, bukan cuma teori umum.`,
         schema: ARTICLE_SCHEMA,
         maxTokens: 3000,
