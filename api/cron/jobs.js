@@ -254,7 +254,7 @@ export default async function handler(req, res) {
           }
 
           if (authUser?.email || fcmToken) {
-            const notifyResult = await notifyChatReminder(authUser?.email, fcmToken, profile.nama || 'User', pendingStep?.title, personalLine)
+            const notifyResult = await notifyChatReminder(authUser?.email, fcmToken, profile.nama?.trim() || authUser?.user_metadata?.full_name?.trim() || authUser?.email?.split('@')[0] || 'Teman', pendingStep?.title, personalLine)
             const ok = notifyResult.email?.success || notifyResult.push?.success
             if (ok) {
               results.push({ userId: profile.user_id, status: 'sent', detail: notifyResult })
@@ -309,7 +309,7 @@ export default async function handler(req, res) {
         const authUser = authUsers.find(u => u.id === profile.user_id)
         const fcmToken = await getUserFcmToken(profile.user_id)
         if (authUser?.email || fcmToken) {
-          const notifyResult = await notifyOnboardingNudge(authUser?.email, fcmToken, profile.nama || 'User')
+          const notifyResult = await notifyOnboardingNudge(authUser?.email, fcmToken, profile.nama?.trim() || authUser?.user_metadata?.full_name?.trim() || authUser?.email?.split('@')[0] || 'Teman')
           const ok = notifyResult.email?.success || notifyResult.push?.success
           results.push({ userId: profile.user_id, status: ok ? 'sent' : 'failed', detail: notifyResult })
         }
@@ -398,7 +398,7 @@ ATURAN PENTING:
           console.error(`[morning-nudge personalLine failed for ${profile.user_id}]`, aiErr)
         }
 
-        const notifyResult = await notifyMorningNudge(fcmToken, profile.nama || 'Teman', personalLine)
+        const notifyResult = await notifyMorningNudge(fcmToken, profile.nama?.trim() || authUser?.user_metadata?.full_name?.trim() || authUser?.email?.split('@')[0] || 'Teman', personalLine)
         const ok = notifyResult.push?.success
         results.push({
           userId: profile.user_id,
@@ -489,7 +489,7 @@ ATURAN PENTING — PERSUASIF TAPI HALUS:
           console.error(`[premium-expiry-reminder personalLine failed for ${sub.user_id}]`, aiErr)
         }
 
-        const notifyResult = await notifyPremiumExpiry(fcmToken, profile?.nama || 'Teman', personalLine, daysUntilExpiry)
+        const notifyResult = await notifyPremiumExpiry(fcmToken, profile?.nama?.trim() || authUser?.user_metadata?.full_name?.trim() || authUser?.email?.split('@')[0] || 'Teman', personalLine, daysUntilExpiry)
         const ok = notifyResult.push?.success
         results.push({
           userId: sub.user_id, daysUntilExpiry,
@@ -582,7 +582,7 @@ ATURAN PENTING — PERSUASIF TAPI HALUS:
           console.error(`[free-upgrade-nudge personalLine failed for ${profile.user_id}]`, aiErr)
         }
 
-        const notifyResult = await notifyUpgradeNudge(fcmToken, profile.nama || 'Teman', personalLine)
+        const notifyResult = await notifyUpgradeNudge(fcmToken, profile.nama?.trim() || authUser?.user_metadata?.full_name?.trim() || authUser?.email?.split('@')[0] || 'Teman', personalLine)
         const ok = notifyResult.push?.success
         results.push({
           userId: profile.user_id,
@@ -758,6 +758,62 @@ JANGAN MENGARANG DATA (PALING PENTING — pelanggaran ini lebih serius daripada 
       return res.status(200).json({ success: true, slug: article.slug, title: article.title, topic })
     } catch (e) {
       console.error('[generate-daily-article]', e)
+      return res.status(500).json({ error: e.message })
+    }
+  }
+
+  // ── FILL MISSING NAMES — isi nama user lama yang kosong dari auth metadata
+  // Retroaktif: cek user_career_profiles yang nama-nya NULL/kosong, lalu isi
+  // dari Google Auth metadata (full_name) atau fallback ke bagian sebelum @
+  // di email. Aman dijalankan berulang — nggak nge-overwrite nama yang udah ada.
+  if (job === 'fill-missing-names') {
+    try {
+      const { data: profiles, error: profilesErr } = await supabase
+        .from('user_career_profiles')
+        .select('user_id, nama')
+        .or('nama.is.null,nama.eq.')
+        .limit(100)
+
+      if (profilesErr) return res.status(500).json({ error: profilesErr.message })
+      if (!profiles?.length) return res.status(200).json({ success: true, filled: 0, message: 'Semua user sudah punya nama' })
+
+      const { data: { users: authUsers }, error: authErr } = await supabase.auth.admin.listUsers()
+      if (authErr) return res.status(500).json({ error: authErr.message })
+
+      const authMap = Object.fromEntries((authUsers || []).map(u => [u.id, u]))
+
+      let filled = 0
+      const results = []
+
+      for (const profile of profiles) {
+        const authUser = authMap[profile.user_id]
+        const fullName = authUser?.user_metadata?.full_name?.trim()
+          || authUser?.user_metadata?.name?.trim()
+          || authUser?.email?.split('@')[0]
+          || null
+
+        if (!fullName) {
+          results.push({ userId: profile.user_id, status: 'skipped', reason: 'no_name_source' })
+          continue
+        }
+
+        const { error: updateErr } = await supabase
+          .from('user_career_profiles')
+          .update({ nama: fullName, last_updated: new Date().toISOString() })
+          .eq('user_id', profile.user_id)
+
+        if (updateErr) {
+          results.push({ userId: profile.user_id, status: 'failed', reason: updateErr.message })
+        } else {
+          filled++
+          console.log(`[fill-missing-names] Filled ${profile.user_id}: ${fullName}`)
+          results.push({ userId: profile.user_id, status: 'filled', name: fullName })
+        }
+      }
+
+      return res.status(200).json({ success: true, filled, processed: results.length, details: results })
+    } catch (e) {
+      console.error('[fill-missing-names]', e)
       return res.status(500).json({ error: e.message })
     }
   }

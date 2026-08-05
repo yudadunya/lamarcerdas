@@ -141,6 +141,10 @@
       "schedule": "0 3 * * 3"
     },
     {
+      "path": "/api/cron/jobs?job=fill-missing-names",
+      "schedule": "0 2 * * 0"
+    },
+    {
       "path": "/api/cron/jobs?job=generate-daily-article",
       "schedule": "0 23 * * *"
     }
