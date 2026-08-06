@@ -1235,44 +1235,76 @@ ${learnedPatterns.map((p, i) => `${i + 1}. ${p.pattern_category}: ${p.pattern_de
 ` : ''
 
   // ════════════════════════════════════════════
-  // ACTION: INIT CHAT (GENERASI PROACTIVE GREETING V2)
+  // ACTION: INIT CHAT (GENERASI PROACTIVE GREETING V3 — AI-generated)
   // ════════════════════════════════════════════
   if (action === 'init-chat') {
     try {
       const coaching = generateDailyCoaching(structuralMemory, activeDashboardMission);
 
-      let openingMessage = `Halo ${structuralMemory.name} 👋\n\n`;
-      openingMessage += `Aku masih ingat tujuan besarmu:\n${structuralMemory.target_position}.\n`;
-      // FIX: target_reason (emotional driver dari onboarding) sekarang ikut ditampilkan,
-      // sebelumnya dikumpulkan tapi tidak pernah dipakai di greeting.
-      if (structuralMemory.target_reason && structuralMemory.target_reason !== 'Belum diketahui') {
-        openingMessage += `Karena ${structuralMemory.target_reason}.\n`;
-      }
-      openingMessage += `\n`;
-      openingMessage += `🔥 Kamu sudah konsisten selama ${structuralMemory.streak_days} hari.\n`;
-      openingMessage += `📈 Progress kesiapanmu saat ini ${structuralMemory.progress_percentage}%.\n\n`;
-      openingMessage += `🎯 Fokus terpenting saat ini:\n${coaching.daily_focus}.\n\n`;
-      openingMessage += `${coaching.daily_reason}\n\n`;
+      // FIX v3: sebelumnya greeting dibuat dengan string concatenation
+      // template kaku — hasilnya selalu format identik setiap hari ("Halo
+      // [nama] 👋\n\nAku masih ingat tujuan besarmu:..." dengan emoji
+      // bullet list yang sama) tanpa peduli konteks percakapan terakhir.
+      // Masalah kedua: diah_anna_memory (yang update tiap sesi, berisi
+      // fakta konkret dari obrolan seperti "361 koneksi") TIDAK PERNAH
+      // dipakai buat greeting — hanya running_insight (weekly) yang dipakai.
+      // Akibatnya: user cerita "udah 361 koneksi", Diah Anna masih bilang
+      // "299" di sesi berikutnya karena baca state lama, bukan memori terbaru.
+      //
+      // Sekarang: greeting di-generate AI beneran pakai diah_anna_memory
+      // (memori sesi terakhir, paling segar) + konteks hari ini, hasilnya
+      // lebih natural dan kontekstual — bukan template yang di-fill variabel.
 
-      if (structuralMemory.running_insight) {
-        openingMessage += `💡 Yang aku pelajari tentangmu:\n${structuralMemory.running_insight}\n\n`;
+      const memoryContext = diahAnnaMemory
+        || (structuralMemory.running_insight
+          ? `Yang aku ketahui: ${structuralMemory.running_insight}`
+          : null)
+
+      let openingMessage
+
+      const incomeQuestion = !careerProfile?.income_situation
+        ? `\n\nBtw, sebelum lanjut — boleh aku tanya satu hal? Situasi kamu sekarang lebih ke: udah punya penghasilan tetap tapi pengen nambah, belum punya penghasilan tetap, atau karier sekarang kurang menjamin dan pengen ganti arah?`
+        : ''
+
+      try {
+        openingMessage = await generateText({
+          system: `${CORE_PERSONA}
+
+Tugas kamu sekarang: tulis sapaan pembuka sesi baru yang terasa NATURAL — bukan template, bukan report status.
+
+ATURAN PENTING:
+- JANGAN buka dengan "Halo [nama] 👋\n\nAku masih ingat tujuan besarmu:" — itu terasa robotic dan template.
+- Mulai dari konteks KONKRET terbaru dari memori (fakta, angka, kejadian spesifik yang user ceritakan di sesi terakhir) atau fokus hari ini — kayak teman yang nyambung dari obrolan kemarin, bukan laporan status awal.
+- Maksimal 3-4 kalimat. Natural, seperti WhatsApp. Nggak perlu semua info dijejalkan.
+- Kalau ada angka/progres konkret di memori (misal "361 koneksi", "sudah apply 3 lowongan"), PAKAI itu — bukan angka lama dari GPS/profile yang mungkin sudah basi.
+- Boleh tanya satu hal konkret buat lanjutin dari sesi terakhir.`,
+          prompt: `Nama: ${structuralMemory.name}
+Target: ${structuralMemory.target_position}
+Fokus aktif: ${coaching.daily_focus}
+Streak: ${structuralMemory.streak_days} hari
+Progress: ${structuralMemory.progress_percentage}%
+Memori sesi terakhir: ${memoryContext || 'Baru mulai, belum ada memori sesi sebelumnya.'}
+
+Tulis sapaan pembuka yang natural.`,
+          maxTokens: 150,
+          tier: 'fast',
+          plan,
+        })
+      } catch (greetErr) {
+        // Fallback ke versi minimal kalau AI gagal — lebih baik singkat & natural
+        // daripada template panjang yang kaku
+        console.warn('[init-chat] AI greeting gagal, pakai fallback:', greetErr.message)
+        openingMessage = memoryContext
+          ? `Halo ${structuralMemory.name}! ${coaching.daily_question}`
+          : `Halo ${structuralMemory.name}! ${coaching.daily_focus} — gimana progresnya?`
       }
 
-      // FIX: sebelumnya ada popup Onboarding terpisah buat nanya "situasi
-      // income" ke user lama yang belum pernah ditanya (profile mereka
-      // dibuat sebelum field ini ada). Sekarang dipindah ke sini — Diah
-      // Anna nanya natural di greeting harian, sekali saja, bukan lewat
-      // form/popup terpisah yang kerasa lepas dari alur ngobrol biasa.
-      if (!careerProfile?.income_situation) {
-        openingMessage += `Btw, sebelum lanjut — boleh aku tanya satu hal? Situasi kamu sekarang lebih ke: udah punya penghasilan tetap tapi pengen nambah, belum punya penghasilan tetap, atau karier sekarang kurang menjamin dan pengen ganti arah?`;
-      } else {
-        openingMessage += `${coaching.daily_question}`;
-      }
+      if (incomeQuestion) openingMessage += incomeQuestion
 
-      return res.status(200).json({ success: true, openingMessage });
+      return res.status(200).json({ success: true, openingMessage })
     } catch (error) {
       console.error('[init-chat] error:', error);
-      return res.status(500).json({ error: 'Gagal inisialisasi panduan Diah Anna.' });
+      return res.status(500).json({ error: 'Gagal inisialisasi panduan Diah Anna.' })
     }
   }
 
