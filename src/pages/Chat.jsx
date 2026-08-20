@@ -461,7 +461,7 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
         ])
       })
       .catch(() => {
-        pushBot(`Halo ${firstName || 'Sobat'} 👋\n\nMari kita lanjut pergerakan karirmu hari ini. Ada yang ingin kamu bahas?`)
+        pushBot(`Halo ${firstName || 'Sobat'} 👋\n\nAku Diah Anna. Cerita aja apa yang lagi kamu pikirin — aku dengerin.`)
       })
   }, [user?.id, subLoading, historyLoaded])
 

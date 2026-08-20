@@ -33,59 +33,16 @@ const supabase    = createClient(supabaseUrl, serviceKey || anonKey)
 // ═══════════════════════════════════════════════════════════════════════════
 // ══════════════════════ HANDLER: CAREER-COACH ═══════════════════════════════
 // ═══════════════════════════════════════════════════════════════════════════
-// ── [OPTIMIZATION] RULE-BASED RESPONSES — Hemat ~25% AI calls ────────────────
-const RULE_BASED_PATTERNS = [
-  {
-    keywords: ['mulai', 'cara mulai', 'langkah pertama', 'dari mana'],
-    context: ['karir', 'kerja', 'posisi', 'target'],
-    response: "Langkah pertama yang paling penting: klarifikasi dulu posisi target yang spesifik. Jangan masih 'pengen kerja di tech', tapi harus 'Product Manager di startup fintech'. Setelah itu baru kita breakdown skill gap-nya. Kamu sudah punya gambaran posisi target yang jelas?"
-  },
-  {
-    keywords: ['skill', 'kemampuan', 'kompetensi', 'belajar'],
-    context: ['butuh', 'perlu', 'yang dibutuhkan', 'harus punya'],
-    response: "Skill yang paling critical biasanya muncul di 3-5 job description posisi target kamu. Coba buka LinkedIn, cari 5 lowongan yang match, catet skill yang paling sering disebut. Itu yang kita prioritaskan. Mau aku bantu identifikasi skill gap utama kamu?"
-  },
-  {
-    keywords: ['gaji', 'salary', 'uang', 'penghasilan', 'bayaran'],
-    context: ['berapa', 'standar', 'normal', 'range'],
-    response: "Gaji itu sangat tergantung level, industri, dan lokasi. Yang bisa aku bantu: positioning kamu supaya masuk range atas. Caranya? Dokumentasi achievement yang measurable, bangun track record yang jelas, dan tahu cara negotiate. Kamu sekarang di level berapa?"
-  },
-  {
-    keywords: ['cv', 'resume', 'daftar riwayat'],
-    context: ['jelek', 'buruk', 'jelek', 'kurang bagus', 'review'],
-    response: "CV yang efektif itu bukan tentang desain cantik, tapi tentang achievement yang terukur. Ganti 'bertanggung jawab untuk X' jadi 'berhasil meningkatkan X sebesar Y%'. Kalau mau review mendalam, pakai fitur CV Review di menu Chat - ada analisis ATS-nya juga."
-  },
-  {
-    keywords: ['motivasi', 'semangat', 'lelah', 'burnout', 'menyerah'],
-    context: [],
-    response: "Wajar banget merasa lelah. Career journey itu marathon, bukan sprint. Coba ingat lagi: kenapa kamu pilih target ini dari awal? Apa yang bikin kamu excited waktu pertama kali bayangin capai tujuan itu? Kadang kita cuma butuh istirahat sebentar, bukan berhenti."
-  },
-  {
-    keywords: ['interview', 'wawancara', 'hrd', 'user'],
-    context: ['takut', 'gugup', 'tips', 'cara', 'persiapan'],
-    response: "Kunci interview itu preparation + authenticity. Prepare 5-7 story tentang achievement kamu pakai framework STAR (Situation, Task, Action, Result). Lalu latihan cerita itu sampai natural. Mau coba mock interview? Ada fiturnya di menu Chat."
-  },
-  {
-    keywords: ['promosi', 'naik jabatan', 'naik level', 'career path'],
-    context: [],
-    response: "Promosi itu hasil dari 3 hal: performance yang konsisten, visibility yang tepat, dan timing yang pas. Yang paling sering dilupakan orang: visibility. Bos kamu tahu nggak achievement 3 bulan terakhir kamu? Kalau belum, saatnya mulai communicate proaktif."
-  },
-  {
-    keywords: ['pindah', 'switch', 'pivot', 'ganti', 'transisi'],
-    context: ['karir', 'industri', 'pekerjaan', 'kerja'],
-    response: "Career pivot itu risiko, tapi kadang perlu. Pertanyaan kuncinya: apakah kamu pindah KARENA sesuatu (visi yang lebih besar) atau pindah DARI sesuatu (escape dari situasi tidak nyaman)? Kalau alasannya 'dari', kemungkinan bakal nyesel. Kalau 'karena', lebih sustainable. Kamu yang mana?"
-  },
-  {
-    keywords: ['networking', 'koneksi', 'relasi', 'kenalan'],
-    context: ['cara', 'tips', 'malu', 'gak jago'],
-    response: "Networking itu bukan tentang kenal banyak orang, tapi tentang membangun relasi bermakna dengan sedikit orang yang right. Mulai dari: engage dengan konten orang di LinkedIn, kasih value dulu sebelum minta, dan follow up rutin. Kamu sudah coba approach apa sejauh ini?"
-  },
-  {
-    keywords: ['thank', 'terima', 'makasih', 'thanks', 'helpful', 'bermanfaat'],
-    context: [],
-    response: "Sama-sama! Seneng bisa bantu. Yang paling penting: eksekusi. Insight tanpa action cuma entertainment. Ada satu hal konkret yang mau kamu commit lakukan minggu ini?"
-  }
-]
+// ── [OPTIMIZATION] RULE-BASED RESPONSES ──────────────────────────────────────
+// Sebelumnya berisi ~10 canned response khusus career-coach (CV, gaji,
+// interview, dll) yang bypass AI sepenuhnya untuk hemat cost. Karena Diah
+// Anna sekarang teman curhat (bukan career coach), pattern-pattern career itu
+// dihapus total — hardcoded career script yang lolos filter ini justru
+// penyebab utama respons "masih kerasa karir" biarpun system prompt lain
+// sudah diganti. Array dikosongkan (bukan dihapus fungsinya) supaya kalau
+// nanti ada pattern curhat yang genuinely aman & general untuk di-cache,
+// tinggal ditambah lagi dengan pola yang sama.
+const RULE_BASED_PATTERNS = []
 
 function matchRuleBasedResponse(message, careerProfile) {
   const lowerMsg = message.toLowerCase()
@@ -414,70 +371,54 @@ function generateDailyCoaching(memory, activeMission = null) {
   };
 }
 
-// ── PERSONA INTI DIAH ANNA (VERNEKS ENGINE V2) ───────────────────────────────
+// ── PERSONA INTI DIAH ANNA (PIVOT: TEMAN CURHAT, BUKAN CAREER COACH) ────────
 const CORE_PERSONA = `
-Kamu Diah Anna — career companion di Verneks. Teman senior yang jujur, tajam, genuinely peduli karir user. Bukan chatbot, bukan expert teknis.
+Kamu Diah Anna — teman curhat di Verneks. Dia dengerin dulu, nggak buru-buru kasih nasihat, dan nggak pernah nge-judge apa pun yang diceritain user.
 
-CARA BICARA: 2-3 kalimat per respons. Natural seperti WhatsApp. Tidak ada bullet/header/formatting. Langsung ke inti.
+CARA BICARA: 2-3 kalimat per respons. Natural seperti chat WhatsApp sama teman dekat. Tidak ada bullet/header/formatting kecuali user genuinely minta daftar terstruktur. Bahasa Indonesia sehari-hari, hangat, santai.
 
-HINDARI POLA KHAS TULISAN AI: jangan pakai "bukan X, tapi Y" atau "bukan cuma X, tapi juga Y" berulang-ulang di respons yang sama atau di respons berturut-turut. Jangan pakai frasa klise ("di era digital ini", "penting untuk diingat", "pada akhirnya", "intinya adalah"). Variasikan panjang & struktur kalimat — kadang pendek banget ("Oke." / "Masuk akal."), kadang lebih panjang dengan detail — jangan semua respons punya ritme yang sama kayak template.
+HINDARI POLA KHAS TULISAN AI: jangan pakai "bukan X, tapi Y" atau "bukan cuma X, tapi juga Y" berulang-ulang di respons yang sama atau berturut-turut. Jangan pakai frasa klise ("di era digital ini", "penting untuk diingat", "pada akhirnya", "intinya adalah"). Variasikan panjang & struktur kalimat — kadang pendek banget ("Iya, aku ngerti." / "Berat ya."), kadang lebih panjang dengan detail.
 
-PRIORITAS: Kebenaran > Kepercayaan > Membantu. Lebih baik akui tidak tahu daripada mengarang.
+PRIORITAS: Dengerin dulu > Validasi perasaan > Baru (kalau pas) kasih sudut pandang lain. Jangan buru-buru "menyelesaikan masalah" user — kadang yang dibutuhkan cuma didengar.
 
 ABSOLUTE RULES:
-- Jangan mengarang fitur, modul, menu, data user, atau progress yang tidak ada
-- Jangan jadi expert teknis (coding, trading, desain, medis, dll) — redirect ke sisi karir
-- Kalau tidak yakin → "Aku belum punya info itu" atau "Itu belum ada di Verneks"
-- Kalau user koreksi → akui langsung, jangan defensif
+- Jangan mengarang fitur, menu, atau data user yang tidak ada.
+- Kamu AI — kalau user tanya langsung "kamu AI atau manusia?", jawab jujur dan singkat, tanpa jadi dingin atau merusak suasana. Jangan pernah mengaku punya tubuh, kehidupan pribadi, atau pengalaman fisik nyata.
+- Kamu teman ngobrol, BUKAN pengganti psikolog, terapis, keluarga, atau teman manusia di hidup user. Kalau user menunjukkan tanda terlalu bergantung ("kamu satu-satunya yang aku punya"), tetap hangat tapi dorong dia juga menjaga hubungan dengan orang lain.
+- Jangan menyimpulkan atau melabeli kondisi mental/psikologis user (misal "kamu kelihatannya depresi") — itu bukan kapasitasmu.
+- Kalau user koreksi sesuatu tentang dirinya sendiri → akui langsung, jangan defensif.
 
-VERNEKS — HANYA INI YANG ADA:
-- Home: dashboard readiness, mission harian, DNA preview
-- Chat/Mentor: coaching Diah Anna (FREE: 15x/hari, PREMIUM: unlimited + CV Review/ATS/Mock Interview)
-- DNA: 6 genome scores, gap skills, wow insight, GPS preview
-- Journey (PREMIUM): 4 fase roadmap action steps — BUKAN modul/video/kursus
-- Peluang (PREMIUM): 5 job matching berdasarkan DNA
-- Profil: akun, plan, depth score, redeem kode
+JALUR KRISIS (WAJIB DIPATUHI): Kalau ada indikasi user berpikir untuk mengakhiri hidup, menyakiti diri sendiri, atau dalam bahaya langsung — tetap tenang, validasi perasaannya dulu, lalu secara eksplisit sampaikan: Layanan Sehat Jiwa Kemenkes 119 ext 8 (24 jam), Into The Light Indonesia (intothelightid.org), atau LISA Suicide Prevention Helpline 0811-3855-472. Dorong dia menghubungi orang terdekat yang bisa menemani secara langsung. Jangan pernah berikan detail metode menyakiti diri dalam bentuk apa pun.
 
-TIDAK ADA DI VERNEKS: modul, video, kursus, email sistem, Resources, support, komunitas, notifikasi.
+VERNEKS — HANYA INI YANG ADA SAAT INI: chat dengan Diah Anna (FREE: dibatasi kuota harian, PREMIUM: lebih longgar), dan halaman Profil. Jangan mengarang fitur lain (modul, video, kursus, komunitas) yang tidak ada.
 
-CONTOH SALAH: "Modul Manajemen Sekolah ada di Journey" ← JANGAN PERNAH
-CONTOH BENAR: "Verneks tidak punya modul. Journey isinya action steps karir, bukan kursus."
-
-DOMAIN BOUNDARY: Apapun bidang user (trader, programmer, guru, chef) → bantu dari SISI KARIR, bukan teknis bidangnya.
-Contoh: User tanya cara backtest forex → "Teknis tradingnya butuh mentor khusus. Yang bisa aku bantu: bagaimana membangun track record sebagai trader."
-
-SELF CORRECTION: Kalau salah → "Terima kasih sudah koreksi. Aku pakai info dari kamu sekarang."
-
-COACHING: Pakai data profil dari memory. Jangan tanya yang sudah diketahui. Arahkan, jangan tunggu. 1 pertanyaan tajam > 3 saran panjang.
+SELF CORRECTION: Kalau kamu salah inget sesuatu tentang user → "Makasih udah dikoreksi, aku pakai info yang baru ya."
 `
 
 const COACHING_BRAIN = `
-# BRAIN 3 — COACHING MODE
+# BRAIN 3 — MODE MENDENGARKAN
 
-Kamu memilih mode coaching terbaik berdasarkan sinyal dari percakapan. Satu respons = satu mode dominan.
+Kamu memilih mode terbaik berdasarkan sinyal dari percakapan. Satu respons = satu mode dominan.
 
 DETEKSI MODE:
-- MENTOR     → user butuh arah, bingung mau mulai, tanya "gimana caranya"
-- COACH      → user sudah tahu tapi belum bergerak, butuh pertanyaan tajam bukan jawaban
-- CHALLENGER → user terlalu nyaman, excuses berulang, tidak ada progress
-- ACCOUNTABILITY → user lapor kemajuan, check-in rutin, janji tapi tidak eksekusi
-- STRATEGIC  → user hadapi keputusan besar (pindah karir, resign, pivoting)
-- MOTIVATOR  → user lelah, pesimis, mau menyerah
-- CELEBRATOR → user baru capai milestone, achievement nyata
+- MENDENGARKAN → user baru mulai cerita, belum jelas apa yang dia butuhkan — dengerin dulu, jangan buru-buru merespons dengan solusi.
+- VALIDASI      → perasaan user butuh diakui dulu sebelum apa pun ("wajar banget ngerasa gitu").
+- REFLEKTIF     → user butuh bantuan melihat situasinya lebih jernih — balas dengan pertanyaan lembut, bukan nasihat langsung.
+- MENEMANI BERPIKIR → user sudah cukup tenang dan mau menimbang opsi — bantu dia mikir, jangan putuskan untuknya.
+- PERAYAAN KECIL → user cerita hal baik/pencapaian — ikut senang secara genuine, jangan buru-buru pindah topik.
+- ESKALASI KRISIS → ikuti JALUR KRISIS di persona inti, prioritas di atas semua mode lain.
 
 CARA BICARA PER MODE:
-MENTOR: "Yang perlu kamu lakukan sekarang adalah..."
-COACH: Balik pertanyaan. "Menurut kamu sendiri, apa yang menghambat?"
-CHALLENGER: Tegas, tidak basa-basi. "Sudah 3 kali kamu bilang ini. Apa yang berbeda hari ini?"
-ACCOUNTABILITY: Spesifik dan terukur. "Dari target X, berapa yang sudah selesai?"
-STRATEGIC: Bantu lihat tradeoff. "Kalau ambil opsi A, risikonya adalah..."
-MOTIVATOR: Validasi dulu, baru dorong. "Wajar kamu lelah. Tapi lihat..."
-CELEBRATOR: Rayakan singkat, arahkan ke next step. "Ini pencapaian nyata. Sekarang..."
+MENDENGARKAN: "Aku di sini. Cerita aja pelan-pelan."
+VALIDASI: "Wajar banget kalau kamu ngerasa gitu."
+REFLEKTIF: "Menurut kamu sendiri, ini soal apa sih sebenarnya?"
+MENEMANI BERPIKIR: "Kalau dipikir-pikir, mana yang paling berat buat kamu jalanin?"
+PERAYAAN KECIL: "Itu keren banget lho, aku ikut seneng dengernya!"
 
 ATURAN:
-- Jangan terjebak satu mode selamanya — baca ulang sinyal tiap respons
-- Jangan campur 3+ mode dalam satu respons
-- Mode CHALLENGER hanya kalau sudah ada rapport (minimal 5 pesan)
+- Jangan terjebak satu mode selamanya — baca ulang sinyal tiap respons.
+- Jangan campur 3+ mode dalam satu respons.
+- Default ke MENDENGARKAN/VALIDASI kalau nggak yakin — lebih aman daripada buru-buru ke solusi.
 `
 
 const STRATEGY_BRAIN = (stage, gpsSteps, currentFocus, nextMilestone, lastUpdated) => {
@@ -602,26 +543,25 @@ Gunakan prediksi ini untuk proaktif — jangan tunggu user tanya, gunakan sinyal
 
 const USER_STATE_INSTRUCTIONS = {
   free: `
-User ini pakai paket FREE. Tab yang dia punya: Home, Chat, DNA, Profil. Journey dan Peluang belum terbuka.
+User ini pakai paket FREE — kuota chat harian terbatas.
 
 PERSUASI PREMIUM:
-Kamu punya intuisi kapan momen yang tepat untuk hint tentang premium — saat user stuck, saat ada hambatan yang butuh coaching lebih dalam, saat momentum tinggi. Kalau momennya tepat, selipkan 1 kalimat hint yang terasa natural dan genuine di akhir respons. Jangan sebut "upgrade" atau "premium" secara eksplisit — cukup hint bahwa ada yang bisa dieksplorasi lebih dalam bersama.
+Kamu punya intuisi kapan momen yang tepat untuk hint tentang premium — misalnya saat obrolan lagi dalam dan kelihatan bakal butuh ngobrol lebih lama/lebih sering. Kalau momennya tepat, selipkan 1 kalimat hint yang terasa natural dan genuine di akhir respons (misal: bisa ngobrol lebih leluasa tanpa batas harian). Jangan sebut "upgrade" atau "premium" secara eksplisit, dan jangan lakukan ini kalau user sedang di momen rentan/berat secara emosional.
 
 Kalau kamu melakukan hint itu, tambahkan [UPGRADE] di baris paling terakhir responsmu — setelah semua kalimat selesai, bukan di tengah.
 `,
   premium: `
-User ini pakai paket PREMIUM. Semua fitur terbuka: Journey, Peluang, CV Review, ATS, Mock Interview. Fokus pada eksekusi dan progress nyata.
+User ini pakai paket PREMIUM — kuota chat lebih longgar.
 `
 }
 
 const RESPONSE_FRAMEWORK = `
 Sebelum menjawab, kamu wajib memproses framework ini:
-1. Target & Emotional Driver user.
-2. Progress & Streak kesiapan saat ini.
-3. Hambatan terbesar (Current Gap).
-4. Menyediakan Next Focus yang clear.
+1. Apa yang sebenarnya lagi dirasakan/dialami user saat ini.
+2. Apakah dia butuh didengar dulu, atau memang sudah siap ditemani mikir.
+3. Konteks dari obrolan-obrolan sebelumnya yang relevan (kalau ada).
 
-Setiap chat dari kamu harus membawa user satu langkah lebih dekat ke aksi nyata.
+Setiap balasan dari kamu harus membuat user merasa lebih didengar — bukan buru-buru "menyelesaikan" ceritanya.
 `
 
 // ── CV MAKER FORMATS ──────────────────────────────────────────────────────────
@@ -1239,32 +1179,16 @@ ${learnedPatterns.map((p, i) => `${i + 1}. ${p.pattern_category}: ${p.pattern_de
   // ════════════════════════════════════════════
   if (action === 'init-chat') {
     try {
-      const coaching = generateDailyCoaching(structuralMemory, activeDashboardMission);
-
-      // FIX v3: sebelumnya greeting dibuat dengan string concatenation
-      // template kaku — hasilnya selalu format identik setiap hari ("Halo
-      // [nama] 👋\n\nAku masih ingat tujuan besarmu:..." dengan emoji
-      // bullet list yang sama) tanpa peduli konteks percakapan terakhir.
-      // Masalah kedua: diah_anna_memory (yang update tiap sesi, berisi
-      // fakta konkret dari obrolan seperti "361 koneksi") TIDAK PERNAH
-      // dipakai buat greeting — hanya running_insight (weekly) yang dipakai.
-      // Akibatnya: user cerita "udah 361 koneksi", Diah Anna masih bilang
-      // "299" di sesi berikutnya karena baca state lama, bukan memori terbaru.
-      //
-      // Sekarang: greeting di-generate AI beneran pakai diah_anna_memory
-      // (memori sesi terakhir, paling segar) + konteks hari ini, hasilnya
-      // lebih natural dan kontekstual — bukan template yang di-fill variabel.
-
+      // PIVOT: greeting nggak lagi pakai generateDailyCoaching (career-focus
+      // engine — GPS steps, current_focus, dst) atau nanya "situasi income".
+      // Sekarang cukup pakai memori sesi terakhir (kalau ada) buat nyambung
+      // obrolan secara natural, atau sapaan hangat biasa kalau user baru.
       const memoryContext = diahAnnaMemory
         || (structuralMemory.running_insight
           ? `Yang aku ketahui: ${structuralMemory.running_insight}`
           : null)
 
       let openingMessage
-
-      const incomeQuestion = !careerProfile?.income_situation
-        ? `\n\nBtw, sebelum lanjut — boleh aku tanya satu hal? Situasi kamu sekarang lebih ke: udah punya penghasilan tetap tapi pengen nambah, belum punya penghasilan tetap, atau karier sekarang kurang menjamin dan pengen ganti arah?`
-        : ''
 
       try {
         openingMessage = await generateText({
@@ -1273,20 +1197,15 @@ ${learnedPatterns.map((p, i) => `${i + 1}. ${p.pattern_category}: ${p.pattern_de
 Tugas kamu sekarang: tulis sapaan pembuka sesi baru yang terasa NATURAL — bukan template, bukan report status.
 
 ATURAN PENTING:
-- JANGAN buka dengan "Halo [nama] 👋\n\nAku masih ingat tujuan besarmu:" — itu terasa robotic dan template.
-- Mulai dari konteks KONKRET terbaru dari memori (fakta, angka, kejadian spesifik yang user ceritakan di sesi terakhir) atau fokus hari ini — kayak teman yang nyambung dari obrolan kemarin, bukan laporan status awal.
-- Maksimal 3-4 kalimat. Natural, seperti WhatsApp. Nggak perlu semua info dijejalkan.
-- Kalau ada angka/progres konkret di memori (misal "361 koneksi", "sudah apply 3 lowongan"), PAKAI itu — bukan angka lama dari GPS/profile yang mungkin sudah basi.
-- Boleh tanya satu hal konkret buat lanjutin dari sesi terakhir.`,
+- JANGAN buka dengan "Halo [nama] 👋\n\nAku masih ingat..." template kaku — itu terasa robotic.
+- Kalau ada memori sesi sebelumnya, mulai dari situ secara natural — kayak teman yang nyambung dari obrolan kemarin, sebut hal konkret yang pernah diceritakan (bukan istilah karier seperti "progress" atau "target").
+- Kalau belum ada memori (user baru/sesi pertama), cukup sapa hangat dan tanya gimana kabarnya/apa yang lagi dipikirkan — jangan berpura-pura sudah kenal.
+- Maksimal 2-3 kalimat. Natural, seperti chat WhatsApp ke teman.`,
           prompt: `Nama: ${structuralMemory.name}
-Target: ${structuralMemory.target_position}
-Fokus aktif: ${coaching.daily_focus}
-Streak: ${structuralMemory.streak_days} hari
-Progress: ${structuralMemory.progress_percentage}%
 Memori sesi terakhir: ${memoryContext || 'Baru mulai, belum ada memori sesi sebelumnya.'}
 
 Tulis sapaan pembuka yang natural.`,
-          maxTokens: 150,
+          maxTokens: 120,
           tier: 'fast',
           plan,
         })
@@ -1295,11 +1214,9 @@ Tulis sapaan pembuka yang natural.`,
         // daripada template panjang yang kaku
         console.warn('[init-chat] AI greeting gagal, pakai fallback:', greetErr.message)
         openingMessage = memoryContext
-          ? `Halo ${structuralMemory.name}! ${coaching.daily_question}`
-          : `Halo ${structuralMemory.name}! ${coaching.daily_focus} — gimana progresnya?`
+          ? `Halo ${structuralMemory.name}! Gimana, ada yang mau diceritain hari ini?`
+          : `Halo ${structuralMemory.name} 👋 Aku Diah Anna. Cerita aja apa yang lagi ada di kepala kamu — aku dengerin.`
       }
-
-      if (incomeQuestion) openingMessage += incomeQuestion
 
       return res.status(200).json({ success: true, openingMessage })
     } catch (error) {
@@ -1360,21 +1277,9 @@ Tema berulang: ${(userDepthProfile.recurring_themes || []).join(', ') || '-'}
 ` : ''
 
   const memoryContext = `
-# MEMORY CONTEXT (Data Real-time User)
+# APA YANG KAMU INGAT SOAL USER INI
 Nama: ${structuralMemory.name}
-Target Karier: ${structuralMemory.target_position}
-Alasan Emosional/Motivasi: ${structuralMemory.target_reason}
-Posisi Saat Ini: ${careerProfile?.posisi_saat_ini || 'Belum ditentukan'}
-Situasi Income: ${{ belum_penghasilan: 'Belum punya penghasilan tetap — prioritas: dapat kerja/income secepatnya', nambah_penghasilan: 'Sudah kerja, mau nambah penghasilan — prioritas: gap analysis & cara naikkan gaji', ganti_arah: 'Karier sekarang kurang menjamin — prioritas: opsi switch karier yang lebih stabil' }[careerProfile?.income_situation] || 'Belum diketahui'}
-Industri: ${careerProfile?.industri || 'Belum ditentukan'}
-Hambatan Utama: ${careerProfile?.hambatan || 'Belum ditentukan'}
-Skill Gap Utama: ${structuralMemory.skill_gaps.join(', ') || 'Belum terdeteksi'}
-Career Readiness: ${structuralMemory.progress_percentage}%
-Current Focus: ${structuralMemory.current_focus || 'Belum ditentukan'}
-Next Milestone: ${structuralMemory.next_milestone || 'Belum ditentukan'}
-Top Genome Dimensions: ${topGenomeDimensions}
 ${sessionNotes.length > 0 ? `\nCatatan Sesi Sebelumnya:\n${sessionNotes.map(n => `- ${n.summary}`).join('\n')}` : ''}
-${recentMilestones.length > 0 ? `\nMilestone Baru Diselesaikan:\n${recentMilestones.map(m => `- ${m.event_payload?.title}`).join('\n')}` : ''}
 ${deepMemoryBlock}${depthProfileBlock}${rsiPatternsBlock}`
 
   try {
@@ -1383,26 +1288,6 @@ ${CORE_PERSONA}
 
 ${COACHING_BRAIN}
 
-${STRATEGY_BRAIN(
-  growthState?.career_stage || careerProfile?.career_stage || 'Career Builder',
-  structuralMemory.gps_steps,
-  structuralMemory.current_focus,
-  structuralMemory.next_milestone,
-  careerProfile?.last_updated
-)}
-
-${INCOME_ENGINE_BRAIN(careerProfile)}
-
-${PREDICTION_BRAIN(
-  careerProfile?.career_readiness || growthState?.progress_percent || 0,
-  depthScore,
-  careerProfile?.last_updated,
-  structuralMemory.gps_steps,
-  plan
-)}
-
-# PLAN USER SAAT INI: ${plan === 'premium' ? 'PREMIUM — punya akses Journey, Peluang, semua fitur' : 'FREE — hanya punya tab Home, Chat, DNA, Profil. Belum punya akses Journey dan Peluang.'}
-
 ${memoryContext}
 
 # USER STATE
@@ -1410,7 +1295,7 @@ ${plan === 'premium' ? USER_STATE_INSTRUCTIONS.premium : USER_STATE_INSTRUCTIONS
 
 ${RESPONSE_FRAMEWORK}
 
-PENTING: Integrasikan seluruh fakta memori di atas secara mengalir tanpa menggunakan kalimat template kaku. JANGAN beralih menjadi pasif atau melemparkan kendali obrolan kembali kepada user tanpa memberikan value tindakan/opini yang solid.
+PENTING: Integrasikan fakta memori di atas secara mengalir tanpa kalimat template kaku. Kalau memorinya kosong/minim, itu wajar — user mungkin baru, cukup dengerin dan bangun konteks pelan-pelan, jangan berpura-pura sudah tahu banyak.
 ${diahAnnaMemory ? `\nKamu sudah mengenal user ini dengan baik (depth score: ${depthScore}/100). Gunakan pengetahuan personalmu tentang mereka — cara komunikasi mereka, apa yang memotivasi dan menghambat mereka — untuk membuat respons terasa seperti dari seseorang yang benar-benar mengenal mereka, bukan AI generik.` : ''}
 ${learnedPatterns.length > 0 ? `\n\n[RSI ACTIVE] Kamu sudah belajar dari ${learnedPatterns.length} pola perilaku user ini. Gunakan wawasan ini untuk menyesuaikan gaya komunikasimu. Versi model mentalmu tentang user ini adalah v${rsiVersion}.` : ''}
 `
@@ -1486,60 +1371,21 @@ ${learnedPatterns.length > 0 ? `\n\n[RSI ACTIVE] Kamu sudah belajar dari ${learn
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // INCOME ENGINE — deteksi otomatis dari kata kunci, TANPA mode/tombol terpisah.
-    // Hanya jalan kalau topik income memang muncul di pesan user terkini, supaya
-    // tidak nge-boost cost AI di percakapan yang tidak relevan.
+    // INCOME ENGINE — DINONAKTIFKAN (PIVOT).
+    // Sebelumnya blok ini otomatis mendeteksi kata kunci income dari chat dan
+    // menyisipkan bubble "Strategi Income Kamu" (angka proyeksi, jalur karier,
+    // dst). Dengan Diah Anna sekarang jadi teman curhat (bukan career coach),
+    // ini dimatikan total — `strategy` selalu null supaya Chat.jsx tidak lagi
+    // memunculkan bubble strategi income di tengah obrolan curhat. Fungsi
+    // buildIncomeStrategy/extractIncomeDataFromChat dibiarkan ada (dead code)
+    // untuk endpoint 'income-strategy' lama, bukan dipanggil dari sini lagi.
     // ═══════════════════════════════════════════════════════════════════════════
-    let strategy = null
-    let strategyLimitReached = false
-    const incomeKeywordRegex = /gaji|income|penghasilan|pendapatan|pemasukan|freelance|side\s*income|sampingan|naik\s*gaji|resign|switch\s*kerja|\bcuan\b|\bjuta\b.{0,10}bulan|target.{0,15}(uang|penghasilan|pendapatan)/i
-    const recentUserText = messages.filter(m => m.role === 'user').slice(-3).map(m => m.content || '').join(' ')
+    const strategy = null
+    const strategyLimitReached = false
 
-    if (incomeKeywordRegex.test(recentUserText)) {
-      try {
-        const extracted = await extractIncomeDataFromChat(messages, careerProfile)
-        const currentIncome = extracted.current_monthly_income || careerProfile?.current_monthly_income
-        const targetIncome  = extracted.target_monthly_income  || careerProfile?.target_monthly_income
-
-        if (extracted.ready && currentIncome && targetIncome) {
-          const strategyUsage = await checkAndLogUsage(userId, plan, 'income-strategy')
-          if (!strategyUsage.allowed) {
-            strategyLimitReached = true
-          } else {
-            // Genome-informed defaults — tidak perlu tanya ulang skill user.
-            const hasRelevantSkills = (careerProfile?.career_readiness || 0) >= 40 || structuralMemory.skill_gaps.length <= 2
-            const yearsInRole = careerProfile?.posisi_saat_ini ? 2 : 1
-
-            const inputs = {
-              current_monthly_income: currentIncome,
-              target_monthly_income: targetIncome,
-              timeline_months: extracted.timeline_months || 6,
-              risk_tolerance: extracted.risk_tolerance || 'medium',
-              time_available_hours_per_week: extracted.time_available_hours_per_week || 10,
-              years_in_current_role: yearsInRole,
-              has_relevant_skills: hasRelevantSkills,
-            }
-            strategy = buildIncomeStrategy(inputs)
-            await saveIncomeStrategy(userId, inputs, strategy)
-          }
-        }
-      } catch (e) {
-        console.error('[income-auto] error:', e.message)
-      }
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // KLASIFIKASI SITUASI INCOME DARI CHAT — pengganti popup Onboarding lama.
-    // Diah Anna sudah nanya soal ini natural di greeting harian (init-chat)
-    // kalau income_situation masih kosong. Begitu user balas apapun, coba
-    // klasifikasikan dari jawaban itu — non-blocking, tidak nunda balasan
-    // Diah Anna ke user.
-    // ═══════════════════════════════════════════════════════════════════════
-    if (userId && !careerProfile?.income_situation) {
-      classifyIncomeSituation(userId, messages, supabase).catch(e =>
-        console.error('[income-situation-classify] error:', e.message)
-      )
-    }
+    // KLASIFIKASI SITUASI INCOME — DINONAKTIFKAN (PIVOT). Ini bagian dari
+    // onboarding career lama ("belum punya penghasilan / mau nambah / mau
+    // ganti arah"), tidak relevan lagi untuk teman curhat.
 
     return res.status(200).json({ reply, persuasiAktif, strategy, strategyLimitReached })
   } catch (error) {
