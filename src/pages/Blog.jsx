@@ -7,13 +7,13 @@ const Logo = () => (
   <img src="/verneks_icon_1.png" alt="Verneks" width="28" height="28" style={{ objectFit: 'contain', flexShrink: 0 }} />
 )
 
-const CATEGORIES = ['Semua', 'Tips CV', 'Interview', 'Karir', 'LinkedIn']
+const CATEGORIES = ['Semua', 'Overthinking', 'Kesehatan Mental', 'Hubungan', 'Self-Care']
 
 const CATEGORY_COLORS = {
-  'Tips CV': { color: '#34B7F1', bg: 'rgba(52,183,241,0.12)' },
-  'Interview': { color: '#FFB74D', bg: 'rgba(255,183,77,0.12)' },
-  'Karir': { color: '#25D366', bg: 'rgba(37,211,102,0.12)' },
-  'LinkedIn': { color: '#F48FB1', bg: 'rgba(244,143,177,0.12)' },
+  'Overthinking': { color: '#34B7F1', bg: 'rgba(52,183,241,0.12)' },
+  'Kesehatan Mental': { color: '#FFB74D', bg: 'rgba(255,183,77,0.12)' },
+  'Hubungan': { color: '#F48FB1', bg: 'rgba(244,143,177,0.12)' },
+  'Self-Care': { color: '#25D366', bg: 'rgba(37,211,102,0.12)' },
 }
 
 function formatDate(dateStr) {
@@ -51,14 +51,14 @@ export default function Blog({ user }) {
 
   useEffect(() => {
     // SEO meta tags
-    document.title = 'Blog Karir — Tips CV, Interview & Pengembangan Karir | Verneks'
+    document.title = 'Blog — Overthinking, Kesehatan Mental & Self-Care | Verneks'
     const metaDesc = document.querySelector('meta[name="description"]')
     if (metaDesc) {
-      metaDesc.setAttribute('content', 'Tips dan panduan praktis seputar CV, interview kerja, negosiasi gaji, dan pengembangan karir untuk profesional Indonesia.')
+      metaDesc.setAttribute('content', 'Bacaan santai seputar overthinking, kesehatan mental, hubungan, dan self-care — ditulis untuk anak muda Indonesia yang lagi cari cara mengelola pikiran dan perasaan sehari-hari.')
     } else {
       const meta = document.createElement('meta')
       meta.name = 'description'
-      meta.content = 'Tips dan panduan praktis seputar CV, interview kerja, negosiasi gaji, dan pengembangan karir untuk profesional Indonesia.'
+      meta.content = 'Bacaan santai seputar overthinking, kesehatan mental, hubungan, dan self-care — ditulis untuk anak muda Indonesia yang lagi cari cara mengelola pikiran dan perasaan sehari-hari.'
       document.head.appendChild(meta)
     }
 
@@ -68,8 +68,8 @@ export default function Blog({ user }) {
       if (!el) { el = document.createElement('meta'); el.setAttribute('property', property); document.head.appendChild(el) }
       el.setAttribute('content', content)
     }
-    setOg('og:title', 'Blog Karir Verneks — Tips CV, Interview & Pengembangan Karir')
-    setOg('og:description', 'Tips dan panduan praktis seputar CV, interview kerja, negosiasi gaji, dan pengembangan karir untuk profesional Indonesia.')
+    setOg('og:title', 'Blog Verneks — Overthinking, Kesehatan Mental & Self-Care')
+    setOg('og:description', 'Bacaan santai seputar overthinking, kesehatan mental, hubungan, dan self-care untuk anak muda Indonesia.')
     setOg('og:type', 'website')
     setOg('og:url', window.location.href)
 
@@ -137,7 +137,7 @@ export default function Blog({ user }) {
           color: '#25D366', fontSize: '0.75rem', fontWeight: 600,
           letterSpacing: '0.5px', marginBottom: 16,
         }}>
-          📚 Blog Karir
+          📚 Blog Verneks
         </div>
         <h1 style={{
           color: '#fff', fontWeight: 900,
@@ -145,14 +145,14 @@ export default function Blog({ user }) {
           letterSpacing: '-0.5px', lineHeight: 1.2,
           marginBottom: 12,
         }}>
-          Tips Karir untuk<br/>
-          <span style={{ color: '#25D366' }}>Profesional Indonesia</span>
+          Bacaan buat Kamu<br/>
+          <span style={{ color: '#25D366' }}>yang Lagi Banyak Pikiran</span>
         </h1>
         <p style={{
           color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem',
           lineHeight: 1.6, maxWidth: 380, margin: '0 auto',
         }}>
-          Panduan praktis CV, interview, negosiasi gaji, dan pengembangan karir — ditulis berdasarkan data nyata dari ribuan job seeker.
+          Tulisan santai seputar overthinking, kesehatan mental, hubungan, dan self-care — bukan teori berat, tapi hal yang beneran kepakai sehari-hari.
         </p>
       </div>
 
@@ -287,10 +287,10 @@ export default function Blog({ user }) {
         }}>
           <div style={{ fontSize: '1.6rem', marginBottom: 8 }}>💙</div>
           <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '1.1rem', marginBottom: 8, letterSpacing: '-0.3px' }}>
-            Sudah tahu tipsnya?<br/>Sekarang giliran praktik!
+            Kalau masih kepikiran terus,<br/>cerita aja ke Diah Anna
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', marginBottom: 18, lineHeight: 1.5 }}>
-            Diskusikan situasi karir kamu langsung dengan Diah Anna — gratis, tanpa kartu kredit.
+            Kadang baca artikel aja nggak cukup — kadang kamu cuma butuh cerita. Diah Anna dengerin, gratis, kapan aja.
           </p>
           <button
             onClick={() => navigate(user ? '/chat' : '/login')}

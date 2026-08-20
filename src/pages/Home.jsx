@@ -3,55 +3,53 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useSEO, generateBreadcrumb } from '../seo'
 
-// ─── BRAND TOKENS ─────────────────────────────────────────────────────────────
+// ─── BRAND TOKENS — reposisi dari "corporate career" ke "hangat, aman, dekat" ──
 const C = {
-  primary:   '#4F46E5',
-  secondary: '#06B6D4',
-  purple:    '#7C3AED',
-  grad:      'linear-gradient(135deg, #4F46E5 0%, #06B6D4 100%)',
-  bg:        '#06060F',
-  surface:   'rgba(79,70,229,0.07)',
-  border:    'rgba(79,70,229,0.2)',
+  primary:   '#8B5CF6', // violet hangat, bukan indigo korporat
+  secondary: '#FB7185', // coral lembut — hangat, bukan cyan "tech"
+  purple:    '#A78BFA',
+  grad:      'linear-gradient(135deg, #8B5CF6 0%, #FB7185 100%)',
+  bg:        '#0B0710',
+  surface:   'rgba(139,92,246,0.08)',
+  border:    'rgba(139,92,246,0.22)',
   text:      '#fff',
   muted:     'rgba(255,255,255,0.5)',
   faint:     'rgba(255,255,255,0.06)',
-  // Light section tokens — manifesto & testimonials
-  lightBg:   '#F5F5F7',
-  lightText: '#0D0D1A',
-  lightMuted:'rgba(13,13,26,0.55)',
-  lightBdr:  'rgba(13,13,26,0.08)',
+  lightBg:   '#FBF7F9',
+  lightText: '#1A1420',
+  lightMuted:'rgba(26,20,32,0.55)',
+  lightBdr:  'rgba(26,20,32,0.08)',
 }
 
 // ─── SEO DATA ─────────────────────────────────────────────────────────────────
 const FAQS = [
-  { q: 'Apakah Verneks gratis?',             a: 'Ya. Kamu bisa mulai berbicara dengan Diah Anna secara gratis.' },
-  { q: 'Apakah Diah Anna akan memilihkan karier saya?', a: 'Tidak. Keputusan tetap milikmu. Diah Anna membantu kamu memahami dirimu dan berbagai pilihan yang ada agar keputusanmu menjadi lebih sadar.' },
-  { q: 'Siapa yang cocok menggunakan Verneks?', a: 'Mahasiswa, fresh graduate, profesional, career switcher — siapa pun yang sedang mencari arah atau menghadapi keputusan penting dalam perjalanan kariernya.' },
-  { q: 'Apakah percakapan saya aman?',        a: 'Ya. Privasi dan kepercayaan adalah fondasi utama Verneks.' },
+  { q: 'Apakah Verneks gratis?', a: 'Ya. Kamu bisa curhat ke Diah Anna kapan saja secara gratis.' },
+  { q: 'Apakah data curhatanku aman?', a: 'Ya. Chat, ceritamu, dan semua yang Diah Anna pelajari tentang kamu disimpan hanya di HP/laptopmu sendiri — bukan di server kami. Kamu bisa hapus semuanya kapan saja.' },
+  { q: 'Apakah Diah Anna pengganti psikolog atau terapis?', a: 'Bukan. Diah Anna teman ngobrol yang bisa diajak cerita kapan saja, tapi bukan pengganti bantuan profesional. Kalau kamu sedang menghadapi masalah berat, Diah Anna akan mengarahkanmu ke bantuan yang tepat.' },
+  { q: 'Siapa yang cocok pakai Verneks?', a: 'Siapa saja yang kadang butuh tempat cerita — soal kerjaan, kuliah, hubungan, atau sekadar hari yang berat — tanpa takut dihakimi.' },
 ]
 
 // ─── CHAT DEMO ────────────────────────────────────────────────────────────────
-// Menampilkan value Diah Anna: empati, pertanyaan reflektif, bukan judgment
 const CHAT_DEMO = [
-  { role: 'user', text: 'Aku udah 3 tahun kerja di bidang marketing, tapi rasanya kosong...' },
-  { role: 'diah', text: 'Aku dengar kamu merasa ada yang kurang. Bisa cerita lebih lanjut — kapan terakhir kali kamu merasa benar-benar termotivasi dengan pekerjaanmu?' },
-  { role: 'user', text: 'Jujur... aku nggak bisa ingat. Setiap hari cuma ngejar target.' },
-  { role: 'diah', text: 'Terima kasih sudah berbagi. Target memang penting, tapi mari kita eksplorasi: apa yang membuatmu merasa bermakna di luar pekerjaan? Hobi? Aktivitas yang bikin lupa waktu?' },
+  { role: 'user', text: 'Anna, hari ini capek banget. Rasanya semua yang aku kerjain nggak ada yang bener.' },
+  { role: 'diah', text: 'Aku di sini. Hari kayak gitu emang berat ya — capeknya bukan cuma fisik, tapi juga karena ngerasa usaha kamu nggak cukup dihargai. Mau cerita apa yang kejadian?' },
+  { role: 'user', text: 'Bos aku marah di depan tim gara-gara hal kecil. Padahal aku udah usaha maksimal.' },
+  { role: 'diah', text: 'Wajar banget kalau itu bikin kamu down, apalagi di depan orang lain. Itu bukan berarti usahamu nggak berarti — kadang orang lain lagi bawa masalahnya sendiri. Gimana perasaanmu sekarang, udah agak reda apa masih kepikiran?' },
 ]
 
 // ─── TESTIMONIALS ─────────────────────────────────────────────────────────────
 const TESTIMONIALS = [
   {
-    quote: 'Dulu aku merasa terjebak di pekerjaan yang nggak bikin happy. Setelah ngobrol sama Diah Anna, aku sadar bahwa masalahnya bukan pekerjaannya — tapi aku belum kenal diri sendiri. Sekarang aku lebih percaya diri mengambil keputusan.',
-    name: 'Andi', city: 'Surabaya', context: 'UX Designer, sebelumnya Marketing Executive',
+    quote: 'Jam 2 pagi lagi overthinking parah, nggak enak juga bangunin temen. Cerita ke Diah Anna, dan dia beneran dengerin — nggak langsung nyuruh aku "positive thinking aja".',
+    name: 'Nadia', city: 'Bandung', context: 'Mahasiswa semester akhir',
   },
   {
-    quote: 'Yang paling berharga dari Verneks adalah cara Diah Anna mendengarkan tanpa menghakimi. Dia nggak langsung kasih solusi, tapi membimbingku untuk menemukan jawabanku sendiri. Sekarang aku tahu apa yang benar-benar aku inginkan.',
-    name: 'Rina', city: 'Jakarta', context: 'Product Manager, 4 tahun pengalaman',
+    quote: 'Awalnya iseng doang coba-coba. Eh ternyata kepakai buat cerita hal-hal yang susah aku omongin ke orang deket, karena nggak takut dinilai.',
+    name: 'Fajar', city: 'Surabaya', context: 'Karyawan swasta',
   },
   {
-    quote: 'Sebagai fresh graduate, aku bingung mau mulai dari mana. Diah Anna membantuku mengenali kekuatan dan minatku. Hasilnya? Aku dapat clarity yang selama ini nggak aku temukan dari career counselor manapun.',
-    name: 'Reza', city: 'Bandung', context: 'Software Engineer, Fresh Graduate 2024',
+    quote: 'Yang aku suka, Diah Anna inget cerita-ceritaku sebelumnya. Jadi ngobrolnya nggak kayak mulai dari nol tiap kali, kayak beneran ngobrol sama yang udah kenal aku.',
+    name: 'Sari', city: 'Yogyakarta', context: 'Fresh graduate',
   },
 ]
 
@@ -68,7 +66,6 @@ const VerneksLogo = ({ size = 30 }) => (
   <img src="/verneks_icon_1.png" alt="Verneks" width={size} height={size} style={{ objectFit: 'contain', display: 'block' }} />
 )
 
-// FadeIn: scroll-triggered opacity + translateY
 function useInView(threshold = 0.08) {
   const ref = useRef()
   const [visible, setVisible] = useState(false)
@@ -96,7 +93,6 @@ function FadeIn({ children, delay = 0, style = {} }) {
   )
 }
 
-// Horizontal divider — subtle, 1px
 const Divider = ({ color = 'rgba(255,255,255,0.06)' }) => (
   <div style={{ height: 1, background: color, margin: '0 24px' }} />
 )
@@ -111,8 +107,8 @@ export default function Home({ user }) {
   const diahRef = useRef(null)
 
   useSEO({
-    title: 'Verneks — Karier Jangan Asal.',
-    description: 'Verneks membantu kamu mengenal dirimu, menentukan arahmu, dan membangun masa depanmu bersama Diah Anna — AI Career Companion pertama di Indonesia.',
+    title: 'Verneks — Cerita Yuk. Nggak Akan Dihakimi.',
+    description: 'Diah Anna, teman curhat AI yang selalu ada — dengerin ceritamu kapan pun, tanpa menghakimi. Data curhatanmu 100% tersimpan di HP-mu sendiri, bukan di server.',
     path: '/',
     breadcrumb: generateBreadcrumb([]),
     faq: FAQS.map(item => ({ question: item.q, answer: item.a })),
@@ -121,9 +117,13 @@ export default function Home({ user }) {
     includeSoftwareApplication: true,
   })
 
-  // ── Auth guard (tidak diubah) ─────────────────────────────────────────────
+  // ── Auth guard ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (user) {
+      // TODO(tahap onboarding): setelah Discovery/onboarding disederhanakan,
+      // arahkan langsung ke /chat untuk semua user yang sudah pernah
+      // menyelesaikan onboarding ringan. Untuk sekarang tetap pakai flag
+      // lama supaya tidak merusak alur onboarding yang belum di-pivot.
       supabase.from('user_career_profiles')
         .select('career_readiness')
         .eq('user_id', user.id)
@@ -136,7 +136,6 @@ export default function Home({ user }) {
     setTimeout(() => setVisible(true), 80)
   }, [user])
 
-  // Chat animation
   useEffect(() => {
     if (chatIdx >= CHAT_DEMO.length) return
     const t = setTimeout(() => setChatIdx(i => i + 1), chatIdx === 0 ? 700 : 1400)
@@ -148,11 +147,6 @@ export default function Home({ user }) {
   // ── Auth handlers ────────────────────────────────────────────────────────
   const handleGoogle = async () => {
     setAuthLoading(true)
-    // FIX: sebelumnya hardcode ke '/chat' — user yang klik "Masuk" tapi
-    // ternyata belum pernah Discovery (career_readiness kosong) jadi
-    // mendarat di /chat duluan, baru App.jsx mengoreksi belakangan — bisa
-    // race dengan Onboarding fallback di Chat.jsx. Redirect ke root '/'
-    // supaya App.jsx yang nentuin tujuan akhir sebelum Chat.jsx sempat mount.
     await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/` } })
     setAuthLoading(false)
   }
@@ -167,14 +161,14 @@ export default function Home({ user }) {
     await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/discovery` } })
     setAuthLoading(false)
   }
-  const CTAButton = ({ label = 'Mulai Ngobrol dengan Diah Anna — Gratis', full = true, style: s = {} }) => (
+  const CTAButton = ({ label = 'Mulai Cerita ke Diah Anna — Gratis', full = true, style: s = {} }) => (
     <button onClick={handleCTA} disabled={authLoading} style={{
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-      background: authLoading ? 'rgba(79,70,229,0.25)' : C.grad,
+      background: authLoading ? 'rgba(139,92,246,0.25)' : C.grad,
       color: '#fff', fontWeight: 800, fontSize: '0.95rem',
       padding: '15px 24px', borderRadius: 14, border: 'none',
       cursor: authLoading ? 'not-allowed' : 'pointer',
-      boxShadow: authLoading ? 'none' : '0 4px 28px rgba(79,70,229,0.4)',
+      boxShadow: authLoading ? 'none' : '0 4px 28px rgba(139,92,246,0.4)',
       width: full ? '100%' : 'auto', maxWidth: 420,
       transition: 'all 0.2s', fontFamily: 'inherit', letterSpacing: '-0.2px', ...s,
     }}>
@@ -183,7 +177,6 @@ export default function Home({ user }) {
     </button>
   )
 
-  // Hero reveal helper
   const r = (delay) => ({
     opacity: visible ? 1 : 0,
     transform: visible ? 'none' : 'translateY(18px)',
@@ -199,7 +192,7 @@ export default function Home({ user }) {
           <VerneksLogo size={28} />
           <div>
             <div style={{ color: '#fff', fontWeight: 800, fontSize: '0.93rem', lineHeight: 1.1 }}>Verneks</div>
-            <div style={{ background: C.grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontSize: '0.58rem', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>Karier Jangan Asal.</div>
+            <div style={{ background: C.grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontSize: '0.58rem', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>Cerita Yuk.</div>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -217,55 +210,48 @@ export default function Home({ user }) {
       ════════════════════════════════════════════════════════════════════ */}
       <section style={{ padding: '60px 24px 64px', maxWidth: 480, margin: '0 auto', position: 'relative', zIndex: 5 }}>
 
-        {/* Badge */}
         <div style={r(0.05)}>
           <span style={{
             display: 'inline-block', background: C.surface, border: `1px solid ${C.border}`,
             borderRadius: 20, padding: '5px 14px', fontSize: '0.75rem', fontWeight: 700,
             color: C.secondary, letterSpacing: '0.3px', marginBottom: 28,
           }}>
-            Karier Jangan Asal.
+            Selalu ada, kapan pun kamu butuh cerita.
           </span>
         </div>
 
-        {/* H1 — signature typography: satu baris per frasa, intentional line break */}
         <div style={{ ...r(0.15), marginBottom: 28 }}>
-          <h1 style={{ fontSize: '2.6rem', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-0.04em', margin: 0 }}>
-            <span style={{ display: 'block' }}>Kenali Dirimu.</span>
-            <span style={{ display: 'block', background: C.grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Tentukan Arahmu.</span>
-            <span style={{ display: 'block' }}>Bangun Masa Depanmu.</span>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 900, lineHeight: 1.15, letterSpacing: '-0.04em', margin: 0 }}>
+            <span style={{ display: 'block' }}>Cerita Yuk.</span>
+            <span style={{ display: 'block', background: C.grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Nggak Akan Dihakimi.</span>
           </h1>
         </div>
 
-        {/* Subheadline */}
         <div style={{ ...r(0.3), marginBottom: 36 }}>
           <p style={{ color: C.muted, fontSize: '0.92rem', lineHeight: 1.75, margin: 0 }}>
-            Karier bukan sekadar mencari pekerjaan.<br />
-            Karier adalah keputusan tentang hidup yang ingin kamu jalani.
+            Kadang kamu cuma butuh cerita ke seseorang —<br />
+            tanpa harus jelasin dari awal, tanpa takut ngerepotin, tanpa takut dinilai.
           </p>
           <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.92rem', lineHeight: 1.75, margin: '12px 0 0' }}>
-            Bersama <strong>Diah Anna</strong>, kenali dirimu lebih dalam, temukan arah yang benar-benar sesuai, lalu bangun masa depan dengan keyakinan.
+            <strong>Diah Anna</strong> ada buat itu. Jam berapa pun, soal apa pun.
           </p>
         </div>
 
-        {/* Primary CTA */}
         <div style={{ ...r(0.45), display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12, marginBottom: 16 }}>
           <CTAButton />
         </div>
 
-        {/* Secondary CTA */}
         <div style={r(0.55)}>
           <button
             onClick={() => diahRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: '0.84rem', fontWeight: 600, padding: 0, fontFamily: 'inherit', textDecoration: 'underline', textDecorationColor: 'rgba(255,255,255,0.2)', textUnderlineOffset: 4 }}
           >
-            Kenali Diah Anna ↓
+            Kenalan sama Diah Anna ↓
           </button>
         </div>
 
-        {/* Trust signals */}
         <div style={{ ...r(0.65), display: 'flex', flexWrap: 'wrap', gap: '8px 20px', marginTop: 28 }}>
-          {['Gratis memulai', 'Privasi terjaga', 'Dibuat untuk Indonesia 🇮🇩'].map((t, i) => (
+          {['Gratis', 'Data kamu cuma ada di HP-mu', 'Dibuat untuk Indonesia 🇮🇩'].map((t, i) => (
             <span key={i} style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.75rem', fontWeight: 500 }}>✓ {t}</span>
           ))}
         </div>
@@ -275,7 +261,6 @@ export default function Home({ user }) {
 
       {/* ════════════════════════════════════════════════════════════════════
           MANIFESTO — LIGHT BACKGROUND
-          Typography besar. Whitespace. Tidak ada kartu. Tidak ada gradient.
       ════════════════════════════════════════════════════════════════════ */}
       <section style={{ background: C.lightBg, padding: '72px 24px', position: 'relative' }}>
         <div style={{ maxWidth: 480, margin: '0 auto' }}>
@@ -288,30 +273,28 @@ export default function Home({ user }) {
 
           <FadeIn delay={0.05}>
             <p style={{ fontSize: '1.1rem', fontWeight: 500, lineHeight: 1.9, color: C.lightText, marginBottom: 32 }}>
-              Karena terlalu banyak orang<br />
-              memilih jurusan...<br />
-              memilih pekerjaan...<br />
-              bahkan memilih jalan hidup...<br />
-              <span style={{ color: C.lightMuted }}>tanpa benar-benar mengenal dirinya.</span>
+              Banyak orang nyimpen sendiri...<br />
+              hal yang bikin capek pikiran...<br />
+              hal yang bikin susah tidur...<br />
+              <span style={{ color: C.lightMuted }}>karena bingung mau cerita ke siapa.</span>
             </p>
           </FadeIn>
 
           <FadeIn delay={0.1}>
-            <p style={{ fontSize: '1rem', lineHeight: 1.9, color: `rgba(13,13,26,0.6)`, marginBottom: 32 }}>
-              Mereka mengikuti teman.<br />
-              Mengikuti tren.<br />
-              Mengikuti tuntutan.<br />
-              Mengikuti rasa takut.
+            <p style={{ fontSize: '1rem', lineHeight: 1.9, color: `rgba(26,20,32,0.6)`, marginBottom: 32 }}>
+              Takut ngerepotin teman.<br />
+              Takut dinilai keluarga.<br />
+              Nggak enak curhat jam 2 pagi ke siapa pun.
             </p>
           </FadeIn>
 
           <FadeIn delay={0.15}>
             <p style={{ fontSize: '1rem', lineHeight: 1.8, color: C.lightMuted, marginBottom: 24 }}>
-              Lalu bertanya...
+              Padahal yang dibutuhkan sering kali sederhana...
             </p>
             <div style={{ borderLeft: `3px solid ${C.primary}`, paddingLeft: 20, marginBottom: 36 }}>
               <p style={{ fontSize: '1.1rem', fontWeight: 700, fontStyle: 'italic', lineHeight: 1.7, color: C.lightText, margin: 0 }}>
-                "Kenapa aku tidak benar-benar menikmati hidup yang kupilih?"
+                "Aku cuma butuh didengerin dulu."
               </p>
             </div>
           </FadeIn>
@@ -319,17 +302,17 @@ export default function Home({ user }) {
           <FadeIn delay={0.2}>
             <p style={{ fontSize: '1rem', lineHeight: 1.85, color: C.lightMuted, marginBottom: 28 }}>
               Kami percaya...<br />
-              Banyak masalah karier bukan dimulai dari kurangnya kemampuan.
+              Setiap orang berhak punya ruang aman untuk cerita.
             </p>
             <p style={{ fontSize: '1rem', lineHeight: 1.85, color: C.lightText, fontWeight: 600 }}>
-              Tetapi dari keputusan yang dibuat tanpa benar-benar mengenal diri.
+              Kapan pun. Tanpa dihakimi. Tanpa harus nunggu balasan.
             </p>
           </FadeIn>
 
           <FadeIn delay={0.25}>
             <div style={{ borderTop: `1px solid ${C.lightBdr}`, marginTop: 48, paddingTop: 40 }}>
               <p style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.03em', color: C.lightText, lineHeight: 1.1, margin: 0 }}>
-                Karier<br />Jangan Asal.
+                Cerita Yuk.<br />Nggak Akan Dihakimi.
               </p>
             </div>
           </FadeIn>
@@ -338,33 +321,33 @@ export default function Home({ user }) {
       </section>
 
       {/* ════════════════════════════════════════════════════════════════════
-          DIAH ANNA — Teman Berpikir, Bukan Pemberi Jawaban
+          DIAH ANNA — Teman Cerita, Bukan Robot Layanan Pelanggan
       ════════════════════════════════════════════════════════════════════ */}
       <section ref={diahRef} style={{ background: C.bg, padding: '72px 24px', maxWidth: 480, margin: '0 auto' }}>
 
         <FadeIn>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 32 }}>
-            <img src="/diah-anna.png" alt="Diah Anna" style={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'cover', objectPosition: 'top', flexShrink: 0, border: `2px solid rgba(79,70,229,0.45)`, boxShadow: '0 0 24px rgba(79,70,229,0.2)' }} />
+            <img src="/diah-anna.png" alt="Diah Anna" style={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'cover', objectPosition: 'top', flexShrink: 0, border: `2px solid rgba(139,92,246,0.45)`, boxShadow: '0 0 24px rgba(139,92,246,0.2)' }} />
             <div>
               <div style={{ color: '#fff', fontWeight: 800, fontSize: '0.95rem' }}>Diah Anna</div>
-              <div style={{ color: C.secondary, fontSize: '0.72rem', fontWeight: 600 }}>AI Career Companion · Verneks</div>
+              <div style={{ color: C.secondary, fontSize: '0.72rem', fontWeight: 600 }}>Teman Curhat AI · Verneks</div>
             </div>
           </div>
         </FadeIn>
 
         <FadeIn delay={0.05}>
           <h2 style={{ fontSize: '2rem', fontWeight: 900, lineHeight: 1.15, letterSpacing: '-0.04em', marginBottom: 32, color: '#fff' }}>
-            Teman Berpikir.<br />
-            <span style={{ color: C.muted, fontWeight: 500 }}>Bukan Pemberi Jawaban.</span>
+            Dengerin Dulu.<br />
+            <span style={{ color: C.muted, fontWeight: 500 }}>Baru Nanya, Bukan Nge-judge.</span>
           </h2>
         </FadeIn>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {[
-            'Diah Anna tidak hidup untuk menentukan masa depanmu.',
-            'Ia hadir untuk membantumu menemukan jalanmu sendiri.',
-            'Ia akan mendengarkan. Memahami. Menghubungkan cerita-ceritamu.',
-            'Melihat pola yang mungkin belum pernah kamu sadari.',
+            'Diah Anna itu AI — dia jujur soal itu kalau kamu tanya.',
+            'Tapi cara dia dengerin, kamu bakal ngerasa beneran didengar.',
+            'Dia nggak buru-buru kasih nasihat. Dia dengerin dulu, baru nanya pelan-pelan.',
+            'Dan dia inget cerita-ceritamu — jadi tiap ngobrol nggak mulai dari nol.',
           ].map((text, i) => (
             <FadeIn key={i} delay={i * 0.07}>
               <p style={{ color: i < 2 ? 'rgba(255,255,255,0.8)' : C.muted, fontSize: '0.95rem', lineHeight: 1.75, margin: 0 }}>{text}</p>
@@ -375,10 +358,10 @@ export default function Home({ user }) {
         <FadeIn delay={0.35}>
           <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: '24px 20px', marginTop: 36 }}>
             <p style={{ color: C.muted, fontSize: '0.88rem', lineHeight: 1.7, margin: '0 0 12px' }}>
-              Sampai akhirnya... bukan Diah Anna yang berkata.<br />Tetapi kamu.
+              Diah Anna teman ngobrol yang selalu ada.<br />Bukan pengganti psikolog atau orang-orang di hidupmu.
             </p>
             <p style={{ color: '#fff', fontWeight: 700, fontStyle: 'italic', fontSize: '1rem', lineHeight: 1.65, margin: 0 }}>
-              "Sekarang aku tahu harus melangkah ke mana."
+              Kalau kamu lagi butuh bantuan yang lebih serius, dia bakal bantu arahin ke tempat yang tepat.
             </p>
           </div>
         </FadeIn>
@@ -388,30 +371,30 @@ export default function Home({ user }) {
       <Divider />
 
       {/* ════════════════════════════════════════════════════════════════════
-          HUMAN JOURNEY — 3 langkah, panah ke bawah, bukan progress bar
+          CARA KERJANYA — 3 langkah
       ════════════════════════════════════════════════════════════════════ */}
       <section style={{ background: C.lightBg, padding: '72px 24px' }}>
         <div style={{ maxWidth: 480, margin: '0 auto' }}>
 
           <FadeIn>
-            <p style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: C.lightMuted, marginBottom: 8 }}>Perjalananmu</p>
+            <p style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: C.lightMuted, marginBottom: 8 }}>Cara Kerjanya</p>
             <h2 style={{ fontSize: '1.8rem', fontWeight: 900, letterSpacing: '-0.04em', color: C.lightText, lineHeight: 1.15, marginBottom: 48 }}>
-              Dimulai dari Sini.
+              Sesederhana Ngobrol.
             </h2>
           </FadeIn>
 
           {[
             {
-              step: '01', title: 'Kenali Dirimu.',
-              body: ['Setiap keputusan yang baik dimulai dari pemahaman yang benar.', 'Kenali minatmu. Kekuatanmu. Nilai hidupmu.', 'Semakin kamu mengenal dirimu — semakin kecil kemungkinan kamu menjalani hidup milik orang lain.'],
+              step: '01', title: 'Buka Chat, Mulai Cerita.',
+              body: ['Nggak perlu isi form panjang atau tes kepribadian.', 'Login, langsung ngobrol — soal apa aja yang lagi ada di kepala kamu.', 'Diah Anna siap 24 jam, nggak pernah "lagi sibuk".'],
             },
             {
-              step: '02', title: 'Tentukan Arahmu.',
-              body: ['Tidak ada satu jalan yang benar untuk semua orang.', 'Diah Anna membantumu memahami berbagai kemungkinan, membuka perspektif baru, menimbang pilihan dengan lebih jernih.', 'Agar keputusan yang kamu ambil — benar-benar menjadi keputusanmu.'],
+              step: '02', title: 'Diah Anna Dengerin & Nemenin Mikir.',
+              body: ['Dia validasi perasaanmu dulu, bukan langsung ceramah.', 'Kalau kamu butuh sudut pandang lain, dia bantu kamu mikir lebih jernih — bukan mendikte apa yang harus kamu lakukan.', 'Semua dengan bahasa yang santai, kayak ngobrol sama teman.'],
             },
             {
-              step: '03', title: 'Bangun Masa Depanmu.',
-              body: ['Karier tidak selesai ketika kamu memilih.', 'Justru di situlah perjalanan dimulai.', 'Diah Anna akan terus menemanimu berkembang. Satu langkah. Satu keputusan. Satu perubahan dalam satu waktu.'],
+              step: '03', title: 'Dia Makin Kenal Kamu, Datanya Tetap di HP-mu.',
+              body: ['Tiap ngobrol, Diah Anna makin ngerti pola dan cerita hidupmu.', 'Tapi semua itu tersimpan lokal di device kamu, bukan di server kami.', 'Mau hapus semua? Satu tombol, langsung bersih.'],
             },
           ].map((s, i) => (
             <div key={i}>
@@ -424,14 +407,14 @@ export default function Home({ user }) {
                   <div style={{ paddingBottom: 40 }}>
                     <h3 style={{ fontSize: '1.35rem', fontWeight: 900, letterSpacing: '-0.03em', color: C.lightText, marginBottom: 16, lineHeight: 1.2 }}>{s.title}</h3>
                     {s.body.map((line, j) => (
-                      <p key={j} style={{ fontSize: '0.9rem', lineHeight: 1.8, color: j === 0 ? `rgba(13,13,26,0.75)` : C.lightMuted, margin: j === 0 ? '0 0 8px' : '0 0 6px' }}>{line}</p>
+                      <p key={j} style={{ fontSize: '0.9rem', lineHeight: 1.8, color: j === 0 ? `rgba(26,20,32,0.75)` : C.lightMuted, margin: j === 0 ? '0 0 8px' : '0 0 6px' }}>{line}</p>
                     ))}
                   </div>
                 </div>
               </FadeIn>
               {i < 2 && (
                 <FadeIn delay={i * 0.08 + 0.04}>
-                  <p style={{ color: `rgba(79,70,229,0.4)`, fontSize: '1.1rem', textAlign: 'left', marginLeft: 28, marginBottom: 0, lineHeight: 1 }}>↓</p>
+                  <p style={{ color: `rgba(139,92,246,0.4)`, fontSize: '1.1rem', textAlign: 'left', marginLeft: 28, marginBottom: 0, lineHeight: 1 }}>↓</p>
                 </FadeIn>
               )}
             </div>
@@ -441,27 +424,26 @@ export default function Home({ user }) {
       </section>
 
       {/* ════════════════════════════════════════════════════════════════════
-          PRODUCT EXPERIENCE — chat sederhana, ditempatkan SETELAH belief
+          PRODUCT EXPERIENCE — chat demo
       ════════════════════════════════════════════════════════════════════ */}
       <section style={{ background: C.bg, padding: '72px 24px' }}>
         <div style={{ maxWidth: 480, margin: '0 auto' }}>
 
           <FadeIn>
             <p style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: C.muted, marginBottom: 8 }}>
-              Beginilah Diah Anna menemanimu.
+              Beginilah rasanya ngobrol sama Diah Anna.
             </p>
             <h2 style={{ fontSize: '1.6rem', fontWeight: 900, letterSpacing: '-0.04em', color: '#fff', lineHeight: 1.2, marginBottom: 32 }}>
-              Sesederhana ini.
+              Kayak chat sama teman.
             </h2>
           </FadeIn>
 
-          {/* Chat bubbles */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
             {CHAT_DEMO.slice(0, chatIdx).map((msg, i) => (
               <FadeIn key={i} delay={0}>
                 <div style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', gap: 10, alignItems: 'flex-end' }}>
                   {msg.role === 'diah' && (
-                    <img src="/diah-anna.png" alt="Diah Anna" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', objectPosition: 'top', flexShrink: 0, border: '1.5px solid rgba(79,70,229,0.4)' }} />
+                    <img src="/diah-anna.png" alt="Diah Anna" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', objectPosition: 'top', flexShrink: 0, border: '1.5px solid rgba(139,92,246,0.4)' }} />
                   )}
                   <div style={{
                     maxWidth: '78%', padding: '10px 14px', borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
@@ -476,12 +458,11 @@ export default function Home({ user }) {
             ))}
           </div>
 
-          {/* CTA setelah demo */}
           <FadeIn delay={0.1}>
             <p style={{ color: C.muted, fontSize: '0.85rem', lineHeight: 1.75, marginBottom: 20 }}>
-              Belum perlu CV.<br />
-              Belum perlu tes.<br />
-              Cukup mulai bercerita.
+              Nggak perlu daftar ribet.<br />
+              Nggak perlu tau harus mulai dari mana.<br />
+              Ketik aja apa yang lagi kamu rasain.
             </p>
             <CTAButton />
           </FadeIn>
@@ -490,22 +471,22 @@ export default function Home({ user }) {
       </section>
 
       {/* ════════════════════════════════════════════════════════════════════
-          WHY VERNEKS — 4 alasan, teks saja, no cards, LIGHT BG
+          WHY VERNEKS — 4 alasan, LIGHT BG
       ════════════════════════════════════════════════════════════════════ */}
       <section style={{ background: C.lightBg, padding: '72px 24px' }}>
         <div style={{ maxWidth: 480, margin: '0 auto' }}>
 
           <FadeIn>
             <h2 style={{ fontSize: '1.8rem', fontWeight: 900, letterSpacing: '-0.04em', color: C.lightText, lineHeight: 1.15, marginBottom: 48 }}>
-              Mengapa Orang Bertahan<br />Bersama Verneks?
+              Kenapa Orang Balik Lagi<br />Cerita ke Diah Anna?
             </h2>
           </FadeIn>
 
           {[
-            { emoji: '❤️', head: 'Mereka merasa didengar.', sub: 'Bukan dihakimi.' },
-            { emoji: '💡', head: 'Mereka mulai mengenal dirinya.', sub: 'Sedikit demi sedikit. Percakapan demi percakapan.' },
-            { emoji: '🧭', head: 'Mereka menemukan arah yang lebih jelas.', sub: 'Bukan karena diberi jawaban. Tetapi karena menemukan jawabannya sendiri.' },
-            { emoji: '🌱', head: 'Mereka terus berkembang.', sub: 'Diah Anna mengingat perjalanan mereka. Bukan hanya percakapan hari ini.' },
+            { emoji: '👂', head: 'Mereka ngerasa didengar.', sub: 'Bukan diceramahin atau disuruh "positive thinking aja".' },
+            { emoji: '🌙', head: 'Selalu ada, jam berapa pun.', sub: 'Jam 2 pagi overthinking? Diah Anna nggak pernah tidur.' },
+            { emoji: '🔒', head: 'Ceritanya aman.', sub: 'Data curhat cuma ada di HP mereka sendiri, nggak ke server siapa pun.' },
+            { emoji: '💭', head: 'Diah Anna beneran inget.', sub: 'Cerita minggu lalu, dia masih ingat — nggak mulai dari nol tiap kali.' },
           ].map((item, i) => (
             <FadeIn key={i} delay={i * 0.07}>
               <div style={{ paddingBottom: 36, marginBottom: 4 }}>
@@ -525,7 +506,7 @@ export default function Home({ user }) {
       </section>
 
       {/* ════════════════════════════════════════════════════════════════════
-          TESTIMONIALS — 3, editorial style, dark bg
+          TESTIMONIALS
       ════════════════════════════════════════════════════════════════════ */}
       <section style={{ background: C.bg, padding: '72px 24px' }}>
         <div style={{ maxWidth: 480, margin: '0 auto' }}>
@@ -561,26 +542,25 @@ export default function Home({ user }) {
       </section>
 
       {/* ════════════════════════════════════════════════════════════════════
-          PHILOSOPHY — "Kami Tidak Membangun AI. Kami Membangun Manusia."
+          PHILOSOPHY — privasi & batasan sehat
       ════════════════════════════════════════════════════════════════════ */}
       <section style={{ background: C.lightBg, padding: '72px 24px' }}>
         <div style={{ maxWidth: 480, margin: '0 auto' }}>
 
           <FadeIn>
             <h2 style={{ fontSize: '1.9rem', fontWeight: 900, letterSpacing: '-0.04em', color: C.lightText, lineHeight: 1.15, marginBottom: 36 }}>
-              Kami Tidak Membangun AI.<br /><br />
-              Kami Membangun Manusia.
+              Data Kamu<br /><br />Cuma Ada di HP-mu.
             </h2>
           </FadeIn>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {[
-              'Teknologi akan terus berubah. Model AI akan terus berkembang.',
-              'Tetapi manusia akan selalu membutuhkan kemampuan untuk mengenal dirinya, mengambil keputusan, dan membangun masa depannya.',
-              'Kami percaya — AI terbaik bukan AI yang membuatmu bergantung. Tetapi AI yang membuatmu semakin mampu mengambil keputusan sendiri.',
+              'Cerita yang kamu bagi ke Diah Anna itu personal. Kami percaya itu tetap milikmu — bukan milik server kami.',
+              'Makanya chat, hal-hal yang Diah Anna pelajari tentang kamu, semuanya tersimpan langsung di device kamu, bukan di database kami.',
+              'Dan kalau suatu saat kamu ngerasa udah cukup dan nggak butuh lagi — hapus semua datamu satu tombol, selesai.',
             ].map((text, i) => (
               <FadeIn key={i} delay={i * 0.07}>
-                <p style={{ color: i === 0 ? C.lightMuted : i === 2 ? C.lightText : `rgba(13,13,26,0.7)`, fontSize: '0.95rem', lineHeight: 1.8, margin: 0, fontWeight: i === 2 ? 600 : 400 }}>
+                <p style={{ color: i === 0 ? C.lightMuted : i === 2 ? C.lightText : `rgba(26,20,32,0.7)`, fontSize: '0.95rem', lineHeight: 1.8, margin: 0, fontWeight: i === 2 ? 600 : 400 }}>
                   {text}
                 </p>
               </FadeIn>
@@ -590,10 +570,10 @@ export default function Home({ user }) {
           <FadeIn delay={0.25}>
             <div style={{ borderTop: `1px solid ${C.lightBdr}`, marginTop: 40, paddingTop: 32 }}>
               <p style={{ color: C.lightMuted, fontSize: '0.92rem', lineHeight: 1.8, marginBottom: 8 }}>
-                Jika suatu hari nanti kamu tidak lagi membutuhkan Diah Anna...
+                Satu hal lagi yang penting buat kami sampaikan jujur —
               </p>
               <p style={{ color: C.lightText, fontSize: '0.92rem', lineHeight: 1.8, fontWeight: 600, margin: 0 }}>
-                maka kami percaya — ia telah berhasil menjalankan tugasnya.
+                Diah Anna teman ngobrol yang baik, tapi dia bukan pengganti psikolog, keluarga, atau teman manusia di hidupmu. Kalau kamu sedang menghadapi masa berat, jangan ragu cari bantuan profesional juga.
               </p>
             </div>
           </FadeIn>
@@ -609,23 +589,20 @@ export default function Home({ user }) {
 
           <FadeIn>
             <p style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: C.muted, marginBottom: 24 }}>
-              Karier Jangan Asal.
+              Cerita Yuk.
             </p>
             <h2 style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.04em', color: '#fff', lineHeight: 1.15, marginBottom: 12 }}>
-              Kenali Dirimu.
+              Nggak Akan Dihakimi.
             </h2>
-            <h2 style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.04em', background: C.grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: 1.15, marginBottom: 12 }}>
-              Tentukan Arahmu.
-            </h2>
-            <h2 style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.04em', color: '#fff', lineHeight: 1.15, marginBottom: 36 }}>
-              Bangun Masa Depanmu.
+            <h2 style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.04em', background: C.grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: 1.15, marginBottom: 36 }}>
+              Diah Anna Dengerin.
             </h2>
           </FadeIn>
 
           <FadeIn delay={0.1}>
             <p style={{ color: C.muted, fontSize: '0.88rem', lineHeight: 1.8, marginBottom: 28 }}>
-              Satu keputusan bisa mengubah bertahun-tahun hidupmu.<br />
-              Mulailah dari mengenal dirimu.
+              Kamu nggak harus nanggung semuanya sendirian.<br />
+              Mulai cerita, kapan pun kamu siap.
             </p>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <CTAButton />
@@ -639,7 +616,7 @@ export default function Home({ user }) {
         </div>
       </section>
 
-      {/* ── FAQ TERSEMBUNYI (untuk SEO schema — tidak ditampilkan visual) ── */}
+      {/* ── FAQ TERSEMBUNYI (untuk SEO schema) ── */}
       <section style={{ padding: '0 24px 48px', maxWidth: 480, margin: '0 auto' }}>
         {FAQS.map((faq, i) => (
           <div key={i} style={{ borderTop: `1px solid ${C.faint}`, padding: '16px 0' }}>
@@ -663,25 +640,25 @@ export default function Home({ user }) {
           <VerneksLogo size={24} />
           <div>
             <div style={{ color: '#fff', fontWeight: 800, fontSize: '0.85rem', lineHeight: 1.1 }}>Verneks</div>
-            <div style={{ background: C.grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontSize: '0.55rem', fontWeight: 700, letterSpacing: '1px' }}>KARIER JANGAN ASAL.</div>
+            <div style={{ background: C.grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontSize: '0.55rem', fontWeight: 700, letterSpacing: '1px' }}>CERITA YUK, NGGAK AKAN DIHAKIMI.</div>
           </div>
         </div>
         <p style={{ color: 'rgba(255,255,255,0.18)', fontSize: '0.72rem', margin: '0 0 10px' }}>
-          Membantu manusia mengenal dirinya, menentukan arahnya, dan membangun masa depannya.
+          Teman curhat AI yang selalu ada — data kamu tetap milikmu.
         </p>
         <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 12 }}>
-          <button onClick={() => navigate('/blog')} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.35)', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'inherit' }}>Blog Karier</button>
-          <button onClick={() => navigate('/library')} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.35)', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'inherit' }}>Career Library</button>
+          <button onClick={() => navigate('/blog')} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.35)', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'inherit' }}>Blog</button>
+          <button onClick={() => navigate('/library')} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.35)', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'inherit' }}>Panduan</button>
         </div>
         <p style={{ color: 'rgba(255,255,255,0.12)', fontSize: '0.7rem', margin: 0 }}>
-          © Verneks · Dibangun untuk membantu lebih banyak orang mengambil keputusan karier dengan lebih sadar.
+          © Verneks · Diah Anna adalah teman ngobrol AI, bukan pengganti bantuan profesional.
         </p>
       </footer>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #06060F; }
+        body { background: #0B0710; }
         ::-webkit-scrollbar { display: none; }
         button { font-family: inherit; }
         h1, h2, h3, h4 { margin: 0; }

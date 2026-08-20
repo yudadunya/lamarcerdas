@@ -22,10 +22,10 @@ const Logo = () => (
 )
 
 const CATEGORY_COLORS = {
-  'Tips CV':   { color: '#34B7F1', bg: 'rgba(52,183,241,0.12)' },
-  'Interview': { color: '#FFB74D', bg: 'rgba(255,183,77,0.12)' },
-  'Karir':     { color: '#25D366', bg: 'rgba(37,211,102,0.12)' },
-  'LinkedIn':  { color: '#F48FB1', bg: 'rgba(244,143,177,0.12)' },
+  'Overthinking':      { color: '#34B7F1', bg: 'rgba(52,183,241,0.12)' },
+  'Kesehatan Mental':  { color: '#FFB74D', bg: 'rgba(255,183,77,0.12)' },
+  'Hubungan':          { color: '#F48FB1', bg: 'rgba(244,143,177,0.12)' },
+  'Self-Care':         { color: '#25D366', bg: 'rgba(37,211,102,0.12)' },
 }
 
 function formatDate(dateStr) {
@@ -359,9 +359,9 @@ export default function BlogPost({ user }) {
         {/* CTA */}
         <div style={{ marginTop: 24, background: 'rgba(37,211,102,0.06)', border: '1px solid rgba(37,211,102,0.15)', borderRadius: 20, padding: '24px 20px', textAlign: 'center' }}>
           <div style={{ fontSize: '1.8rem', marginBottom: 8 }}>💙</div>
-          <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '1.1rem', marginBottom: 8, letterSpacing: '-0.3px' }}>Siap terapkan tipsnya?</h2>
+          <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '1.1rem', marginBottom: 8, letterSpacing: '-0.3px' }}>Masih kepikiran soal ini?</h2>
           <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.82rem', marginBottom: 18, lineHeight: 1.5 }}>
-            Diah Anna siap bantu kamu langkah demi langkah — analisis CV, mock interview, atau sekedar ngobrol soal karir.
+            Kamu nggak harus mikirin ini sendirian. Cerita ke Diah Anna, dengerin dulu baru dikasih sudut pandang lain.
           </p>
           <button onClick={() => navigate(user ? '/chat' : '/login')} style={{ width: '100%', background: '#25D366', color: '#fff', border: 'none', borderRadius: 14, padding: 14, fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer', letterSpacing: '-0.2px' }}>
             {user ? 'Ngobrol dengan Diah Anna →' : 'Coba Gratis Sekarang →'}

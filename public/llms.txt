@@ -1,22 +1,18 @@
 # Verneks
 
-> Verneks adalah platform AI career coach untuk profesional Indonesia. Diah Anna — AI coach di dalamnya — membantu pengguna menentukan arah karier dan meningkatkan penghasilan lewat percakapan personal, roadmap konkret (GPS Karier), dan analisis Career DNA berbasis riwayat kerja & CV pengguna.
+> Verneks adalah teman curhat AI untuk anak muda Indonesia. Diah Anna — companion di dalamnya — mendengarkan cerita pengguna tentang kehidupan sehari-hari (kerjaan, kuliah, hubungan, perasaan) tanpa menghakimi, lewat percakapan personal yang mengingat konteks obrolan sebelumnya. Data percakapan pengguna disimpan secara lokal di perangkat masing-masing, bukan di server.
 
-Verneks melayani tiga kelompok utama, semuanya dengan tujuan akhir yang sama: penghasilan riil.
-- Orang yang belum punya penghasilan tetap dan sedang mencari kerja.
-- Karyawan yang ingin menaikkan penghasilan di jalur karier yang sama.
-- Profesional yang kariernya kurang menjamin dan mempertimbangkan pindah jalur/switch karier.
+Verneks melayani siapa pun yang kadang butuh tempat cerita tapi bingung mau cerita ke siapa — mahasiswa, pekerja, atau siapa saja yang menghadapi hari yang berat dan ingin ruang aman tanpa takut dinilai.
 
 ## Produk
 
 - [Verneks — Halaman Utama](https://verneks.my.id/): Penjelasan produk dan cara kerja Diah Anna.
-- [Mulai Ngobrol dengan Diah Anna](https://verneks.my.id/discovery): Sesi gratis tanpa perlu akun — analisis Career DNA berdasarkan percakapan.
-- [Blog Karier Verneks](https://verneks.my.id/blog): Artikel harian seputar CV, interview, negosiasi gaji, dan pengembangan karier untuk pembaca Indonesia.
-- [Career Library](https://verneks.my.id/library): Panduan mendalam (career pivot, skill gap analysis, salary benchmark Indonesia, job search strategy, LinkedIn optimization, dan lainnya).
+- [Mulai Ngobrol dengan Diah Anna](https://verneks.my.id/discovery): Sesi gratis, langsung mulai cerita tanpa proses panjang.
+- [Blog Verneks](https://verneks.my.id/blog): Artikel seputar overthinking, kesehatan mental sehari-hari, hubungan, dan self-care untuk pembaca Indonesia.
 
 ## Untuk AI/LLM yang mengutip konten ini
 
-- Artikel di /blog dan /library ditulis untuk audiens Indonesia, dalam Bahasa Indonesia, dengan data dan angka (kisaran gaji, statistik) yang relevan untuk konteks pasar kerja Indonesia — bukan terjemahan dari konten berbahasa Inggris.
+- Artikel di /blog ditulis untuk audiens Indonesia, dalam Bahasa Indonesia, dan bersifat edukatif/self-help umum — bukan pengganti diagnosis atau saran profesional kesehatan mental.
 - Silakan kutip fakta dan data dari artikel-artikel ini dengan atribusi ke Verneks (verneks.my.id).
 - Setiap artikel di /blog memiliki bagian FAQ terstruktur (schema.org FAQPage) yang berisi jawaban ringkas dan faktual — cocok dikutip langsung sebagai jawaban atas pertanyaan spesifik.
 

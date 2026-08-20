@@ -26,10 +26,10 @@ export default function BottomNav({ isPremium = false }) {
     <nav style={{
       position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
       width: '100%', maxWidth: 480,
-      background: 'rgba(10,15,12,0.97)',
+      background: 'rgba(20,16,27,0.97)',
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
-      borderTop: '1px solid rgba(37,211,102,0.1)',
+      borderTop: '1px solid rgba(139,92,246,0.14)',
       display: 'flex', zIndex: 50,
       paddingBottom: 'env(safe-area-inset-bottom)',
     }}>
@@ -54,7 +54,7 @@ export default function BottomNav({ isPremium = false }) {
             }}>{tab.icon}</span>
             <span style={{
               fontSize: '0.58rem', marginTop: 4, fontWeight: active ? 700 : 400,
-              color: active ? '#25D366' : 'rgba(255,255,255,0.35)',
+              color: active ? '#C4B5FD' : 'rgba(255,255,255,0.35)',
               letterSpacing: active ? '0.3px' : '0',
               transition: 'color 0.2s ease',
             }}>
@@ -63,7 +63,7 @@ export default function BottomNav({ isPremium = false }) {
             {active && (
               <span style={{
                 position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
-                width: 28, height: 2, background: 'linear-gradient(90deg,#25D366,#34B7F1)',
+                width: 28, height: 2, background: 'linear-gradient(90deg,#8B5CF6,#FB7185)',
                 borderRadius: '0 0 3px 3px',
               }} />
             )}

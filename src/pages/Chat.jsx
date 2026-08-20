@@ -8,10 +8,10 @@ import BottomNav from '../components/BottomNav'
 function renderMd(text) {
   if (!text) return ''
   return text
-    .replace(/^## (.+)$/gm, '<div style="font-weight:700;font-size:0.9rem;margin:10px 0 3px;color:#111">$1</div>')
-    .replace(/^### (.+)$/gm, '<div style="font-weight:600;font-size:0.85rem;margin:8px 0 2px;color:#333">$1</div>')
-    .replace(/\*\*(.+?)\*\"/g, '<strong>$1</strong>')
-    .replace(/- (.+)$/gm, '<div style="padding:2px 0 2px 14px;position:relative"><span style="position:absolute;left:4px;color:var(--wa-green)">•</span>$1</div>')
+    .replace(/^## (.+)$/gm, '<div style="font-weight:700;font-size:0.92rem;margin:10px 0 3px;color:#fff">$1</div>')
+    .replace(/^### (.+)$/gm, '<div style="font-weight:600;font-size:0.87rem;margin:8px 0 2px;color:rgba(255,255,255,0.9)">$1</div>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/- (.+)$/gm, '<div style="padding:2px 0 2px 14px;position:relative"><span style="position:absolute;left:4px;color:#C4B5FD">•</span>$1</div>')
     .replace(/^\d+\. (.+)$/gm, '<div style="padding:2px 0 2px 14px;position:relative">$1</div>')
     .replace(/\n{2,}/g, '<br><br>')
     .replace(/\n/g, '<br>')
@@ -84,6 +84,28 @@ const DEFAULT_SUBSCRIPTION = {
   getDaysRemaining: () => null,
 }
 
+// ── Diah Anna design tokens — dipakai khusus di halaman Chat, tidak
+// bergantung ke variabel --wa-* lama (yang masih dipakai halaman lain) supaya
+// redesign ini nggak nyebar tak terduga ke bagian app yang belum di-pivot.
+const DA = {
+  chatBg:        '#14101B',
+  chatBgImage:   'radial-gradient(circle at 15% 0%, rgba(139,92,246,0.10) 0%, transparent 45%), radial-gradient(circle at 85% 100%, rgba(251,113,133,0.08) 0%, transparent 45%)',
+  headerBg:      'rgba(20,16,27,0.92)',
+  headerBorder:  'rgba(255,255,255,0.08)',
+  headerSub:     'rgba(255,255,255,0.5)',
+  avatarRing:    'rgba(139,92,246,0.55)',
+  avatarGlow:    'rgba(139,92,246,0.35)',
+  bubbleUser:    'linear-gradient(135deg, #8B5CF6 0%, #FB7185 100%)',
+  bubbleBot:     'rgba(255,255,255,0.06)',
+  bubbleBotBorder: 'rgba(255,255,255,0.08)',
+  bubbleBotText: 'rgba(255,255,255,0.92)',
+  inputBarBg:    'rgba(20,16,27,0.96)',
+  inputBg:       'rgba(255,255,255,0.07)',
+  inputBorder:   'rgba(255,255,255,0.12)',
+  sendGrad:      'linear-gradient(135deg, #8B5CF6 0%, #FB7185 100%)',
+}
+
+
 // NOTE: getNextFocus() dihapus dari sini.
 // Single source of truth sekarang adalah api/career-coach.js (action: 'init-chat'),
 // supaya prioritas next-focus tidak pernah drift antara client dan server.
@@ -123,8 +145,8 @@ function RedeemCodeModal({ userId, onClose }) {
       <div style={{
         position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
         width: '100%', maxWidth: 480,
-        background: '#0d1710',
-        border: '1px solid rgba(37,211,102,0.18)',
+        background: '#14101B',
+        border: '1px solid rgba(139,92,246,0.22)',
         borderRadius: '22px 22px 0 0',
         zIndex: 1001,
         fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -167,7 +189,7 @@ function RedeemCodeModal({ userId, onClose }) {
                   onClick={submit}
                   style={{
                     padding: '12px 18px', borderRadius: 10,
-                    background: redeemCode.length < 12 ? 'rgba(37,211,102,0.2)' : 'linear-gradient(135deg,#25D366,#128C7E)',
+                    background: redeemCode.length < 12 ? 'rgba(139,92,246,0.25)' : 'linear-gradient(135deg,#8B5CF6,#FB7185)',
                     color: '#fff', fontWeight: 700, fontSize: '0.85rem',
                     border: 'none', cursor: redeemCode.length < 12 ? 'not-allowed' : 'pointer',
                     whiteSpace: 'nowrap',
@@ -177,7 +199,7 @@ function RedeemCodeModal({ userId, onClose }) {
                 </button>
               </div>
               {redeemMsg && (
-                <div style={{ marginTop: 10, fontSize: '0.8rem', color: redeemMsg.type === 'ok' ? '#25D366' : '#EF5350', fontWeight: 600 }}>
+                <div style={{ marginTop: 10, fontSize: '0.8rem', color: redeemMsg.type === 'ok' ? '#34D399' : '#EF5350', fontWeight: 600 }}>
                   {redeemMsg.text}
                 </div>
               )}
@@ -185,9 +207,9 @@ function RedeemCodeModal({ userId, onClose }) {
           ) : (
             <div style={{ padding: '4px', textAlign: 'center' }}>
               <div style={{ fontSize: '1.6rem', marginBottom: 6 }}>🎉</div>
-              <div style={{ color: '#25D366', fontWeight: 700, fontSize: '0.95rem' }}>Premium berhasil diaktifkan!</div>
+              <div style={{ color: '#34D399', fontWeight: 700, fontSize: '0.95rem' }}>Premium berhasil diaktifkan!</div>
               <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.78rem', marginTop: 4 }}>Berlaku 30 hari. Refresh halaman untuk mulai.</div>
-              <button onClick={() => window.location.reload()} style={{ marginTop: 12, padding: '10px 22px', borderRadius: 9, background: '#25D366', color: '#fff', fontWeight: 700, fontSize: '0.85rem', border: 'none', cursor: 'pointer' }}>
+              <button onClick={() => window.location.reload()} style={{ marginTop: 12, padding: '10px 22px', borderRadius: 9, background: 'linear-gradient(135deg,#8B5CF6,#FB7185)', color: '#fff', fontWeight: 700, fontSize: '0.85rem', border: 'none', cursor: 'pointer' }}>
                 Refresh Sekarang
               </button>
             </div>
@@ -549,31 +571,47 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
 
   return (
     <>
-    <div ref={containerRef} style={{ position: 'fixed', top: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 480, height: 'calc(100vh - 65px)', display: 'flex', flexDirection: 'column', background: 'var(--wa-chat-bg)', overflow: 'hidden' }}>
+    <div ref={containerRef} style={{
+      position: 'fixed', top: 0, left: '50%', transform: 'translateX(-50%)',
+      width: '100%', maxWidth: 480, height: 'calc(100vh - 65px)',
+      display: 'flex', flexDirection: 'column',
+      background: DA.chatBg, backgroundImage: DA.chatBgImage,
+      overflow: 'hidden',
+    }}>
       {showRedeemModal && <RedeemCodeModal userId={user?.id} onClose={() => setShowRedeemModal(false)} />}
 
-      <div style={{ background: 'var(--wa-header)', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0, zIndex: 10 }}>
-        <img src="/diah-anna.png" alt="Diah Anna" style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid rgba(37,211,102,0.4)' }}/>
+      {/* ── HEADER ─────────────────────────────────────────────────────── */}
+      <div style={{
+        background: DA.headerBg, backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+        borderBottom: `1px solid ${DA.headerBorder}`,
+        padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12,
+        flexShrink: 0, zIndex: 10,
+      }}>
+        <div style={{ position: 'relative', flexShrink: 0 }}>
+          <img src="/diah-anna.png" alt="Diah Anna" style={{
+            width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', objectPosition: 'top',
+            border: `2px solid ${DA.avatarRing}`, boxShadow: `0 0 14px ${DA.avatarGlow}`,
+          }}/>
+          <span style={{
+            position: 'absolute', bottom: 0, right: 0, width: 11, height: 11, borderRadius: '50%',
+            background: '#34D399', border: '2px solid #14101B',
+          }} />
+        </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ color: '#fff', fontWeight: 700, fontSize: '1rem', lineHeight: 1.2, display: 'flex', alignItems: 'center', gap: 5 }}>
+          <div style={{ color: '#fff', fontWeight: 800, fontSize: '0.98rem', lineHeight: 1.2, letterSpacing: '-0.2px' }}>
             Diah Anna
-            <img src="/icons/verified.png" width="16" height="16" alt="verified" style={{ flexShrink: 0, marginTop: 1 }} />
           </div>
-          <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.73rem' }}>Career Companion • aktif memantau</div>
+          <div style={{ color: DA.headerSub, fontSize: '0.72rem', fontWeight: 500 }}>Selalu ada buat dengerin</div>
         </div>
 
         {plan === 'premium' && daysRemaining !== null && (
           <div
             title={daysRemaining <= 7 ? 'Paket Premium kamu akan segera berakhir' : 'Sisa masa aktif Premium'}
             style={{
-              flexShrink: 0,
-              display: 'flex', alignItems: 'center', gap: 4,
-              padding: '5px 10px',
-              borderRadius: 999,
-              fontSize: '0.68rem', fontWeight: 700,
-              color: '#fff',
-              background: daysRemaining <= 7 ? 'rgba(255,159,10,0.22)' : 'rgba(37,211,102,0.18)',
-              border: `1px solid ${daysRemaining <= 7 ? 'rgba(255,159,10,0.55)' : 'rgba(37,211,102,0.4)'}`,
+              flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4,
+              padding: '5px 10px', borderRadius: 999, fontSize: '0.68rem', fontWeight: 700, color: '#fff',
+              background: daysRemaining <= 7 ? 'rgba(251,113,133,0.22)' : 'rgba(139,92,246,0.22)',
+              border: `1px solid ${daysRemaining <= 7 ? 'rgba(251,113,133,0.5)' : 'rgba(139,92,246,0.45)'}`,
               whiteSpace: 'nowrap',
             }}
           >
@@ -586,19 +624,13 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
             onClick={() => setShowRedeemModal(true)}
             title="Sudah punya kode redeem premium? Klik untuk aktivasi"
             style={{
-              flexShrink: 0,
-              display: 'flex', alignItems: 'center', gap: 4,
-              padding: '5px 10px',
-              borderRadius: 999,
-              fontSize: '0.68rem', fontWeight: 700,
-              color: '#fff',
-              background: 'rgba(255,255,255,0.12)',
-              border: '1px solid rgba(255,255,255,0.25)',
-              whiteSpace: 'nowrap',
-              cursor: 'pointer',
+              flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4,
+              padding: '5px 10px', borderRadius: 999, fontSize: '0.68rem', fontWeight: 700, color: '#fff',
+              background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.16)',
+              whiteSpace: 'nowrap', cursor: 'pointer',
             }}
           >
-            🎟️ Sudah punya kode redeem?
+            🎟️ Kode redeem?
           </button>
         )}
       </div>
@@ -607,44 +639,60 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
         <div
           onClick={() => navigate('/pricing')}
           style={{
-            background: 'linear-gradient(90deg,#FFF7E6,#FFEFCF)',
-            borderBottom: '1px solid #F5D28C',
-            padding: '8px 16px',
-            display: 'flex', alignItems: 'center', gap: 8,
+            background: 'linear-gradient(90deg, rgba(251,113,133,0.16), rgba(139,92,246,0.16))',
+            borderBottom: `1px solid ${DA.headerBorder}`,
+            padding: '9px 16px', display: 'flex', alignItems: 'center', gap: 8,
             flexShrink: 0, cursor: 'pointer',
           }}
         >
           <span style={{ fontSize: '1.05rem' }}>⏳</span>
-          <div style={{ flex: 1, fontSize: '0.75rem', color: '#7A4A00', lineHeight: 1.35 }}>
+          <div style={{ flex: 1, fontSize: '0.75rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.35 }}>
             <strong>
               {daysRemaining === 0
                 ? 'Paket Premium kamu habis hari ini.'
                 : `Paket Premium kamu tinggal ${daysRemaining} hari lagi.`}
             </strong>{' '}
-            Perpanjang sekarang biar akses tanpa batas tidak putus.
+            Perpanjang biar akses tetap lancar.
           </div>
-          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--wa-green-dark)', flexShrink: 0 }}>Perpanjang ›</span>
+          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#FB7185', flexShrink: 0 }}>Perpanjang ›</span>
         </div>
       )}
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '10px 10px 4px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+      {/* ── MESSAGES ───────────────────────────────────────────────────── */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 12px 6px', display: 'flex', flexDirection: 'column', gap: 10 }}>
 
         {messages.map(msg => {
           const isUser = msg.role === 'user'
           return (
-          <div key={msg.id} style={{ marginBottom: msg.quickReplies ? 2 : 1 }}>
-            <div style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
-              <div style={{ maxWidth: '82%', background: isUser ? '#DCF8C6' : '#fff', borderRadius: isUser ? '14px 3px 14px 14px' : '3px 14px 14px 14px', padding: '9px 13px 5px', fontSize: '0.875rem', lineHeight: 1.55, boxShadow: '0 1px 2px rgba(0,0,0,0.1)', color: '#111B21', wordBreak: 'break-word' }}>
+          <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start', gap: 8, alignItems: 'flex-end' }}>
+              {!isUser && (
+                <img src="/diah-anna.png" alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover', objectPosition: 'top', flexShrink: 0, opacity: 0.9 }} />
+              )}
+              <div style={{
+                maxWidth: '78%',
+                background: isUser ? DA.bubbleUser : DA.bubbleBot,
+                border: isUser ? 'none' : `1px solid ${DA.bubbleBotBorder}`,
+                borderRadius: isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                padding: '11px 14px', fontSize: '0.9rem', lineHeight: 1.6,
+                boxShadow: isUser ? '0 2px 14px rgba(139,92,246,0.25)' : '0 1px 6px rgba(0,0,0,0.18)',
+                color: isUser ? '#fff' : DA.bubbleBotText,
+                wordBreak: 'break-word',
+              }}>
                 <div dangerouslySetInnerHTML={{ __html: renderMd(msg.text) }} />
               </div>
             </div>
             {msg.quickReplies && (
-              <div style={{ display: 'flex', justifyContent: 'flex-start', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-start', gap: 6, marginLeft: 32, flexWrap: 'wrap' }}>
                 {msg.quickReplies.map((qr, i) => (
                   <button
                     key={i}
-                    onClick={() => { if (qr.action === 'open-income-form') setShowIncomeForm(true) }}
-                    style={{ background: '#fff', border: '1px solid var(--wa-green)', color: 'var(--wa-green-dark)', borderRadius: 999, padding: '6px 14px', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}
+                    onClick={() => { /* qr.action lain ditangani di sini kalau perlu di masa depan */ }}
+                    style={{
+                      background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.4)',
+                      color: '#C4B5FD', borderRadius: 999, padding: '6px 14px',
+                      fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
+                    }}
                   >
                     {qr.label}
                   </button>
@@ -654,19 +702,54 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
           </div>
           )
         })}
-        {loading && <div style={{ background: '#fff', borderRadius: '3px 14px 14px 14px', padding: '12px 16px', width: 60, display: 'flex', gap: 4, marginTop: 4 }}>...</div>}
+
+        {loading && (
+          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+            <img src="/diah-anna.png" alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover', objectPosition: 'top', flexShrink: 0, opacity: 0.9 }} />
+            <div style={{
+              background: DA.bubbleBot, border: `1px solid ${DA.bubbleBotBorder}`,
+              borderRadius: '16px 16px 16px 4px', padding: '13px 16px',
+              display: 'flex', gap: 4, alignItems: 'center',
+            }}>
+              {[0, 1, 2].map(i => (
+                <span key={i} style={{
+                  width: 6, height: 6, borderRadius: '50%', background: 'rgba(255,255,255,0.55)',
+                  animation: `daTypingDot 1.1s ease-in-out ${i * 0.15}s infinite`,
+                }} />
+              ))}
+            </div>
+          </div>
+        )}
         <div ref={bottomRef} style={{ height: 4 }} />
       </div>
 
-      <div style={{ background: '#f0f2f5', padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, borderTop: '1px solid #e0e0e0' }}>
+      {/* ── INPUT BAR ──────────────────────────────────────────────────── */}
+      <div style={{
+        background: DA.inputBarBg, borderTop: `1px solid ${DA.headerBorder}`,
+        padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0,
+      }}>
         <input value={input} onChange={e => setInput(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !loading) { e.preventDefault(); handleSend() } }}
-          placeholder="Ketik progres strategismu..." disabled={loading}
-          style={{ flex: 1, background: '#fff', border: 'none', borderRadius: 24, padding: '10px 16px', fontSize: '0.9rem', outline: 'none' }}
+          placeholder="Cerita aja, aku dengerin..." disabled={loading}
+          style={{
+            flex: 1, background: DA.inputBg, border: `1px solid ${DA.inputBorder}`,
+            borderRadius: 24, padding: '11px 16px', fontSize: '0.9rem', color: '#fff',
+            outline: 'none', fontFamily: 'inherit',
+          }}
         />
         <button onClick={() => handleSend()} disabled={loading || !input.trim()}
-          style={{ width: 38, height: 38, borderRadius: '50%', background: !loading && input.trim() ? '#25D366' : '#ccc', border: 'none', color: '#fff' }}>➤</button>
+          style={{
+            width: 40, height: 40, borderRadius: '50%', border: 'none', flexShrink: 0,
+            background: !loading && input.trim() ? DA.sendGrad : 'rgba(255,255,255,0.1)',
+            color: '#fff', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: !loading && input.trim() ? 'pointer' : 'not-allowed',
+            transition: 'background 0.15s ease',
+          }}>➤</button>
       </div>
+
+      <style>{`
+        @keyframes daTypingDot { 0%, 60%, 100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-2px); } }
+      `}</style>
     </div>
     <BottomNav isPremium={plan === 'premium'} />
     </>

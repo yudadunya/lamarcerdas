@@ -1,385 +1,272 @@
 export const BLOG_POSTS = [
   {
-    slug: 'cara-lolos-ats-2024',
-    title: 'Cara Lolos ATS dan Sampai ke Meja HRD di 2025',
-    excerpt: 'ATS (Applicant Tracking System) menolak 75% lamaran sebelum dilihat manusia. Pelajari cara bikin CV yang lolos filter ATS dan langsung menarik perhatian HRD.',
-    category: 'Tips CV',
-    emoji: '📄',
-    date: '2025-01-15',
+    slug: 'cara-berhenti-overthinking-sebelum-tidur',
+    title: 'Cara Berhenti Overthinking Sebelum Tidur, Menurut Orang yang Sering Ngalamin',
+    excerpt: 'Udah capek seharian, tapi begitu lampu dimatikan otak malah nyala terus. Ini beberapa cara yang beneran membantu meredakan overthinking sebelum tidur.',
+    category: 'Overthinking',
+    emoji: '🌙',
+    date: '2026-08-10',
     readTime: '5 menit',
-    keywords: ['ATS', 'CV ATS friendly', 'cara lolos ATS', 'tips CV 2025'],
+    keywords: ['overthinking sebelum tidur', 'cara berhenti overthinking', 'susah tidur karena pikiran', 'insomnia karena cemas'],
     faq: [
-      { q: 'Apa itu ATS dalam rekrutmen?', a: 'ATS (Applicant Tracking System) adalah software yang digunakan perusahaan untuk menyaring lamaran secara otomatis sebelum dilihat HRD. ATS membaca CV dan memberi skor berdasarkan kata kunci dan format.' },
-      { q: 'Berapa persen lamaran yang ditolak ATS?', a: 'Sekitar 75% lamaran ditolak ATS sebelum dibaca manusia. Artinya hanya 1 dari 4 CV yang sampai ke meja HRD.' },
-      { q: 'Format CV apa yang paling ramah ATS?', a: 'Format PDF satu kolom tanpa tabel, header/footer, atau gambar adalah yang paling ramah ATS. Gunakan font standar dan struktur linear dari atas ke bawah.' },
-      { q: 'Bagaimana cara meningkatkan ATS score CV saya?', a: 'Masukkan kata kunci dari job description secara natural, gunakan format satu kolom, hindari tabel dan gambar, simpan sebagai PDF yang bisa di-copy teksnya, dan pastikan setiap section diberi label yang jelas.' },
-      { q: 'Apakah CV dengan desain bagus bisa gagal ATS?', a: 'Ya. CV dengan desain grafis yang berat, banyak kolom, tabel, atau elemen visual memang bagus untuk mata manusia tapi sering gagal dibaca ATS dengan benar.' },
+      { q: 'Kenapa overthinking sering muncul pas mau tidur?', a: 'Saat badan diam dan nggak ada distraksi (kerjaan, HP, obrolan), otak jadi punya "ruang kosong" yang otomatis diisi pikiran-pikiran yang tadinya tertunda sepanjang hari.' },
+      { q: 'Apakah menulis sebelum tidur beneran membantu?', a: 'Buat banyak orang, iya. Menulis apa yang mengganjal di kepala memindahkan pikiran dari "muter di kepala" ke "sudah dikeluarkan", jadi terasa lebih ringan.' },
+      { q: 'Bolehkah main HP saat overthinking sebelum tidur?', a: 'Boleh sesekali, tapi scrolling media sosial sering menambah bahan overthinking baru. Kalau mau distraksi, pilih yang pasif seperti dengar musik pelan atau podcast santai.' },
+      { q: 'Kapan overthinking sebelum tidur perlu dibantu profesional?', a: 'Kalau pola ini sudah mengganggu tidur hampir tiap malam selama berminggu-minggu dan bikin fungsi harianmu terganggu, ini saat yang tepat untuk cerita ke psikolog, bukan cuma dipendam sendiri.' },
     ],
     content: `
-## Apa itu ATS dan Kenapa Penting?
+## Kenapa Otak Baru "Aktif" Pas Mau Tidur?
 
-Applicant Tracking System (ATS) adalah software yang digunakan perusahaan untuk menyaring ribuan lamaran secara otomatis. Sebelum CV kamu dilihat HRD manusia, ATS sudah menentukan apakah kamu layak lanjut atau langsung dibuang.
+Sepanjang hari kamu sibuk — kerja, kuliah, scroll HP, ngobrol sama orang. Begitu lampu dimatikan dan badan diam, nggak ada lagi yang mengalihkan perhatian. Semua pikiran yang tadi ditunda otomatis antre masuk. Bukan berarti kamu lemah atau berlebihan — ini pola yang dialami hampir semua orang yang harinya padat.
 
-Faktanya, **75% lamaran** ditolak ATS bahkan sebelum mata manusia membacanya. Bukan karena kamu tidak kompeten — tapi karena format CV kamu tidak "dibaca" mesin dengan benar.
+## Beberapa Cara yang Bisa Dicoba
 
-## 5 Kesalahan CV yang Langsung Ditolak ATS
+### 1. Keluarkan Dulu dari Kepala, Pindahkan ke Kertas
+Sediakan notes atau buku kecil di samping kasur. Begitu ada pikiran yang muter-muter, tulis aja — nggak perlu rapi, nggak perlu jadi kalimat lengkap. Tujuannya bukan menyelesaikan masalahnya malam itu juga, cuma memindahkan bebannya keluar dari kepala.
 
-### 1. Pakai Tabel, Kolom, atau Header/Footer
-ATS tua tidak bisa membaca tabel dan kolom dengan benar. Informasi di dalam tabel sering terbaca acak atau terlewati sama sekali.
+### 2. Kasih Batas Waktu buat "Sesi Khawatir"
+Coba teknik ini: kasih diri kamu 10 menit di awal malam khusus buat mikirin hal yang mengganjal. Setelah 10 menit, sadar bahwa waktunya udah habis, dan kalau pikiran itu muncul lagi, ingatkan diri "udah aku pikirkan tadi, sekarang waktunya istirahat."
 
-**Solusi:** Gunakan format satu kolom, linear dari atas ke bawah.
+### 3. Fokus ke Tubuh, Bukan ke Pikiran
+Overthinking hidup di kepala. Salah satu cara meredakannya adalah menarik perhatian ke tubuh — tarik napas pelan lewat hidung 4 hitungan, tahan sebentar, buang lewat mulut 6 hitungan. Ulangi beberapa kali. Ini bukan menyelesaikan masalah, tapi menenangkan sistem saraf yang lagi "siaga".
 
-### 2. Simpan sebagai .jpg atau .png
-Banyak pelamar screenshot CV lalu kirim sebagai gambar. ATS tidak bisa membaca gambar — CV kamu jadi blank.
+### 4. Jangan Coba Menyelesaikan Masalah Jam 11 Malam
+Otak yang capek dan ngantuk cenderung melihat semua masalah lebih besar dan lebih menakutkan dari yang sebenarnya. Kalau nyadar lagi coba mikirin solusi besar tengah malam, ingatkan diri: ini bukan waktu yang tepat buat mikir jernih. Simpan buat besok pagi.
 
-**Solusi:** Selalu kirim dalam format **.pdf** (yang bisa di-copy teksnya) atau **.docx**.
+### 5. Kalau Masih Terus Muter, Nggak Apa-Apa Cerita
+Kadang cara paling efektif buat "keluar dari kepala sendiri" adalah cerita ke orang lain — entah teman, keluarga, atau ruang yang memang didesain buat itu. Kadang cuma dengan mengucapkan pikiran itu keras-keras (atau mengetiknya), bebannya udah terasa beda.
 
-### 3. Nama File Asal-asalan
-File bernama "cv-final-final-v3.pdf" terlihat tidak profesional dan sulit dicari HRD.
+> Overthinking sebelum tidur itu bukan tanda kamu "kurang kuat". Itu tanda otak kamu masih kerja keras walau badan udah pengen istirahat.
 
-**Solusi:** Beri nama seperti NamaKamu-CV-2025.pdf
+## Kalau Kamu Butuh Teman Cerita Malam Ini
 
-### 4. Tidak Ada Kata Kunci yang Relevan
-ATS mencari kata kunci spesifik dari deskripsi pekerjaan. Kalau CV kamu tidak menyebut skill yang diminta, skor ATS kamu rendah.
-
-**Solusi:** Baca job description dengan teliti dan masukkan kata kunci relevan secara natural di CV kamu.
-
-### 5. Foto dan Grafik Terlalu Banyak
-Desain CV yang penuh grafik memang bagus untuk mata manusia, tapi menyulitkan ATS.
-
-**Solusi:** Simpan desain kreatif untuk portofolio. CV utama tetap bersih dan terstruktur.
-
-## Format CV yang Ramah ATS
-
-Struktur ideal CV yang lolos ATS:
-
-- **Header** — Nama, nomor HP, email, LinkedIn
-- **Ringkasan Profesional** — 3-4 kalimat tentang siapa kamu dan value yang kamu bawa
-- **Pengalaman Kerja** — Urutan terbalik (terbaru dulu), bullet points dengan angka
-- **Pendidikan**
-- **Skill** — Daftar skill teknis yang relevan dengan posisi
-
-## Cek ATS Score CV Kamu Sekarang
-
-Tidak perlu tebak-tebakan. Di Verneks, kamu bisa cek ATS score CV kamu **gratis** dalam 30 detik. AI kami akan kasih skor ATS dari 0-100, tunjukkan bagian mana yang perlu diperbaiki, dan berikan saran konkret yang bisa langsung kamu terapkan.
-
-**Ribuan job seeker sudah meningkatkan ATS score mereka dari rata-rata 48 menjadi 78+ setelah menggunakan Verneks.**
-    `
+Nggak semua orang punya seseorang yang bisa diajak cerita jam segitu tanpa ngerasa ngerepotin. Kalau kamu lagi di posisi itu, Diah Anna di Verneks bisa jadi tempat mengeluarkan apa yang lagi berputar di kepala — kapan pun, tanpa dihakimi.
+    `,
   },
   {
-    slug: 'tips-interview-kerja-fresh-graduate',
-    title: '7 Tips Interview Kerja untuk Fresh Graduate yang Belum Punya Pengalaman',
-    excerpt: 'Fresh graduate sering kalah bukan karena tidak pintar, tapi karena tidak tahu cara "menjual diri" dengan benar. Ini 7 tips yang bisa langsung kamu praktikkan.',
-    category: 'Interview',
-    emoji: '🎤',
-    date: '2025-01-22',
+    slug: 'kenapa-aku-ngerasa-kosong-padahal-hidup-baik-baik-saja',
+    title: 'Kenapa Aku Ngerasa Kosong Padahal Hidup Kelihatan Baik-Baik Saja?',
+    excerpt: 'Kerjaan lancar, keluarga sehat, nggak ada masalah besar — tapi kok rasanya hampa? Perasaan ini lebih umum dari yang kamu kira, dan ada alasannya.',
+    category: 'Kesehatan Mental',
+    emoji: '🫧',
+    date: '2026-08-05',
     readTime: '6 menit',
-    keywords: ['tips interview', 'fresh graduate', 'cara interview kerja', 'persiapan interview'],
+    keywords: ['ngerasa kosong', 'hampa padahal hidup baik', 'emotional numbness', 'burnout diam-diam'],
     faq: [
-      { q: 'Apa yang harus dipersiapkan fresh graduate sebelum interview?', a: 'Riset perusahaan secara mendalam, siapkan jawaban untuk pertanyaan umum menggunakan metode STAR, latihan mock interview, dan siapkan 2-3 pertanyaan untuk HRD.' },
-      { q: 'Bagaimana cara menjawab "ceritakan tentang diri kamu" saat interview?', a: 'Jangan baca ulang CV. Ceritakan perjalanan singkat: latar belakang pendidikan, pengalaman relevan (organisasi, magang, proyek), skill utama yang kamu bawa, dan kenapa kamu tertarik posisi ini.' },
-      { q: 'Apa itu metode STAR dalam interview?', a: 'STAR adalah Situation (konteks), Task (tugas/tantangan), Action (apa yang kamu lakukan), Result (hasilnya). Gunakan struktur ini untuk menjawab pertanyaan berbasis pengalaman.' },
-      { q: 'Bolehkah fresh graduate tidak punya pengalaman kerja saat interview?', a: 'Boleh. Gantikan dengan pengalaman organisasi, kepanitiaan, proyek kuliah, lomba, atau magang. Yang penting ceritakan dengan struktur yang jelas dan tunjukkan dampak nyata.' },
-      { q: 'Apakah perlu follow up setelah interview kerja?', a: 'Sangat disarankan. Kirim email terima kasih dalam 24 jam setelah interview. Ini jarang dilakukan tapi memberi kesan sangat positif ke recruiter.' },
+      { q: 'Apakah wajar ngerasa kosong padahal nggak ada masalah besar?', a: 'Wajar. Perasaan kosong sering muncul bukan karena ada satu masalah besar, tapi karena capek yang menumpuk pelan-pelan, atau karena terlalu lama "menjalani" hidup tanpa benar-benar merasakannya.' },
+      { q: 'Apa beda ngerasa kosong dengan depresi?', a: 'Merasa kosong bisa jadi bagian dari banyak hal — kelelahan, burnout, atau memang kondisi kesehatan mental tertentu. Karena ini bukan hal yang bisa didiagnosis sendiri, kalau perasaan ini menetap lama, ada baiknya cerita ke psikolog untuk memastikan.' },
+      { q: 'Apa yang bisa dilakukan saat ngerasa kosong?', a: 'Mulai dari hal kecil: cek apakah kamu cukup tidur, cukup istirahat dari rutinitas, dan masih punya waktu untuk hal yang dulu bikin senang. Kalau semua itu sudah dicoba dan rasanya tetap sama, bicara dengan orang lain (teman dekat atau profesional) akan sangat membantu.' },
+      { q: 'Kapan harus mencari bantuan profesional untuk rasa kosong ini?', a: 'Kalau rasa kosong itu sudah berlangsung berminggu-minggu, mengganggu tidur atau nafsu makan, atau bikin kamu menjauh dari orang-orang terdekat, itu saatnya bicara dengan psikolog atau tenaga profesional kesehatan mental.' },
     ],
     content: `
-## Kenapa Fresh Graduate Sering Gagal Interview?
+## Bukan Kamu Doang yang Ngerasa Begini
 
-Bukan karena IPK rendah. Bukan karena universitas tidak terkenal. Kebanyakan fresh graduate gagal interview karena **tidak tahu cara menjawab pertanyaan dengan struktur yang meyakinkan**.
+Ini salah satu keluhan yang paling sering muncul tapi paling jarang diomongin: "Hidupku sebenarnya baik-baik aja, tapi kenapa rasanya kosong?" Nggak ada drama besar, nggak ada kejadian traumatis yang jelas — cuma rasa hampa yang nggak tahu darimana asalnya.
 
-Kabar baiknya: ini bisa dilatih. Berikut 7 tips yang terbukti efektif.
+## Beberapa Kemungkinan Alasannya
 
-## 7 Tips Interview Kerja Fresh Graduate
+### Kamu Udah Lama "Menjalani", Bukan "Merasakan"
+Ketika hari-hari diisi rutinitas yang sama — bangun, kerja, pulang, tidur — otak lama-lama masuk mode autopilot. Kamu tetap berfungsi, tapi nggak benar-benar hadir di momen-momennya. Ini bisa membuat hidup terasa datar meski secara objektif "baik-baik saja".
 
-### 1. Gunakan Metode STAR
-Setiap jawaban tentang pengalaman, gunakan struktur STAR:
+### Capek yang Nggak Kelihatan
+Ada capek fisik yang gampang dikenali (badan pegal, ngantuk), tapi ada juga capek emosional yang jauh lebih diam-diam — hasil dari terus-menerus menahan perasaan, menyenangkan orang lain, atau menekan kebutuhan sendiri demi terlihat baik-baik saja.
 
-- **S**ituation — Apa konteksnya?
-- **T**ask — Apa tugas/tantanganmu?
-- **A**ction — Apa yang kamu lakukan?
-- **R**esult — Apa hasilnya?
+### Standar "Harusnya Bahagia" yang Terlalu Tinggi
+Kadang kita menahan diri untuk mengakui perasaan kosong karena merasa "harusnya aku bersyukur, hidupku udah lebih baik dari banyak orang". Padahal perasaan itu nggak butuh alasan besar untuk sah dirasakan.
 
-Contoh jawaban pertanyaan "Ceritakan pengalaman kerja tim kamu": Saat lomba bisnis plan tingkat nasional, tim kami kesulitan membagi tugas. Saya ambil inisiatif memetakan kekuatan masing-masing anggota dan redistribusi tugas. Akhirnya kami masuk 10 besar dari 200+ tim.
+## Yang Bisa Dicoba
 
-### 2. Riset Perusahaan Sebelum Interview
-HRD langsung tahu siapa yang asal melamar dan siapa yang serius. Pelajari produk/layanan utama, nilai dan budaya perusahaan, berita terbaru, dan kompetitor mereka.
+- **Cek dulu kebutuhan dasar.** Tidur cukup? Makan teratur? Masih ada waktu buat hal yang dulu kamu suka? Kedengarannya sederhana, tapi kekosongan sering jadi lebih berat kalau fondasi ini berantakan duluan.
+- **Kembali ke hal kecil yang dulu bikin senang**, bukan buat "memaksa bahagia", tapi buat ngecek — apakah rasa itu masih ada di sana, cuma tertutup capek.
+- **Cerita ke seseorang**, meski kamu sendiri bingung harus bilang apa. Kadang justru dengan mulai bicara, kamu jadi lebih paham apa yang sebenarnya kamu rasakan.
 
-### 3. Siapkan Jawaban untuk Pertanyaan Wajib
-Latih jawaban untuk pertanyaan yang hampir selalu ditanyakan:
+> Kalau perasaan kosong ini menetap berminggu-minggu, mulai ganggu tidur, nafsu makan, atau bikin kamu menjauh dari orang-orang di sekitarmu — ini bukan sesuatu yang harus kamu urai sendirian. Bicara dengan psikolog bisa membantu memahami apa yang sebenarnya terjadi.
 
-- "Ceritakan tentang diri kamu" (jangan baca ulang CV!)
-- "Kenapa kamu tertarik bergabung di sini?"
-- "Apa kelebihan dan kekurangan kamu?"
-- "Di mana kamu ingin berada 5 tahun lagi?"
+## Cerita Dulu, Nggak Perlu Nunggu Tau Alasannya
 
-### 4. Siapkan 2-3 Pertanyaan untuk HRD
-Di akhir interview, pasti ditanya "Ada pertanyaan?" Jangan jawab tidak ada. Tanyakan seperti apa hari-hari pertama onboarding atau apa yang membuat seseorang sukses di posisi ini.
-
-### 5. Latihan Mock Interview
-Berlatih sendirian di depan cermin tidak cukup efektif. Kamu butuh feedback dari luar. Minta teman atau senior untuk mock interview, atau gunakan AI seperti Verneks untuk simulasi HRD.
-
-### 6. Perhatikan Bahasa Tubuh
-55% kesan pertama berasal dari bahasa tubuh. Duduk tegak, tatap mata pewawancara, dan senyum wajar saat memperkenalkan diri.
-
-### 7. Follow Up Setelah Interview
-Kirim email terima kasih 24 jam setelah interview. Ini jarang dilakukan tapi memberi kesan sangat positif.
-
-## Latihan Mock Interview Gratis di Verneks
-
-Di Verneks, kamu bisa latihan interview dengan AI yang berperan sebagai HRD — kapan saja, tanpa perlu takut dihakimi. AI akan ajukan pertanyaan sesuai posisi, evaluasi jawaban kamu secara jujur, dan kasih saran konkret.
-
-**Latihan membuat sempurna. Mulai mock interview gratis sekarang.**
-    `
+Kamu nggak harus punya jawaban lengkap kenapa kamu ngerasa kosong sebelum boleh cerita. Diah Anna di Verneks bisa jadi tempat mulai — dengerin dulu, bantu kamu mikir lebih jernih soal apa yang sebenarnya kamu rasakan.
+    `,
   },
   {
-    slug: 'cara-negosiasi-gaji-saat-interview',
-    title: 'Cara Negosiasi Gaji saat Interview Tanpa Bikin Offer Dicabut',
-    excerpt: 'Negosiasi gaji adalah skill yang bisa dipelajari. Pelajari cara riset gaji pasar, kapan waktu terbaik untuk negosiasi, dan kalimat yang tepat untuk diucapkan.',
-    category: 'Karir',
-    emoji: '💰',
-    date: '2025-02-05',
-    readTime: '7 menit',
-    keywords: ['negosiasi gaji', 'cara minta naik gaji', 'gaji interview', 'tips negosiasi'],
+    slug: 'cara-bilang-tidak-tanpa-ngerasa-bersalah',
+    title: 'Cara Bilang "Tidak" Tanpa Ngerasa Bersalah Setelahnya',
+    excerpt: 'Susah nolak permintaan orang lain meski udah kewalahan sendiri? Ini bukan soal kamu baik atau nggak baik — ini soal batasan yang belum terlatih.',
+    category: 'Self-Care',
+    emoji: '🛑',
+    date: '2026-07-28',
+    readTime: '5 menit',
+    keywords: ['cara bilang tidak', 'susah menolak', 'people pleaser', 'batasan diri'],
     faq: [
-      { q: 'Kapan waktu yang tepat untuk negosiasi gaji?', a: 'Tunda sampai mereka jelas tertarik dengan kamu — biasanya di akhir interview atau saat offer formal masuk. Jangan tanya gaji di awal interview sebelum mereka melihat value kamu.' },
-      { q: 'Berapa persen karyawan yang bernegosiasi gaji?', a: 'Hanya 43% karyawan yang bernegosiasi gaji. Padahal 85% recruiter masih punya ruang untuk menaikkan offer pertama mereka.' },
-      { q: 'Apa yang harus dikatakan saat negosiasi gaji?', a: 'Contoh kalimat efektif: "Berdasarkan riset saya tentang standar industri dan pengalaman X tahun di bidang Y, apakah ada ruang untuk menyesuaikan ke kisaran [angka target]?" Selalu anchor ke nilai yang kamu bawa.' },
-      { q: 'Apakah negosiasi gaji bisa membuat offer dicabut?', a: 'Sangat jarang. Selama kamu profesional dan reasonable, negosiasi justru menunjukkan kamu tahu nilai diri. Offer hampir tidak pernah dicabut karena negosiasi yang sopan.' },
-      { q: 'Selain gaji, apa lagi yang bisa dinegosiasikan?', a: 'Banyak! Bonus signing, tunjangan transport atau makan, flexible working, budget training/sertifikasi, tanggal mulai kerja, dan jadwal review gaji yang lebih cepat.' },
+      { q: 'Kenapa aku susah banget bilang tidak ke orang lain?', a: 'Sering kali karena takut dianggap nggak baik, takut hubungan jadi renggang, atau karena dari dulu terbiasa merasa nilai diri datang dari seberapa berguna kamu untuk orang lain.' },
+      { q: 'Apakah menolak permintaan orang berarti aku egois?', a: 'Tidak. Menjaga batasan yang sehat justru membuat kamu bisa membantu orang lain secara lebih tulus, bukan karena terpaksa atau menyimpan rasa kesal.' },
+      { q: 'Bagaimana cara menolak tanpa terdengar kasar?', a: 'Sampaikan dengan jelas dan singkat, tanpa perlu alasan panjang lebar atau permintaan maaf berlebihan. Contoh: "Aku nggak bisa bantu kali ini, tapi makasih udah tanya."' },
+      { q: 'Apa yang harus dilakukan kalau ngerasa bersalah setelah menolak?', a: 'Wajar muncul di awal, apalagi kalau kamu belum terbiasa. Ingatkan diri bahwa rasa bersalah bukan berarti kamu salah — itu cuma tanda kamu sedang melatih kebiasaan baru.' },
     ],
     content: `
-## Kenapa Banyak Orang Takut Negosiasi Gaji?
+## Kenapa Bilang "Tidak" Terasa Sesulit Itu?
 
-Survei menunjukkan **57% karyawan tidak pernah bernegosiasi gaji** saat menerima tawaran kerja. Alasan terbesar: takut offer dicabut atau terlihat serakah.
+Buat sebagian orang, menolak permintaan — sekecil apa pun — terasa seperti melakukan kesalahan besar. Padahal yang terjadi cuma menjaga waktu dan energi sendiri. Kalau kamu sering merasa begini, kemungkinan besar bukan karena kamu "terlalu baik", tapi karena batasan diri kamu belum pernah dilatih.
 
-Padahal, kebanyakan HRD **mengharapkan** negosiasi. Bahkan ada yang sengaja memberikan angka lebih rendah dari yang bisa mereka bayar, untuk melihat apakah kandidat akan bernegosiasi.
+## Dari Mana Biasanya Kebiasaan Ini Berasal
 
-## Langkah 1: Riset Gaji Pasar
+Banyak yang tumbuh dengan pola pikir bahwa nilai diri diukur dari seberapa berguna untuk orang lain. Kalau menolak, rasanya seperti mengecewakan, dan mengecewakan orang terasa sama beratnya dengan kehilangan mereka. Padahal orang-orang yang benar-benar peduli sama kamu nggak akan berhenti peduli cuma karena sekali kamu bilang "nggak bisa".
 
-Sebelum negosiasi, kamu harus tahu angka yang realistis. Gunakan Glassdoor, LinkedIn Salary, JobStreet, atau tanya teman/senior di industri serupa.
+## Cara Latihan Bilang Tidak
 
-Faktor yang memengaruhi range gaji:
+### 1. Nggak Perlu Alasan Panjang
+Semakin panjang alasan yang kamu kasih, semakin terasa seperti kamu sedang "meminta izin" untuk menolak. Cukup: "Aku nggak bisa bantu kali ini." Titik. Nggak perlu dijelaskan berlapis-lapis.
 
-- Lokasi (Jakarta vs kota lain)
-- Industri (tech vs manufaktur vs retail)
-- Ukuran perusahaan (startup vs korporat)
-- Pengalaman dan skill spesifik
+### 2. Kasih Jeda Sebelum Jawab
+Kalau kamu tipe yang langsung bilang "iya" refleks sebelum sempat mikir, coba biasakan jawab: "Aku cek dulu ya, nanti aku kabari." Jeda ini kasih ruang buat mikir apakah kamu beneran mau/bisa, bukan cuma reflek takut mengecewakan.
 
-## Langkah 2: Tentukan Angka Kamu
+### 3. Ingat: Menolak Sekali Bukan Menutup Pintu Selamanya
+Menolak satu permintaan nggak berarti kamu nggak akan pernah membantu lagi. Ini cuma soal "nggak bisa/nggak mau kali ini" — bukan pernyataan tentang hubungan kalian secara keseluruhan.
 
-Siapkan 3 angka: Ideal (angka impian), Target (angka realistis), dan Minimum (terbawah yang masih bisa kamu terima). Mulai negosiasi dari angka di antara Ideal dan Target.
+### 4. Rasa Bersalah di Awal Itu Normal
+Kalau kamu udah lama terbiasa selalu bilang "iya", pertama kali bilang "tidak" pasti terasa nggak nyaman. Itu bukan tanda kamu salah — itu tanda kamu sedang membangun kebiasaan baru yang belum terbiasa.
 
-## Langkah 3: Timing yang Tepat
+> Batasan yang sehat bukan tembok yang menjauhkan orang. Itu pagar yang bikin kamu masih punya energi buat orang-orang dan hal-hal yang benar-benar penting buat kamu.
 
-❌ Jangan tanya gaji di awal interview sebelum mereka tertarik dengan kamu.
-✅ Tunda sampai mereka jelas tertarik — biasanya di akhir interview atau saat offer formal.
+## Latihan Bareng, Yuk
 
-Kalau dipaksa menyebut angka duluan, katakan bahwa kamu terbuka untuk mendiskusikan kompensasi yang kompetitif sesuai standar industri, lalu balik tanya berapa range yang mereka siapkan.
-
-## Kalimat Negosiasi yang Efektif
-
-Saat offer masuk dan angkanya kurang, katakan bahwa kamu sangat tertarik dengan posisi ini dan yakin bisa berkontribusi besar. Berdasarkan riset standar industri dan pengalamanmu, tanyakan apakah ada ruang untuk menyesuaikan ke kisaran target kamu.
-
-Kunci: selalu anchor alasan ke **nilai yang kamu bawa**, bukan kebutuhan pribadi.
-
-## Apa yang Bisa Dinegosiasi Selain Gaji?
-
-Kalau gaji tidak bisa dinaikkan, coba negosiasi bonus signing, tunjangan transport atau makan, flexible working arrangement, budget training atau sertifikasi, atau review gaji lebih cepat.
-
-## Latihan Negosiasi dengan AI
-
-Negosiasi adalah skill — semakin sering dilatih, semakin natural. Di Verneks, kamu bisa simulasikan skenario negosiasi gaji dengan AI dan dapat feedback tentang kalimat dan pendekatan kamu.
-
-**Career coach Diah Anna siap membantu kamu mempersiapkan negosiasi gaji yang sukses.**
-    `
+Kalau kamu masih bingung gimana cara nolak situasi tertentu tanpa terdengar kasar, coba ceritain situasinya ke Diah Anna. Kadang cuma dengan menyusun kata-katanya dulu bareng seseorang, rasanya jadi lebih gampang dipraktikkan beneran.
+    `,
   },
   {
-    slug: 'cara-switch-karir-tanpa-pengalaman',
-    title: 'Cara Switch Karir ke Industri Baru Tanpa Pengalaman Relevan',
-    excerpt: 'Ingin pindah dari marketing ke tech? Dari finance ke UX design? Bisa, asal strateginya tepat. Ini panduan lengkap career switch yang realistis dan berhasil.',
-    category: 'Karir',
-    emoji: '🔄',
-    date: '2025-02-18',
-    readTime: '8 menit',
-    keywords: ['career switch', 'pindah karir', 'ganti profesi', 'cara switch karir'],
-    faq: [
-      { q: 'Berapa lama waktu yang dibutuhkan untuk career switch?', a: 'Rata-rata 6-18 bulan tergantung seberapa jauh gap skill yang perlu dijembatani dan seberapa aktif kamu membangun portfolio dan network di industri baru.' },
-      { q: 'Apakah career switch bisa tanpa pengalaman sama sekali?', a: 'Bisa, tapi kamu perlu membangun portfolio nyata — proyek mandiri, freelance, atau kontribusi open source — untuk membuktikan kemampuan ke employer baru.' },
-      { q: 'Apa itu transferable skills dalam career switch?', a: 'Transferable skills adalah kemampuan yang berguna di banyak industri, seperti analytical thinking, komunikasi, project management, dan problem solving. Ini aset utama saat switch karir.' },
-      { q: 'Haruskah saya resign dulu sebelum switch karir?', a: 'Tidak disarankan. Proses switch karir membutuhkan waktu dan kamu butuh income selama transisi. Lakukan persiapan sambil masih bekerja, baru resign setelah ada offer.' },
-      { q: 'Bagaimana cara menulis CV untuk career switch?', a: 'Reframe pengalaman lama agar relevan dengan posisi baru, tonjolkan transferable skills, tambahkan portfolio atau proyek yang menunjukkan kemampuan di bidang baru, dan tulis professional summary yang menjelaskan alasan switch.' },
-    ],
-    content: `
-## Apakah Career Switch Itu Realistis?
-
-Ya, sangat realistis — tapi butuh strategi. Career switch tanpa rencana sering berakhir dengan posisi entry-level bergaji jauh lebih rendah atau frustrasi karena tidak tahu harus mulai dari mana.
-
-Dengan pendekatan yang tepat, banyak orang berhasil switch karir dalam **6-18 bulan** bahkan ke industri yang sangat berbeda.
-
-## Kenali "Transferable Skills" Kamu
-
-Ini aset terbesar kamu saat switch karir. Transferable skills adalah skill yang berguna di banyak industri.
-
-Dari marketing: data analysis berguna di product management, storytelling berguna di UX writing, dan customer insight berguna di product atau UX research.
-
-Dari finance: analytical thinking berguna di data analyst, attention to detail berguna di QA, dan risk assessment berguna di product strategy.
-
-## 5 Langkah Career Switch yang Berhasil
-
-### Langkah 1: Pilih Target Karir yang Spesifik
-Jangan bilang "mau ke tech." Tentukan posisi spesifik seperti Product Manager di startup fintech atau Data Analyst di perusahaan FMCG.
-
-### Langkah 2: Audit Gap Skill Kamu
-Bandingkan skill yang kamu punya dengan requirement posisi target. Buat daftar skill yang sudah kamu miliki, skill yang perlu dipelajari, dan skill yang bisa dibuktikan dari pengalaman lama.
-
-### Langkah 3: Bangun Portfolio Nyata
-Untuk data analyst: buat proyek analisis data di Kaggle atau GitHub. Untuk UX designer: redesign app yang sudah ada dan dokumentasikan prosesnya. Untuk product manager: tulis product case study tentang produk yang kamu pakai sehari-hari.
-
-### Langkah 4: Reframe CV Kamu
-CV kamu tidak perlu menyembunyikan background lama — tapi harus di-frame ulang untuk relevan ke posisi baru.
-
-❌ Pengalaman lama: "Mengelola kampanye iklan di berbagai platform digital"
-✅ Setelah di-reframe: "Menganalisis data 50K+ user behavior untuk mengoptimalkan funnel konversi; menghasilkan 35% peningkatan conversion rate"
-
-### Langkah 5: Bangun Network di Industri Baru
-80% posisi terisi melalui networking. Ikuti komunitas LinkedIn yang relevan, hadiri meetup industri, dan reach out ke orang-orang di posisi yang kamu inginkan untuk informational interview.
-
-## Hindari Kesalahan Umum Ini
-
-❌ Keluar kerja sebelum ada offer — switch karir butuh waktu, jangan burn savings.
-❌ Ekspektasi gaji terlalu tinggi di awal — siap menerima step back sementara untuk step up lebih besar.
-❌ Tidak memanfaatkan pengalaman lama — background berbeda bisa jadi keunggulan kompetitif.
-
-## Diskusi Career Switch dengan Diah Anna
-
-Setiap orang punya situasi unik. Diah Anna di Verneks bisa bantu kamu identifikasi transferable skills, buat roadmap switch karir yang realistis, dan review CV yang sudah di-reframe.
-
-**Gratis, 24/7, tanpa judgement. Mulai diskusi sekarang.**
-    `
-  },
-  {
-    slug: 'cara-membuat-cv-yang-menarik',
-    title: 'Cara Membuat CV yang Menarik: Panduan Lengkap 2025',
-    excerpt: 'CV adalah kesan pertama kamu. Pelajari cara membuat CV yang tidak hanya lolos ATS tapi juga membuat HRD ingin segera memanggil kamu interview.',
-    category: 'Tips CV',
-    emoji: '✨',
-    date: '2025-03-01',
-    readTime: '9 menit',
-    keywords: ['cara membuat CV', 'template CV', 'CV menarik', 'CV profesional 2025'],
-    faq: [
-      { q: 'Berapa panjang CV yang ideal?', a: '1 halaman untuk pengalaman kurang dari 7 tahun, maksimal 2 halaman untuk yang lebih senior. HRD rata-rata hanya menghabiskan 6-7 detik per CV, jadi ringkas dan padat.' },
-      { q: 'Apakah CV harus pakai foto?', a: 'Di Indonesia umumnya iya. Gunakan foto formal dengan background netral, pakaian profesional, dan ekspresi ramah. Hindari foto selfie atau foto liburan.' },
-      { q: 'Apa perbedaan CV dan resume?', a: 'Di Indonesia keduanya sering digunakan bergantian. Secara internasional, CV lebih panjang dan detail, sedangkan resume lebih singkat (1-2 halaman). Untuk melamar kerja di Indonesia, cukup buat yang 1-2 halaman.' },
-      { q: 'Bagaimana cara menulis achievement di CV?', a: 'Gunakan formula: kata kerja kuat + apa yang dilakukan + hasil dalam angka. Contoh: "Meningkatkan penjualan 45% dalam 6 bulan melalui strategi upselling yang baru diimplementasikan."' },
-      { q: 'Apakah perlu membuat CV berbeda untuk setiap lamaran?', a: 'Idealnya ya — setidaknya sesuaikan professional summary dan kata kunci skill dengan job description masing-masing posisi. Ini signifikan meningkatkan ATS score dan relevansi CV kamu.' },
-    ],
-    content: `
-## Apa Bedanya CV Biasa dengan CV yang Dipanggil Interview?
-
-HRD rata-rata menghabiskan **6-7 detik** untuk memutuskan apakah mereka akan membaca CV lebih lanjut. Yang dilihat pertama adalah apakah format mudah dibaca, apakah nama posisi terakhir relevan, dan apakah ada angka atau achievement yang menonjol.
-
-CV yang dipanggil interview bukan yang paling cantik desainnya — tapi yang paling **efektif** menyampaikan value kamu dalam 6 detik pertama.
-
-## Anatomi CV yang Optimal
-
-### 1. Header (Wajib Ada)
-Nama lengkap, nomor HP aktif, email profesional, LinkedIn profile URL, dan kota domisili. Tidak perlu alamat lengkap.
-
-### 2. Professional Summary (2-4 Kalimat)
-Ini elevator pitch kamu dalam teks. Harus menjawab siapa kamu, berapa tahun pengalaman di bidang apa, apa achievement terbesar kamu, dan apa yang kamu cari.
-
-❌ Buruk: "Saya adalah lulusan S1 Manajemen yang memiliki passion tinggi dan motivasi kuat untuk berkembang."
-
-✅ Baik: "Digital Marketing Specialist dengan 4 tahun pengalaman di industri e-commerce. Berhasil meningkatkan organic traffic 340% dan menurunkan CAC 28% melalui strategi content dan SEO."
-
-### 3. Pengalaman Kerja (Inti CV)
-Untuk setiap posisi: nama perusahaan, nama posisi, periode, lalu 3-5 bullet points dimulai dengan kata kerja aktif. Setiap bullet idealnya punya angka atau metrik.
-
-Formula bullet point: kata kerja kuat + apa yang dilakukan + hasil dalam angka.
-
-❌ "Bertanggung jawab atas social media perusahaan"
-✅ "Mengelola 5 akun social media dengan 120K followers; meningkatkan engagement rate dari 1.2% ke 4.8% dalam 6 bulan"
-
-### 4. Pendidikan
-Untuk yang sudah punya pengalaman kerja lebih dari 2 tahun, cukup nama universitas, jurusan, dan tahun lulus.
-
-### 5. Skill
-Bagi menjadi hard skills (Excel, Python, Figma) dan soft skills — pilih maksimal 3 yang benar-benar relevan.
-
-## Kesalahan CV yang Sering Dilakukan
-
-❌ Satu CV untuk semua lamaran — seharusnya customize untuk setiap posisi.
-❌ Terlalu panjang — 1 halaman untuk kurang dari 7 tahun pengalaman.
-❌ Foto tidak profesional — pakai foto formal dengan background netral.
-❌ Tidak ada achievement — hanya deskripsi tugas tanpa hasil.
-❌ Typo dan grammar error — langsung kesan negatif.
-
-## Buat CV Profesional dengan AI dalam 2 Menit
-
-CV Maker AI di Verneks bisa membantu. Ceritakan pengalamanmu, AI menyusun CV dengan format ATS-friendly, otomatis mengoptimalkan kata kerja dan achievement, lalu export ke PDF siap kirim.
-
-**Tidak perlu template berbayar. Mulai gratis sekarang.**
-    `
-  },
-  {
-    slug: 'linkedin-tips-untuk-dicari-recruiter',
-    title: 'Tips LinkedIn agar Profile Kamu Ditemukan Recruiter di 2025',
-    excerpt: 'Recruiter aktif mencari kandidat di LinkedIn setiap hari. Optimalkan profile kamu dengan tips ini agar kamu yang ditemukan — bukan kamu yang harus ngelamar.',
-    category: 'LinkedIn',
-    emoji: '🔍',
-    date: '2025-03-15',
+    slug: 'tanda-hubungan-yang-bikin-capek-secara-emosional',
+    title: '5 Tanda Hubungan yang Bikin Kamu Capek Secara Emosional (Bukan Cuma Beda Pendapat)',
+    excerpt: 'Ada beda antara hubungan yang kadang ada konflik wajar, dengan hubungan yang bikin kamu terus-menerus lelah. Ini beberapa tandanya.',
+    category: 'Hubungan',
+    emoji: '💬',
+    date: '2026-07-20',
     readTime: '6 menit',
-    keywords: ['LinkedIn tips', 'optimasi LinkedIn', 'profile LinkedIn', 'dicari recruiter LinkedIn'],
+    keywords: ['hubungan melelahkan', 'toxic relationship', 'capek secara emosional', 'tanda hubungan tidak sehat'],
     faq: [
-      { q: 'Apakah LinkedIn penting untuk mencari kerja di Indonesia?', a: 'Sangat penting, terutama untuk posisi profesional dan korporat. Banyak recruiter Indonesia aktif mencari kandidat di LinkedIn setiap hari, dan banyak posisi tidak diiklankan di job board manapun.' },
-      { q: 'Bagaimana cara menulis headline LinkedIn yang menarik?', a: 'Jangan hanya tulis jabatan. Tambahkan spesialisasi dan value yang kamu bawa. Contoh: "Digital Marketing Manager | SEO & Growth | Bantu brand tumbuh 3x melalui organic strategy".' },
-      { q: 'Berapa kali sebaiknya posting di LinkedIn?', a: '2-3 kali per minggu sudah cukup untuk menjaga algoritma aktif. Konsistensi lebih penting dari frekuensi. Kualitas konten lebih penting dari kuantitas.' },
-      { q: 'Apakah perlu mengaktifkan Open to Work di LinkedIn?', a: 'Ya, aktifkan fitur Open to Work. Kamu bisa atur agar hanya terlihat oleh recruiter (bukan koneksi umum) jika tidak ingin bos tahu kamu sedang cari kerja.' },
-      { q: 'Apa konten LinkedIn yang paling sering viral?', a: 'Lesson learned dari pengalaman kerja, tips praktis di bidang keahlian, cerita perjalanan karir termasuk kegagalan, dan opini tentang tren industri. Konten personal dan jujur cenderung lebih engage.' },
+      { q: 'Apakah semua konflik dalam hubungan itu tanda tidak sehat?', a: 'Tidak. Perbedaan pendapat dan konflik sesekali itu normal di hubungan mana pun. Yang jadi masalah adalah kalau pola itu terus berulang tanpa penyelesaian dan bikin kamu merasa terus dikuras.' },
+      { q: 'Apa itu capek secara emosional dalam hubungan?', a: 'Kondisi ketika kamu merasa terus-menerus waspada, cemas, atau harus "menjaga perasaan" orang lain sampai lupa menjaga perasaan sendiri, hingga hubungan terasa lebih menguras daripada mengisi.' },
+      { q: 'Apa yang harus dilakukan kalau merasa capek emosional dalam hubungan?', a: 'Mulai dengan mengenali polanya, lalu coba bicarakan secara terbuka dengan orang tersebut. Kalau pola itu tidak berubah meski sudah dibicarakan, mungkin perlu evaluasi lebih dalam soal batasan atau keberlanjutan hubungan itu.' },
+      { q: 'Apakah normal butuh bantuan pihak luar untuk melihat hubungan sendiri lebih jernih?', a: 'Sangat normal. Kadang kita terlalu dekat dengan situasinya untuk melihat pola secara objektif — bicara ke teman yang dipercaya atau profesional bisa membantu memberi sudut pandang yang lebih jernih.' },
     ],
     content: `
-## LinkedIn Bukan Sekadar Online CV
+## Beda "Capek Karena Konflik Wajar" dan "Capek Karena Pola yang Nggak Sehat"
 
-Mayoritas pengguna LinkedIn hanya menggunakannya sebagai CV online — upload pengalaman kerja, lalu lupa. Padahal LinkedIn punya **algoritma pencarian** yang digunakan recruiter untuk menemukan kandidat aktif maupun pasif.
+Semua hubungan — pertemanan, keluarga, pasangan — pasti pernah ada gesekan. Itu normal. Yang perlu diperhatikan adalah kalau capeknya bukan dari satu konflik sesekali, tapi dari pola yang terus berulang dan nggak pernah benar-benar selesai.
 
-Dengan optimasi yang tepat, kamu bisa masuk daftar pencarian recruiter tanpa harus aktif melamar.
+## 5 Tanda yang Perlu Diperhatikan
 
-## 7 Elemen LinkedIn yang Wajib Dioptimalkan
+### 1. Kamu Selalu yang "Mengalah Duluan"
+Bukan karena kamu memang setuju, tapi karena capek berdebat atau takut situasi makin runyam. Lama-lama kamu jadi terbiasa mengecilkan perasaan sendiri demi menghindari konflik.
 
-### 1. Foto Profil
-Foto profil yang baik meningkatkan kemungkinan dilihat recruiter 21x lebih tinggi. Pakai foto profesional, background polos atau blur, wajah terlihat jelas, dan pakaian sesuai industri target.
+### 2. Kamu Merasa Harus "Menebak" Suasana Hati Orang Itu
+Kalau kamu terus-menerus was-was mengecek mood orang tersebut sebelum ngomong apa pun, itu tanda kamu sedang bekerja ekstra untuk menjaga hubungan tetap "aman" — dan itu melelahkan dalam jangka panjang.
 
-### 2. Headline (Bukan Cuma Nama Jabatan)
+### 3. Setelah Ketemu atau Ngobrol, Kamu Merasa Terkuras, Bukan Terisi
+Hubungan yang sehat nggak selalu bikin senang tiap saat, tapi secara keseluruhan harusnya terasa mengisi. Kalau pola yang sering muncul justru sebaliknya — capek, hampa, atau lega setelah "selesai" — itu layak diperhatikan.
 
-❌ Biasa: "Marketing Manager at PT. XYZ"
-✅ Dioptimalkan: "Digital Marketing Manager | SEO & Growth | Bantu brand tumbuh 3x melalui organic strategy"
+### 4. Permintaan Maaf Nggak Pernah Diikuti Perubahan
+Kalau pola yang sama terus berulang meski sudah dibicarakan berkali-kali, itu tanda ada sesuatu yang lebih dalam dari sekadar "lupa" atau "khilaf".
 
-Masukkan keyword yang sering dicari recruiter di industri kamu.
+### 5. Kamu Mulai Menjauh dari Orang Lain demi Hubungan Ini
+Kalau kamu sadar mulai mengurangi waktu dengan teman atau keluarga karena hubungan ini, atau merasa harus "memilih" antara mereka, itu tanda penting untuk diperhatikan.
 
-### 3. Bagian About yang Menjual
-Tulis dalam orang pertama, conversational tapi profesional. Mulai dengan kalimat pembuka yang menarik (bukan "Saya adalah..."), ceritakan pengalaman dan achievement dengan angka, lalu tutup dengan cara menghubungi kamu.
+## Bukan Berarti Harus Langsung Diputus
 
-### 4. Keyword di Seluruh Profile
-Tentukan 5-10 keyword untuk bidang kamu dan masukkan secara natural di headline, about, deskripsi pengalaman, dan skill section.
+Menyadari tanda-tanda ini bukan berarti kamu harus langsung mengambil keputusan besar. Langkah pertama biasanya cukup dengan mengakui polanya ke diri sendiri, baru dari situ memikirkan apakah ini bisa dibicarakan bersama, atau butuh batasan yang lebih jelas.
 
-### 5. Skills Section
-Pilih maksimal 10 skill yang paling relevan dengan posisi yang kamu inginkan. Minta endorsement dari rekan kerja untuk skill utama.
+> Kamu berhak berada di hubungan yang membuatmu merasa lebih ringan menjalani hidup — bukan yang bikin kamu harus terus waspada.
 
-### 6. Featured Section
-Tampilkan karya terbaik: link ke artikel atau tulisan, portofolio, sertifikat, atau media coverage jika ada.
+## Kadang Susah Lihat Pola Sendiri dari Dalam
 
-### 7. Aktif Posting Konten
-2-3 kali per minggu sudah cukup. Ide konten yang sering viral: lesson learned dari pengalaman kerja, tips praktis, dan cerita perjalanan karir.
+Kalau kamu lagi coba memahami suatu hubungan tapi bingung mulai dari mana, coba ceritakan situasinya ke Diah Anna. Kadang cukup dengan menyusun ceritanya jadi kalimat, kamu jadi lebih bisa melihat pola yang selama ini nggak kelihatan jelas.
+    `,
+  },
+  {
+    slug: 'cara-berhenti-membandingkan-diri-di-media-sosial',
+    title: 'Cara Berhenti Membandingkan Diri Sendiri Tiap Buka Media Sosial',
+    excerpt: 'Buka aplikasi buat refreshing, tapi keluar malah ngerasa hidup sendiri kurang. Ini kenapa itu terjadi dan cara memutus polanya.',
+    category: 'Overthinking',
+    emoji: '📱',
+    date: '2026-07-12',
+    readTime: '5 menit',
+    keywords: ['membandingkan diri di media sosial', 'insecure lihat medsos', 'social media comparison', 'cara berhenti scroll'],
+    faq: [
+      { q: 'Kenapa media sosial bikin gampang membandingkan diri?', a: 'Karena yang ditampilkan orang di media sosial biasanya cuma momen terbaik mereka, bukan gambaran lengkap harinya. Otak kita cenderung membandingkan "belakang panggung" kita sendiri dengan "panggung depan" orang lain.' },
+      { q: 'Apakah harus berhenti total pakai media sosial?', a: 'Nggak harus. Yang lebih realistis dan berkelanjutan biasanya bukan berhenti total, tapi mengubah cara dan kapan kamu menggunakannya.' },
+      { q: 'Apa tanda media sosial sudah mulai mengganggu kesehatan mental?', a: 'Kalau setelah scroll kamu lebih sering merasa cemas, kurang, atau nggak puas dengan hidup sendiri dibanding sebelum buka aplikasi, itu tanda perlu dievaluasi polanya.' },
+      { q: 'Apa yang bisa dilakukan selain mengurangi screen time?', a: 'Coba juga curate ulang siapa yang kamu ikuti, dan sadari bahwa konten yang kamu lihat bukan representasi utuh dari kehidupan orang lain.' },
+    ],
+    content: `
+## Kenapa Rasanya Selalu Ada yang "Lebih"?
 
-## Aktifkan Open to Work
+Buka media sosial, dan dalam hitungan menit kamu udah lihat orang liburan, orang dapat promosi, orang yang kelihatan "lebih punya segalanya". Padahal yang kamu lihat cuma highlight — bukan gambaran utuh hari mereka yang juga penuh hal biasa-biasa aja, bahkan susah.
 
-Di setting profile, aktifkan Open to Work. Pilih "Recruiter saja" jika tidak ingin bos tahu. Ini sinyal langsung ke recruiter bahwa kamu available.
+## Kenapa Ini Terasa Begitu Nyata
 
-## Optimalkan Profile LinkedIn dengan Diah Anna
+Otak kita nggak secara otomatis membedakan "ini cuma potongan terbaik" dari "ini gambaran lengkap". Yang kita lihat berulang-ulang, itu yang terasa seperti kenyataan. Kalau tiap hari yang masuk ke kepala cuma pencapaian orang lain, lama-lama standar "normal" jadi bergeser — dan hidup sendiri terasa kurang, padahal sebenarnya nggak.
 
-Bingung bagaimana menulis headline atau bagian About? Ceritakan background kamu ke Diah Anna di Verneks dan dapatkan saran headline yang keyword-rich, draft bagian About yang menjual, dan tips spesifik untuk industri kamu.
+## Yang Bisa Dicoba
 
-**Konsultasi gratis, langsung dapat actionable advice.**
-    `
-  }
+### 1. Sadari Momen "Sebelum vs Sesudah" Scroll
+Coba perhatikan: gimana perasaanmu sebelum buka aplikasi, dan gimana perasaanmu setelah scroll 20 menit? Kalau polanya konsisten bikin lebih cemas atau nggak puas, itu data penting buat diri sendiri.
+
+### 2. Curate, Bukan Cuma Kurangi Waktu
+Mengurangi screen time membantu, tapi sering nggak cukup kalau isi feed-nya tetap sama. Coba unfollow atau mute akun yang bikin kamu sering ngerasa kurang — nggak perlu alasan dramatis, cukup "ini nggak baik buat headspace-ku sekarang".
+
+### 3. Ingat: Kamu Membandingkan "Belakang Layar" dengan "Panggung Depan" Orang Lain
+Orang jarang posting hari yang berantakan, keraguan, atau kegagalan mereka. Membandingkan proses lengkap hidupmu dengan cuplikan terbaik hidup orang lain itu perbandingan yang dari awal nggak seimbang.
+
+### 4. Isi Waktu yang Biasa Dipakai Scroll dengan Sesuatu yang Terasa "Milikmu"
+Nggak harus produktif — bisa jalan santai, dengerin musik, atau sekadar diam tanpa layar. Tujuannya bukan menghukum diri, tapi kasih otak jeda dari arus perbandingan terus-menerus.
+
+> Kamu nggak pernah benar-benar tahu cerita lengkap di balik satu foto atau satu unggahan. Jangan biarkan potongan itu menentukan gimana kamu menilai keseluruhan hidupmu sendiri.
+
+## Kalau Perbandingan Ini Bikin Kamu Sering Down
+
+Kadang yang dibutuhkan bukan cuma tips, tapi tempat buat cerita gimana perasaan sebenarnya. Diah Anna di Verneks siap dengerin, kapan pun kamu ngerasa mulai kepikiran gara-gara apa yang kamu lihat di media sosial.
+    `,
+  },
+  {
+    slug: 'self-care-itu-bukan-cuma-skincare',
+    title: 'Self-Care Itu Bukan Cuma Skincare dan Me Time — Ini yang Sering Kelewat',
+    excerpt: 'Self-care sering direduksi jadi masker wajah dan nonton drakor. Padahal bentuknya jauh lebih luas, dan beberapa yang paling penting justru yang paling nggak "instagramable".',
+    category: 'Self-Care',
+    emoji: '🌱',
+    date: '2026-07-03',
+    readTime: '5 menit',
+    keywords: ['self care artinya', 'self care itu apa', 'self care bukan skincare', 'cara self care yang benar'],
+    faq: [
+      { q: 'Apa itu self-care sebenarnya?', a: 'Self-care adalah segala tindakan sadar yang kamu lakukan untuk menjaga kondisi fisik, emosional, dan mentalmu tetap sehat — bentuknya jauh lebih luas dari sekadar perawatan diri yang terlihat, seperti skincare.' },
+      { q: 'Kenapa self-care sering disalahpahami cuma soal skincare atau belanja?', a: 'Karena bentuk self-care yang paling gampang dipamerkan di media sosial memang yang berkaitan dengan produk atau me time yang terlihat menyenangkan, padahal banyak bentuk self-care yang justru nggak terlihat sama sekali.' },
+      { q: 'Apa contoh self-care yang sering terlewat?', a: 'Tidur cukup, bilang tidak saat kewalahan, menyelesaikan tugas yang ditunda (karena beban pikirannya sering lebih berat dari tugasnya sendiri), dan mengakui perasaan alih-alih menekannya.' },
+      { q: 'Apakah self-care harus mahal atau butuh waktu khusus?', a: 'Tidak. Banyak bentuk self-care yang paling berdampak justru gratis dan sederhana, seperti tidur lebih awal atau menetapkan batasan yang jelas ke orang lain.' },
+    ],
+    content: `
+## Self-Care Bukan Cuma yang Kelihatan di Media Sosial
+
+Kalau ketik "self-care" di media sosial, yang muncul kebanyakan: masker wajah, bubble tea, belanja "buat healing". Semua itu nggak salah — tapi itu cuma sebagian kecil dari apa yang sebenarnya dibutuhkan tubuh dan pikiran kita untuk tetap sehat.
+
+## Bentuk Self-Care yang Sering Kelewat
+
+### 1. Tidur Cukup — yang Paling Sering Dikorbankan
+Begadang buat "me time" (nonton series sampai jam 2 pagi misalnya) sering terasa seperti self-care, padahal besoknya justru bikin lebih gampang capek, gampang emosi, dan gampang overthinking. Tidur cukup sering lebih berdampak dibanding perawatan apa pun.
+
+### 2. Bilang Tidak Saat Udah Kewalahan
+Menjaga batasan itu self-care, meski nggak semenyenangkan self-care yang biasa dibayangkan. Terus-menerus bilang "iya" sampai kewalahan bukan tanda peduli sama orang lain — itu tanda belum melatih batasan diri.
+
+### 3. Menyelesaikan Hal Kecil yang Ditunda-Tunda
+Tugas yang numpuk atau pesan yang belum dibalas sering makan lebih banyak energi mental daripada tugasnya sendiri — karena terus ada di kepala sebagai beban. Kadang self-care yang paling terasa justru menyelesaikan satu hal kecil itu, bukan menghindarinya lebih lama.
+
+### 4. Mengakui Perasaan, Bukan Menekannya
+Self-care bukan cuma soal "menenangkan diri", tapi juga soal jujur ke diri sendiri kalau lagi capek, kesal, atau sedih — daripada dipaksa terlihat baik-baik saja terus.
+
+### 5. Gerak Sedikit, Bukan demi Bentuk Badan
+Jalan kaki 10 menit atau stretching ringan bukan soal target fisik, tapi karena tubuh yang kaku lama-lama bikin pikiran ikut terasa berat.
+
+> Self-care yang paling penting sering justru yang paling nggak terlihat bagus difoto — tidur lebih awal, menolak sesuatu, atau menyelesaikan hal kecil yang bikin lega.
+
+## Nggak Tahu Harus Mulai dari Mana? Cerita Aja Dulu
+
+Kadang susah tahu apa yang sebenarnya kamu butuhkan sampai kamu coba ceritakan gimana harimu berjalan. Diah Anna bisa bantu kamu mikir pelan-pelan — bentuk self-care mana yang paling kamu butuhkan sekarang, bukan yang paling terlihat keren.
+    `,
+  },
 ]

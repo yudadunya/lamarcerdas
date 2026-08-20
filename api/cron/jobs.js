@@ -606,55 +606,57 @@ ATURAN PENTING — PERSUASIF TAPI HALUS:
 
   // ── GENERATE DAILY ARTICLE — auto-publish satu artikel SEO baru per hari.
   if (job === 'generate-daily-article') {
-    // Pool topik — sengaja jauh lebih banyak dari 365 (jalan setahun tanpa
-    // pernah exact-duplicate), dikelompokkan ke 4 kategori yang sudah ada di
-    // Blog.jsx (Tips CV, Interview, Karir, LinkedIn) supaya konsisten sama
-    // desain filter yang sudah ada. Semua topik ditulis condong ke "hasilnya
-    // duit riil" — selaras dengan reposisi produk yang sudah kita bahas
-    // (bukan cuma "pengembangan diri" generik).
+    // PIVOT (Agustus 2026): Verneks bukan lagi career coach — sekarang teman
+    // curhat AI (Diah Anna). Pool topik & kategori diganti total supaya
+    // selaras dengan brand baru, dikelompokkan ke 4 kategori yang sekarang
+    // dipakai Blog.jsx (Overthinking, Kesehatan Mental, Hubungan, Self-Care).
+    // Topik dipilih yang evergreen (nggak terikat tahun/tren) dan genuinely
+    // membantu — bukan clickbait soal kesehatan mental.
     const TOPIC_POOL = [
-      // Tips CV
-      'Cara Bikin CV yang Bikin HRD Langsung Telepon Balik',
-      'Kata-Kata yang Bikin CV Kamu Otomatis Ditolak Recruiter',
-      'Cara Hitung dan Tampilkan Achievement dengan Angka di CV',
-      'CV buat Fresh Graduate Tanpa Pengalaman Kerja: Panduan Lengkap',
-      'Cara Bikin CV Bahasa Inggris yang Standar Internasional',
-      'Portofolio Online vs CV PDF: Mana yang Lebih Efektif 2026',
-      'Cara Menjelaskan Gap Tahun Kosong di CV Tanpa Terlihat Mencurigakan',
-      'CV Career Switcher: Cara Highlight Skill yang Transferable',
-      'Panjang CV Ideal: 1 Halaman atau 2 Halaman?',
-      'Cara Bikin Ringkasan Profesional (Summary) yang Menjual',
-      // Interview
-      'Jawaban Ideal untuk "Ceritakan Tentang Diri Kamu" Saat Interview',
-      'Cara Jawab "Kenapa Kamu Resign dari Kantor Lama" Tanpa Menjelekkan',
-      'Pertanyaan yang WAJIB Kamu Tanya Balik ke Interviewer',
-      'Cara Negosiasi Gaji Saat Interview Tanpa Terlihat Serakah',
-      'STAR Method: Cara Jawab Pertanyaan Interview Perilaku',
-      'Cara Interview Online yang Bikin Kamu Kelihatan Profesional',
-      'Red Flag Perusahaan yang Wajib Dikenali Saat Interview',
-      'Cara Follow Up Setelah Interview Tanpa Terkesan Desperate',
-      'Kesalahan Fatal yang Bikin Kandidat Gagal di 5 Menit Pertama',
-      'Cara Jawab Pertanyaan Soal Gaji yang Diminta Saat Interview',
-      // Karir
-      'Tanda-Tanda Kamu Harus Resign dari Pekerjaan Sekarang',
-      'Cara Naik Jabatan Tanpa Harus Pindah Perusahaan',
-      'Skill yang Paling Dicari Perusahaan Indonesia di 2026',
-      'Cara Switch Karir di Usia 30-an Tanpa Mulai dari Nol',
-      'Side Hustle yang Cocok Buat Karyawan Kantoran',
-      'Cara Tau Gaji Kamu di Bawah Standar Market atau Tidak',
-      'Personal Branding buat Karyawan yang Introvert',
-      'Cara Membangun Portofolio Tanpa Proyek Klien Nyata',
-      'Freelance vs Karyawan Tetap: Mana yang Lebih Untung 2026',
-      'Cara Menabung dari Gaji UMR Sambil Upgrade Skill',
-      'Remote Job Indonesia: Cara Cari dan Dapat Kerja dari Rumah',
-      'Cara Bikin Rencana Karir 5 Tahun yang Realistis',
-      // LinkedIn
-      'Cara Optimasi Profil LinkedIn Biar Dilirik Recruiter',
-      'Konten LinkedIn yang Bikin Kamu Kelihatan Expert di Bidangmu',
-      'Cara Networking di LinkedIn Tanpa Terlihat Sok Kenal',
-      'Headline LinkedIn yang Menarik Perhatian Recruiter dalam 3 Detik',
-      'Cara Minta Rekomendasi LinkedIn yang Efektif',
-      'Open to Work di LinkedIn: Aman atau Berisiko?',
+      // Overthinking
+      'Cara Berhenti Mikirin Ucapan yang Salah Berjam-Jam Setelahnya',
+      'Kenapa Kita Sering Membayangkan Skenario Terburuk yang Belum Tentu Terjadi',
+      'Cara Berhenti Overthinking Sebelum Kirim Pesan Penting',
+      'Overthinking Setelah Ngobrol: Kenapa Kita Suka Replay Percakapan',
+      'Cara Mengenali Kapan Mikir Jadi Overthinking, Bukan Lagi Berpikir Jernih',
+      'Kenapa Keputusan Kecil Kadang Terasa Lebih Berat dari Keputusan Besar',
+      'Cara Menenangkan Pikiran Saat Semua Terasa Nggak Terkendali',
+      'Overthinking soal Masa Depan: Cara Fokus ke yang Bisa Dikontrol Hari Ini',
+      'Kenapa Kita Suka Mikirin Apa Kata Orang Padahal Belum Tentu Mereka Mikirin Itu',
+      'Cara Keluar dari Pikiran yang Muter-Muter Tanpa Ujung',
+      // Kesehatan Mental
+      'Beda Capek Biasa dan Tanda-Tanda Burnout yang Sering Diabaikan',
+      'Kenapa Kadang Kita Nangis Tanpa Tahu Alasan Pastinya',
+      'Cara Mengenali Kalau Kamu Butuh Istirahat, Bukan Cuma Butuh Liburan',
+      'Perbedaan Sedih Biasa dan Saatnya Bicara ke Profesional',
+      'Kenapa "Positive Thinking Aja" Kadang Nggak Membantu',
+      'Cara Menghadapi Hari yang Berat Tanpa Memaksa Diri Baik-Baik Saja',
+      'Kenapa Perasaan Bersalah Sering Muncul Padahal Nggak Melakukan Kesalahan',
+      'Cara Mengenali Pola Pikir yang Terlalu Keras ke Diri Sendiri',
+      'Kenapa Istirahat Kadang Terasa Bersalah, Padahal Dibutuhkan',
+      'Cara Menjaga Kesehatan Mental Saat Lagi di Fase Transisi Hidup',
+      // Hubungan
+      'Cara Ngomong Perasaan ke Orang Terdekat Tanpa Takut Merusak Hubungan',
+      'Tanda Kamu Terlalu Banyak Mengalah dalam Hubungan Pertemanan',
+      'Cara Menghadapi Teman yang Cuma Muncul Saat Butuh',
+      'Kenapa Susah Percaya Lagi Setelah Dikecewakan Berkali-Kali',
+      'Cara Menjaga Hubungan Jarak Jauh dengan Keluarga yang Sehat',
+      'Tanda Kamu Butuh Ruang Sendiri dalam Hubungan, Bukan Berarti Nggak Sayang',
+      'Cara Menghadapi Konflik dengan Orang Tua yang Beda Generasi',
+      'Kenapa Kadang Lebih Gampang Curhat ke Orang Asing Daripada Orang Dekat',
+      'Cara Mengakhiri Pertemanan yang Sudah Nggak Sehat Tanpa Drama',
+      'Tanda Hubungan yang Sehat, yang Sering Dianggap Biasa Aja',
+      // Self-Care
+      'Self-Care Murah yang Beneran Efektif, Bukan Cuma Belanja',
+      'Cara Membangun Rutinitas Pagi yang Nggak Bikin Stres Duluan',
+      'Kenapa Journaling Membantu, dan Cara Mulai Tanpa Ribet',
+      'Cara Istirahat yang Beneran Mengisi Ulang Energi, Bukan Cuma Rebahan',
+      'Pentingnya Me Time yang Sebenarnya, Bukan Cuma Scroll HP',
+      'Cara Membangun Kebiasaan Kecil yang Bikin Hari Terasa Lebih Ringan',
+      'Kenapa Merayakan Progres Kecil Itu Penting, Bukan Cuma Hasil Akhir',
+      'Cara Mengatur Waktu Layar Tanpa Merasa Serba Salah',
+      'Self-Compassion: Cara Bersikap Baik ke Diri Sendiri Saat Gagal',
+      'Cara Membangun Batasan yang Sehat Tanpa Merasa Egois',
     ]
 
     // Cek slug/title yang udah pernah dipakai — hindari topik double persis.
@@ -671,9 +673,10 @@ ATURAN PENTING — PERSUASIF TAPI HALUS:
     }
 
     const topic = availableTopics[Math.floor(Math.random() * availableTopics.length)]
-    const category = TOPIC_POOL.indexOf(topic) < 10 ? 'Tips CV'
-      : TOPIC_POOL.indexOf(topic) < 20 ? 'Interview'
-      : TOPIC_POOL.indexOf(topic) < 32 ? 'Karir' : 'LinkedIn'
+    const topicIdx = TOPIC_POOL.indexOf(topic)
+    const category = topicIdx < 10 ? 'Overthinking'
+      : topicIdx < 20 ? 'Kesehatan Mental'
+      : topicIdx < 30 ? 'Hubungan' : 'Self-Care'
 
     const ARTICLE_SCHEMA = {
       type: 'object',
@@ -703,7 +706,14 @@ ATURAN PENTING — PERSUASIF TAPI HALUS:
 
     try {
       const article = await generateStructured({
-        system: `Kamu adalah content writer expert career coaching untuk audiens Indonesia (Verneks — platform AI career coach). Tulis artikel SEO yang genuinely membantu, bukan artikel tipis isi ulang generik. Gaya bahasa: profesional tapi hangat, seperti Diah Anna (AI career coach Verneks) menjelaskan ke teman — bukan kaku seperti textbook. SELALU hubungkan topik ke dampak nyata: penghasilan, peluang kerja, atau kemajuan karir konkret — bukan cuma "pengembangan diri" abstrak. Tulis SEMUA dalam Bahasa Indonesia.
+        system: `Kamu adalah content writer untuk Verneks — platform teman curhat AI (Diah Anna) untuk audiens muda Indonesia. Tulis artikel yang genuinely membantu soal overthinking, kesehatan mental sehari-hari, hubungan, dan self-care — bukan artikel tipis isi ulang generik. Gaya bahasa: hangat, santai, seperti Diah Anna ngobrol sama teman dekat — bukan kaku seperti textbook psikologi atau artikel kesehatan formal. Tulis SEMUA dalam Bahasa Indonesia.
+
+ATURAN KHUSUS KONTEN KESEHATAN MENTAL (WAJIB DIPATUHI — lebih penting dari gaya bahasa):
+- JANGAN pernah memberi diagnosis atau menyebut pembaca "kemungkinan mengidap [kondisi tertentu]". Kamu bukan tenaga profesional dan artikel ini bukan alat diagnosis.
+- JANGAN berikan saran dosis, nama obat, atau instruksi teknis penanganan krisis (self-harm, bunuh diri) dalam bentuk apa pun — kalau topik menyentuh area itu, arahkan pembaca untuk bicara ke profesional atau layanan krisis, jangan beri instruksi self-help sebagai gantinya.
+- SETIAP artikel yang membahas kondisi yang bisa serius (burnout berat, rasa kosong berkepanjangan, dst) WAJIB menyertakan satu paragraf yang mengingatkan pembaca untuk bicara ke psikolog/profesional kalau kondisinya menetap lama atau mengganggu fungsi harian — jangan lewati bagian ini.
+- Jangan membuat pembaca merasa masalahnya "kecil" atau "lebay" — tapi juga jangan mendramatisir hal yang wajar jadi terdengar seperti gangguan klinis.
+- Tulisan boleh terasa related dan personal, tapi jangan berpura-pura penulisnya (Diah Anna) pernah "mengalami sendiri" pengalaman hidup manusia nyata — dia AI, bukan orang yang benar-benar mengalami hal yang diceritakan.
 
 HINDARI TANDA-TANDA TULISAN AI (PENTING — Google punya sistem yang aktif menurunkan ranking konten yang "kebaca AI generik", dan pembaca juga makin gampang mengenali & tidak percaya konten kayak gitu):
 - JANGAN buka paragraf atau artikel dengan basa-basi generik ("Di era digital saat ini...", "Dalam dunia kerja yang semakin kompetitif...", "Seiring berkembangnya zaman..."). Langsung masuk ke poin, cerita konkret, atau fakta spesifik.

@@ -473,11 +473,11 @@ export default function App() {
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       justifyContent: 'center', height: '100vh', gap: '16px',
-      background: 'var(--wa-header)'
+      background: '#14101B',
     }}>
       <img src="/verneks_icon_1.png" alt="Verneks" style={{ width: 56, height: 56, objectFit: 'contain' }} />
       <div style={{ color: '#fff', fontWeight: 700, fontSize: '1.4rem' }}>Verneks</div>
-      <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>Memuat...</div>
+      <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>Memuat...</div>
     </div>
   )
 
@@ -485,11 +485,11 @@ export default function App() {
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       justifyContent: 'center', height: '100vh', gap: '16px',
-      background: 'var(--wa-header)'
+      background: '#14101B',
     }}>
       <img src="/verneks_icon_1.png" alt="Verneks" style={{ width: 56, height: 56, objectFit: 'contain' }} />
       <div style={{ color: '#fff', fontWeight: 700, fontSize: '1.4rem' }}>Verneks</div>
-      <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>Memuat...</div>
+      <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>Memuat...</div>
     </div>
   )
 
