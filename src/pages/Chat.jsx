@@ -559,6 +559,11 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
       }
     })
     .catch((err) => {
+      // Log pesan error asli ke console browser — sebelumnya user cuma lihat
+      // teks generik "Terjadi kepadatan jalur komunikasi" tanpa tahu akar
+      // masalahnya (limit? error server? network?). Buka DevTools > Console
+      // buat lihat detail ini kalau chat gagal lagi.
+      console.error('[Chat] /api/career-coach gagal:', err.message, err)
       if (err.limitReached) {
         pushBot('Chat hari ini sudah habis 🙏 Upgrade ke Premium untuk lanjut ngobrol tanpa batas.')
         setTimeout(() => window.dispatchEvent(new CustomEvent('show-upgrade', { detail: {} })), 1200)
