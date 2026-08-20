@@ -3,7 +3,6 @@ import { supabase } from '../lib/supabase'
 import { useNavigate, useLocation } from 'react-router-dom'
 import ShareCard from '../components/ShareCard'
 import ShareAppModal from '../components/ShareAppModal'
-import BottomNav from '../components/BottomNav'
 
 function renderMd(text) {
   if (!text) return ''
@@ -248,6 +247,7 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
   const [cvText, setCvText]             = useState('')
   const [interview, setInterview]       = useState({ position: '', level: '', messages: [], qNum: 0 })
   const [showRedeemModal, setShowRedeemModal] = useState(false)
+  const [showMenu, setShowMenu] = useState(false)
   
   const coachKey         = user?.id ? `lc_coach_${user.id}` : null
   const greetingFiredRef = useRef(false)
@@ -573,7 +573,7 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
     <>
     <div ref={containerRef} style={{
       position: 'fixed', top: 0, left: '50%', transform: 'translateX(-50%)',
-      width: '100%', maxWidth: 480, height: 'calc(100vh - 65px)',
+      width: '100%', maxWidth: 480, height: '100vh',
       display: 'flex', flexDirection: 'column',
       background: DA.chatBg, backgroundImage: DA.chatBgImage,
       overflow: 'hidden',
@@ -633,7 +633,54 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
             🎟️ Kode redeem?
           </button>
         )}
+
+        <button
+          onClick={() => setShowMenu(true)}
+          aria-label="Menu"
+          style={{
+            flexShrink: 0, width: 32, height: 32, borderRadius: '50%',
+            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+            color: '#fff', fontSize: '1.1rem', fontWeight: 700,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', lineHeight: 1,
+          }}
+        >
+          ⋮
+        </button>
       </div>
+
+      {showMenu && (
+        <>
+          <div onClick={() => setShowMenu(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 40 }} />
+          <div style={{
+            position: 'absolute', top: 60, right: 12, zIndex: 41,
+            background: '#1C1626', border: '1px solid rgba(139,92,246,0.25)',
+            borderRadius: 14, overflow: 'hidden', minWidth: 200,
+            boxShadow: '0 12px 32px rgba(0,0,0,0.4)',
+          }}>
+            {[
+              { label: '👤  Profil & Pengaturan', onClick: () => navigate('/profile') },
+              { label: '🎟️  Kode Redeem', onClick: () => setShowRedeemModal(true) },
+              { label: '📤  Ajak Teman', onClick: () => setShowShareApp(true) },
+              { label: '🚪  Keluar', onClick: async () => { await supabase.auth.signOut(); navigate('/') }, danger: true },
+            ].map((item, i) => (
+              <button
+                key={i}
+                onClick={() => { setShowMenu(false); item.onClick() }}
+                style={{
+                  display: 'block', width: '100%', textAlign: 'left',
+                  padding: '13px 16px', background: 'none', border: 'none',
+                  borderTop: i > 0 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                  color: item.danger ? '#FB7185' : 'rgba(255,255,255,0.88)',
+                  fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                }}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
       {showRenewalReminder && (
         <div
@@ -751,7 +798,6 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
         @keyframes daTypingDot { 0%, 60%, 100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-2px); } }
       `}</style>
     </div>
-    <BottomNav isPremium={plan === 'premium'} />
     </>
   )
 }
