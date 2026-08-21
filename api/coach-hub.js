@@ -1096,76 +1096,60 @@ async function handleCareerCoach(req, res) {
   // ════════════════════════════════════════════
   // FETCH BASE MEMORY DATA & SUBSCRIPTION CHECK
   // ════════════════════════════════════════════
-  const { userId } = req.body
+  // PIVOT — LOCAL-FIRST MEMORY: Chat.jsx sekarang kirim `localMemory` di body
+  // (ringkasan + RSI patterns yang tersimpan di IndexedDB device user). Kalau
+  // itu ada, server pakai LANGSUNG dan TIDAK query tabel career-profile
+  // Supabase sama sekali untuk request ini — sesuai janji "data kamu cuma
+  // ada di HP/laptopmu" di landing page. Server tetap query Supabase untuk
+  // plan & usage counter lewat getRealPlan/checkAndLogUsage di bawah — itu
+  // data billing/rate-limit, bukan konten personal, jadi wajar tetap di server.
+  const { userId, localMemory } = req.body
   const plan = await getRealPlan(userId)
 
-  let careerProfile = null
-  let growthState   = null
-  let genomeData    = null
-  let sessionNotes  = []
-  let recentMilestones = []
-  let activeDashboardMission = null
+  let careerProfile   = null
   let learnedPatterns = []      // [RSI] Pola yang sudah dipelajari AI
-  let rsiVersion = 1            // [RSI] Versi model mental AI tentang user
+  let rsiVersion      = 1       // [RSI] Versi model mental AI tentang user
+  let diahAnnaMemory  = null    // ringkasan naratif ("apa yang Diah Anna inget")
+  let structuralMemoryName = 'Sobat'
 
-  if (userId) {
+  if (localMemory && typeof localMemory === 'object') {
+    diahAnnaMemory = (localMemory.summary || '').trim() || null
+    structuralMemoryName = localMemory.name || 'Sobat'
+    learnedPatterns = Array.isArray(localMemory.rsiPatterns)
+      ? localMemory.rsiPatterns.slice(0, 8).map(p => ({
+          pattern_category:    p.type || 'umum',
+          pattern_description: p.description || '',
+          confidence_score:    p.confidence || 0,
+          occurrence_count:    p.occurrenceCount || 1,
+        }))
+      : []
+  } else if (userId) {
+    // FALLBACK LEGACY — cuma jalan untuk client lama yang belum kirim
+    // localMemory (misal versi app yang belum ke-refresh). Begitu semua
+    // traffic sudah pasti kirim localMemory, blok ini aman dihapus total.
     try {
-      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+      const profileRes = await supabase
+        .from('user_career_profiles')
+        .select('nama, diah_anna_memory, rsi_version, running_insight, depth_score, user_depth_profile')
+        .eq('user_id', userId).maybeSingle()
+      const patternsRes = await supabase
+        .from('ai_learned_patterns')
+        .select('pattern_category, pattern_description, confidence_score, occurrence_count')
+        .eq('user_id', userId).order('confidence_score', { ascending: false }).limit(8)
 
-      const [profileRes, growthRes, genomeRes, capsuleRes, eventsRes, dashboardRes, patternsRes] = await Promise.all([
-        supabase.from('user_career_profiles').select('*').eq('user_id', userId).maybeSingle(),
-        supabase.from('user_growth_state').select('*').eq('user_id', userId).maybeSingle(),
-        supabase.from('user_genome_scores').select('*').eq('user_id', userId).maybeSingle(),
-        // Ambil capsule kemarin saja (bukan semua history) — hemat token
-        supabase.from('memory_capsule_log').select('capsule_text, capsule_date').eq('user_id', userId).eq('capsule_date', yesterday).maybeSingle(),
-        supabase.from('career_events').select('event_type, event_payload, created_at').eq('user_id', userId).eq('event_type', 'milestone_completed').order('created_at', { ascending: false }).limit(3),
-        supabase.from('dashboard_missions').select('*').eq('user_id', userId).eq('status', 'active').order('created_at', { ascending: false }).limit(1).maybeSingle(),
-        // [RSI] Ambil pola yang sudah dipelajari
-        supabase.from('ai_learned_patterns').select('id, pattern_category, pattern_description, confidence_score, occurrence_count, last_observed_at').eq('user_id', userId).order('confidence_score', { ascending: false }).limit(10),
-      ])
-
-      careerProfile          = profileRes.data
-      growthState            = growthRes.data
-      genomeData             = genomeRes.data
-      sessionNotes           = capsuleRes.data ? [{ summary: capsuleRes.data.capsule_text }] : []
-      recentMilestones       = eventsRes.data || []
-      activeDashboardMission = dashboardRes.data
-      learnedPatterns        = patternsRes.data || []
-      rsiVersion             = careerProfile?.rsi_version || 1
+      careerProfile       = profileRes.data
+      learnedPatterns     = patternsRes.data || []
+      rsiVersion          = careerProfile?.rsi_version || 1
+      diahAnnaMemory       = careerProfile?.diah_anna_memory || null
+      structuralMemoryName = careerProfile?.nama || 'Sobat'
     } catch (e) {
-      console.error('[career-coach] load error:', e.message)
+      console.error('[career-coach] load error (legacy fallback):', e.message)
     }
   }
 
-  const GENOME_LABELS = { analytical: 'Analytical', leadership: 'Leadership', builder: 'Builder', creator: 'Creator', communication: 'Communication', risk_taking: 'Risk Taking' }
-  const topGenomeDimensions = genomeData
-    ? Object.entries(GENOME_LABELS)
-        .map(([k, label]) => ({ label, val: genomeData[k] || 0 }))
-        .sort((a, b) => b.val - a.val)
-        .filter(g => g.val > 0)
-        .slice(0, 3)
-        .map(g => `${g.label} (${g.val})`)
-        .join(', ')
-    : 'Belum teranalisis'
-
-  const rawSkillGaps = careerProfile?.skill_gaps
-  const skillGapsArr = Array.isArray(rawSkillGaps) ? rawSkillGaps : (rawSkillGaps && typeof rawSkillGaps === 'object' ? Object.values(rawSkillGaps) : [])
-  const gpsSteps = growthState?.gps_steps || careerProfile?.gps_steps || []
-
-  // Normalisasi data memori murni untuk Next Focus Engine
   const structuralMemory = {
-    name: careerProfile?.nama || 'Rekan',
-    target_position: careerProfile?.target_posisi || 'Belum ditentukan',
-    target_reason: careerProfile?.target_reason || careerProfile?.motivasi || 'Belum diketahui',
-    current_focus: growthState?.current_focus || careerProfile?.current_focus,
-    skill_gaps: skillGapsArr,
-    next_milestone: growthState?.next_milestone || careerProfile?.next_milestone,
-    gps_steps: gpsSteps,
-    streak_days: growthState?.streak_days || 0,
-    progress_percentage: growthState?.progress_percent || careerProfile?.career_readiness || 0,
-    // FIX: running_insight ditulis oleh weekly-review.js ke user_career_profiles,
-    // BUKAN ke user_growth_state. Sumber lama (growthState) selalu null.
-    running_insight: careerProfile?.running_insight || null
+    name: structuralMemoryName,
+    running_insight: careerProfile?.running_insight || null,
   }
 
   // [RSI] Format pola yang dipelajari menjadi konteks untuk AI
@@ -1173,6 +1157,27 @@ async function handleCareerCoach(req, res) {
 # POLA YANG SUDAH AKU PELAJARI TENTANG KAMU (RSI v${rsiVersion})
 ${learnedPatterns.map((p, i) => `${i + 1}. ${p.pattern_category}: ${p.pattern_description} (Keyakinan: ${p.confidence_score}%, muncul ${p.occurrence_count}x)`).join('\n')}
 ` : ''
+
+  const sessionNotes = []
+
+  // ── Deep memory blocks ────────────────────────────────────────────────────
+  const userDepthProfile = careerProfile?.user_depth_profile || {}
+  const depthScore       = careerProfile?.depth_score        || 0
+
+  const deepMemoryBlock = diahAnnaMemory ? `
+# APA YANG KAMU INGAT TENTANG USER INI
+${diahAnnaMemory}
+` : ''
+
+  const depthProfileBlock = depthScore > 0 ? `
+# POLA MENDALAM USER (depth score: ${depthScore}/100)
+Gaya coaching yang cocok: ${userDepthProfile.coach_style_fit || 'belum terdeteksi'}
+Kondisi emosi terakhir: ${userDepthProfile.last_emotional_state || 'tidak diketahui'}
+Yang memotivasi: ${(userDepthProfile.emotional_triggers?.motivators || []).join(', ') || '-'}
+Yang menghambat: ${(userDepthProfile.emotional_triggers?.blockers || []).join(', ') || '-'}
+Tema berulang: ${(userDepthProfile.recurring_themes || []).join(', ') || '-'}
+` : ''
+
 
   // ════════════════════════════════════════════
   // ACTION: INIT CHAT (GENERASI PROACTIVE GREETING V3 — AI-generated)
@@ -1256,25 +1261,6 @@ Tulis sapaan pembuka yang natural.`,
     setCachedResponse(msgHash, ruleBasedResponse)
     return res.status(200).json({ reply: ruleBasedResponse, ruleBased: true })
   }
-
-  // ── Deep memory blocks (dari update-memory.js) ───────────────────────────
-  const diahAnnaMemory   = careerProfile?.diah_anna_memory   || null
-  const userDepthProfile = careerProfile?.user_depth_profile || {}
-  const depthScore       = careerProfile?.depth_score        || 0
-
-  const deepMemoryBlock = diahAnnaMemory ? `
-# APA YANG KAMU INGAT TENTANG USER INI
-${diahAnnaMemory}
-` : ''
-
-  const depthProfileBlock = depthScore > 0 ? `
-# POLA MENDALAM USER (depth score: ${depthScore}/100)
-Gaya coaching yang cocok: ${userDepthProfile.coach_style_fit || 'belum terdeteksi'}
-Kondisi emosi terakhir: ${userDepthProfile.last_emotional_state || 'tidak diketahui'}
-Yang memotivasi: ${(userDepthProfile.emotional_triggers?.motivators || []).join(', ') || '-'}
-Yang menghambat: ${(userDepthProfile.emotional_triggers?.blockers || []).join(', ') || '-'}
-Tema berulang: ${(userDepthProfile.recurring_themes || []).join(', ') || '-'}
-` : ''
 
   const memoryContext = `
 # APA YANG KAMU INGAT SOAL USER INI
@@ -1362,9 +1348,14 @@ ${learnedPatterns.length > 0 ? `\n\n[RSI ACTIVE] Kamu sudah belajar dari ${learn
     // Detect meaningful signals dalam pesan user
     const hasEmotionalSignal = /bingung|stuck|tidak tahu|ga yakin|ragu|susah|dilema|ambiguous|hambatan|masalah|keputusan|pilih|gimana|sebaiknya/i.test(currentUserMsg)
     
-    // [OPTIMIZATION #6] RSI ON-DEMAND ONLY — hanya trigger untuk breakthrough moments
-    // Tidak lagi automatic setiap 5 pesan, hanya saat ada emotional signal ATAU conversation sangat panjang
-    if (userId && messages.length >= 6 && (hasEmotionalSignal || userMsgCount % 8 === 0)) {
+    // [RSI] Background pattern analysis — DIBATASI ke fallback legacy saja.
+    // Kalau client kirim `localMemory` (jalur local-first), RSI pattern baru
+    // ditangani lewat action 'update-local-memory' yang HASIL-nya dikirim
+    // balik ke client buat disimpan di IndexedDB — bukan ditulis ke Supabase
+    // di sini. Ini penting: analyzeAndLearnPatterns() di bawah nulis langsung
+    // ke tabel ai_learned_patterns, yang akan melanggar janji "data cuma di
+    // HP/laptopmu" kalau tetap jalan untuk user local-first.
+    if (!localMemory && userId && messages.length >= 6 && (hasEmotionalSignal || userMsgCount % 8 === 0)) {
       analyzeAndLearnPatterns(userId, messages, rawReply, careerProfile, learnedPatterns, rsiVersion, supabase).catch(e =>
         console.error('[RSI] Background analysis error:', e.message)
       )
@@ -1764,6 +1755,8 @@ export default async function handler(req, res) {
       return handleDiscoveryCoach(req, res)
     case 'end-session':
       return handleEndSession(req, res)
+    case 'update-local-memory':
+      return handleUpdateLocalMemory(req, res)
     case 'career-coach':
       return handleCareerCoach(req, res)
     default:
@@ -1771,5 +1764,74 @@ export default async function handler(req, res) {
       // sama seperti perilaku career-coach.js sebelumnya kalau tidak ada
       // routing tambahan.
       return handleCareerCoach(req, res)
+  }
+}
+
+/**
+ * handleUpdateLocalMemory — PENGGANTI handleEndSession untuk local-first.
+ * =============================================================================
+ * handleEndSession (di atas) menganalisis percakapan LALU MENULIS hasilnya ke
+ * Supabase (user_chat_history, memory_capsule_log, user_career_profiles). Itu
+ * persis yang melanggar janji "data kamu cuma ada di HP/laptopmu" — jadi
+ * Chat.jsx TIDAK memanggil handleEndSession lagi.
+ *
+ * Fungsi ini melakukan analisis yang SAMA (ringkas percakapan jadi satu
+ * paragraf memori + opsional 1 pola RSI baru), tapi hasilnya di-RETURN ke
+ * client lewat response JSON — client (localMemory.js, lewat Chat.jsx) yang
+ * menyimpannya ke IndexedDB. Server tidak menyimpan apa pun dari isi
+ * percakapan ke database — tidak ada write ke Supabase sama sekali di sini.
+ */
+async function handleUpdateLocalMemory(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+
+  try {
+    const { userId, plan = 'free', recentMessages, currentSummary, name } = req.body
+
+    if (!Array.isArray(recentMessages) || recentMessages.length === 0) {
+      return res.status(400).json({ error: 'recentMessages kosong.' })
+    }
+
+    const userMsgCount = recentMessages.filter(m => m.role === 'user').length
+    if (userMsgCount < 3) {
+      return res.status(200).json({ skipped: true, reason: 'session_too_short', summary: currentSummary || null })
+    }
+
+    const convoText = recentMessages.slice(-24)
+      .map(m => `${m.role === 'user' ? 'User' : 'Diah Anna'}: ${(m.text || m.content || '').slice(0, 300)}`)
+      .filter(l => l.length > 15).join('\n')
+
+    const result = await generateStructured({
+      system: `Kamu membantu Diah Anna (teman curhat AI) meringkas percakapan jadi memori jangka panjang yang ringkas dan hangat — dalam Bahasa Indonesia, ditulis seperti catatan personal, bukan laporan formal. Fokus ke hal konkret yang diceritakan user (situasi, perasaan, orang-orang yang disebut, hal yang berulang) — bukan analisis klinis atau penilaian.`,
+      prompt: `Memori lama (kalau ada):\n${currentSummary || '(belum ada, ini sesi awal)'}\n\nPercakapan sesi ini:\n${convoText}\n\nTulis versi memori yang diperbarui — gabungkan hal penting dari memori lama dengan hal baru dari sesi ini, maksimal 5-6 kalimat. Kalau ada satu pola perilaku/emosional yang cukup jelas berulang (misal: "sering overthinking sebelum tidur", "cenderung memendam masalah dengan atasan"), sertakan juga sebagai pola terpisah.`,
+      schema: {
+        type: 'object',
+        required: ['updated_summary'],
+        properties: {
+          updated_summary: { type: 'string', description: 'Memori yang sudah digabung, 5-6 kalimat, Bahasa Indonesia natural' },
+          new_pattern: {
+            type: 'object',
+            description: 'Opsional — hanya isi kalau ada pola yang cukup jelas',
+            properties: {
+              type: { type: 'string', description: 'kategori singkat, misal: emotional_pattern, communication_style, recurring_topic' },
+              description: { type: 'string' },
+              confidence: { type: 'number' },
+            },
+          },
+        },
+      },
+      maxTokens: 400,
+      tier: 'fast',
+      plan,
+    })
+
+    return res.status(200).json({
+      success: true,
+      summary: (result?.updated_summary || currentSummary || '').trim(),
+      newPattern: result?.new_pattern?.description ? result.new_pattern : null,
+    })
+  } catch (error) {
+    console.error('[update-local-memory] error:', error.message)
+    // Gagal itu tidak fatal — client tetap pakai summary lama, coba lagi nanti.
+    return res.status(200).json({ success: false, summary: req.body?.currentSummary || null })
   }
 }

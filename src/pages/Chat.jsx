@@ -3,6 +3,17 @@ import { supabase } from '../lib/supabase'
 import { useNavigate, useLocation } from 'react-router-dom'
 import ShareCard from '../components/ShareCard'
 import ShareAppModal from '../components/ShareAppModal'
+import {
+  getRecentMessages as getLocalMessages,
+  addChatMessage as addLocalMessage,
+  getSummary as getLocalSummary,
+  saveSummary as saveLocalSummary,
+  upsertRsiPattern as upsertLocalRsiPattern,
+  getTopRsiPatterns as getLocalTopRsiPatterns,
+  countMessagesSince as countLocalMessagesSince,
+  getSettings as getLocalSettings,
+  saveSettings as saveLocalSettings,
+} from '../lib/localMemory'
 
 function renderMd(text) {
   if (!text) return ''
@@ -272,20 +283,32 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
   const coachHistoryRef = useRef([])
   useEffect(() => { coachHistoryRef.current = coachHistory }, [coachHistory])
 
-  // ── Save helper ───────────────────────────────────────────────────────────
-  const saveHistoryToSupabase = useCallback((msgs, useBeacon = false) => {
-    if (!user?.id || !msgs?.length) return
-    // Update localStorage langsung supaya sinkron
+  // ── Save helper — LOCAL-FIRST: histori disimpan ke IndexedDB device user
+  // (localMemory.js), BUKAN lagi dikirim ke Supabase. localStorage tetap
+  // dipakai sebagai buffer cepat untuk render instan saat reload (murni
+  // client-side, tidak pernah kirim data ke mana pun).
+  //
+  // lastPersistedLenRef melacak berapa banyak pesan yang SUDAH masuk
+  // IndexedDB, supaya kalau setCoachHistory dipanggil berkali-kali cepat
+  // (misal: kirim pesan lalu balasan Diah Anna datang < 300ms kemudian),
+  // semua pesan baru tetap kesimpen — bukan cuma pesan terakhir tiap panggilan.
+  const lastPersistedLenRef = useRef(0)
+  const saveHistoryToLocal = useCallback((msgs) => {
+    if (!msgs?.length) return
     if (coachKey) {
       try { localStorage.setItem(coachKey, JSON.stringify(msgs.slice(-50))) } catch {}
     }
-    const payload = JSON.stringify({ userId: user.id, messages: msgs.slice(-50) })
-    if (useBeacon && navigator.sendBeacon) {
-      navigator.sendBeacon('/api/chat-history', new Blob([payload], { type: 'application/json' }))
-    } else {
-      fetch('/api/chat-history', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true }).catch(() => {})
-    }
-  }, [user?.id, coachKey])
+    const newOnes = msgs.slice(lastPersistedLenRef.current)
+    lastPersistedLenRef.current = msgs.length
+    newOnes.forEach(m => {
+      const content = m.content || m.text
+      if (!content) return
+      addLocalMessage({
+        role: m.role === 'assistant' ? 'assistant' : 'user',
+        content,
+      }).catch(() => {})
+    })
+  }, [coachKey])
 
   const setCoachHistory = useCallback((updater) => {
     setCoachHistoryRaw(prev => {
@@ -293,40 +316,63 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
       if (coachKey) {
         try { localStorage.setItem(coachKey, JSON.stringify(next.slice(-50))) } catch {}
       }
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
-      saveTimerRef.current = setTimeout(() => saveHistoryToSupabase(next), 300)
+      // IndexedDB itu lokal & murah — simpan langsung tanpa debounce supaya
+      // tidak ada window kosong yang bisa bikin pesan hilang.
+      saveHistoryToLocal(next)
       return next
     })
-  }, [coachKey, saveHistoryToSupabase])
+  }, [coachKey, saveHistoryToLocal])
   
   const [shareCard, setShareCard] = useState(null)
   const [showShareApp, setShowShareApp] = useState(false)
+
+  // ── Local memory (IndexedDB) — dimuat sekali saat mount, dikirim ke server
+  // tiap request chat lewat body `localMemory` supaya server TIDAK perlu
+  // simpan/baca konten personal dari Supabase sama sekali.
+  const localMemoryRef = useRef({ name: null, summary: null, rsiPatterns: [] })
+  const [localMemoryReady, setLocalMemoryReady] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    Promise.all([getLocalSummary(), getLocalTopRsiPatterns(8)])
+      .then(([summary, rsiPatterns]) => {
+        if (cancelled) return
+        const firstName = (user?.user_metadata?.name || user?.user_metadata?.full_name || '').split(' ')[0] || null
+        localMemoryRef.current = { name: firstName, summary: summary || null, rsiPatterns: rsiPatterns || [] }
+        setLocalMemoryReady(true)
+      })
+      .catch(() => setLocalMemoryReady(true))
+    return () => { cancelled = true }
+  }, [user?.id])
 
   const bottomRef = useRef()
   const fileRef   = useRef()
   const containerRef = useRef()
 
-  // ── Load history dari Supabase saat mount ────────────────────────────────
+  // ── Load history dari IndexedDB device (BUKAN Supabase) saat mount ───────
   useEffect(() => {
     if (!user?.id || historyLoaded) return
 
-    fetch(`/api/chat-history?userId=${user.id}&daysBack=1`)
-      .then(r => r.json())
-      .then(data => {
-        if (data.error) { setHistoryLoaded(true); return }
-
-        if (Array.isArray(data.today) && data.today.length > 0) {
-          // Selalu pakai data Supabase — lebih reliable dari localStorage
-          setCoachHistoryRaw(data.today)
+    getLocalMessages('default', 50)
+      .then(localMsgs => {
+        if (localMsgs.length > 0) {
+          const asCoachHistory = localMsgs.map(m => ({ id: m.id, role: m.role, content: m.content, text: m.content }))
+          setCoachHistoryRaw(asCoachHistory)
+          // PENTING: sinkronkan penanda "sudah tersimpan sampai mana" — kalau
+          // tidak, panggilan setCoachHistory berikutnya (misal kirim pesan
+          // baru) akan mengira SEMUA pesan yang baru dimuat ini belum
+          // tersimpan, lalu nulis ulang semuanya sebagai entry duplikat baru
+          // di IndexedDB.
+          lastPersistedLenRef.current = asCoachHistory.length
           if (coachKey) {
-            try { localStorage.setItem(coachKey, JSON.stringify(data.today.slice(-50))) } catch {}
+            try { localStorage.setItem(coachKey, JSON.stringify(asCoachHistory.slice(-50))) } catch {}
           }
-          const displayMsgs = data.today
+          const displayMsgs = asCoachHistory
             .filter(m => m.role !== 'system')
             .map(m => ({
               id:   m.id || (Date.now() + Math.random()),
               role: m.role === 'assistant' ? 'bot' : m.role,
-              text: m.text || m.content || '',
+              text: m.content || '',
             }))
           if (displayMsgs.length > 0) {
             setMessages(displayMsgs)
@@ -336,62 +382,80 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
           }
           greetingFiredRef.current = true
         }
-        // today kosong → biarkan greeting useEffect jalan normal
+        // Belum ada history lokal → biarkan greeting useEffect jalan normal
         setHistoryLoaded(true)
       })
       .catch(() => {
-        // Fetch gagal → tetap set loaded supaya greeting bisa jalan
         setHistoryLoaded(true)
       })
   }, [user?.id])
 
-  // ── End-session trigger: kirim ke /api/end-session ───────────────────────
-  const memoryFiredRef = useRef(false)
-
-  // Reset flag tiap hari (bukan tiap user berubah)
-  useEffect(() => { memoryFiredRef.current = false }, [user?.id])
-
-  const sendEndSession = useCallback((triggerType = 'visibility') => {
-    if (!user?.id) return
-    if (memoryFiredRef.current) return
+  // ── Sinkronisasi memori lokal: tiap kelipatan 8 pesan user, minta AI
+  // meringkas percakapan jadi memori jangka panjang. Hasilnya di-return dari
+  // server (TIDAK ditulis ke Supabase di sana) lalu disimpan ke IndexedDB
+  // di sini. Ini pengganti sendEndSession lama yang nulis ke Supabase.
+  const syncingMemoryRef = useRef(false)
+  const syncLocalMemory = useCallback(async () => {
+    if (!user?.id || syncingMemoryRef.current) return
     const msgs = coachHistoryRef.current
     if (msgs.filter(m => m.role === 'user').length < 3) return
-    memoryFiredRef.current = true
-
-    const payload = JSON.stringify({
-      userId:   user.id,
-      messages: msgs.slice(-50),
-      trigger:  triggerType,
-    })
-
-    // sendBeacon pakai Blob text/plain — lebih reliable cross-browser
-    if (triggerType !== 'logout' && navigator.sendBeacon) {
-      navigator.sendBeacon('/api/end-session', new Blob([payload], { type: 'text/plain' }))
-    } else {
-      fetch('/api/end-session', {
+    syncingMemoryRef.current = true
+    try {
+      const res = await fetch('/api/coach-hub', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: payload,
-        keepalive: true,
-      }).catch(() => {})
+        body: JSON.stringify({
+          target: 'update-local-memory',
+          userId: user.id,
+          plan,
+          recentMessages: msgs.slice(-24),
+          currentSummary: localMemoryRef.current.summary,
+          name: localMemoryRef.current.name,
+        }),
+      })
+      const data = await res.json()
+      if (data?.summary) {
+        localMemoryRef.current.summary = data.summary
+        await saveLocalSummary(data.summary)
+      }
+      if (data?.newPattern?.description) {
+        await upsertLocalRsiPattern({
+          type: data.newPattern.type || 'umum',
+          description: data.newPattern.description,
+          confidence: data.newPattern.confidence || 50,
+        })
+        localMemoryRef.current.rsiPatterns = await getLocalTopRsiPatterns(8)
+      }
+    } catch (e) {
+      console.warn('[Chat] sync memori lokal gagal (nanti dicoba lagi):', e.message)
+    } finally {
+      syncingMemoryRef.current = false
     }
-  }, [user?.id])
+  }, [user?.id, plan])
 
-  // Reset flag tiap user baru
+
+
+  // ── Trigger sync memori lokal saat sesi berakhir (ganti sendEndSession
+  // lama yang nulis ke Supabase). Beacon TIDAK dipakai di sini karena kita
+  // butuh RESPONS-nya (summary baru) buat disimpan ke IndexedDB — beacon
+  // tidak pernah kasih balik response. Jadi andalan utamanya adalah sync
+  // per-kelipatan-8-pesan (lihat handleSend) yang jalan saat app masih aktif;
+  // trigger di bawah ini best-effort tambahan saat app di-minimize.
+  const memoryFiredRef = useRef(false)
   useEffect(() => { memoryFiredRef.current = false }, [user?.id])
 
   useEffect(() => {
-    const onHide   = () => { saveHistoryToSupabase(coachHistoryRef.current, true);  sendEndSession('visibility') }
-    const onUnload = () => { saveHistoryToSupabase(coachHistoryRef.current, true);  sendEndSession('beforeunload') }
-    const onLogout = () => { saveHistoryToSupabase(coachHistoryRef.current, false); sendEndSession('logout') }
-    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') onHide() })
-    window.addEventListener('beforeunload', onUnload)
-    window.addEventListener('diah-anna-logout-memory', onLogout)
-    return () => {
-      window.removeEventListener('beforeunload', onUnload)
-      window.removeEventListener('diah-anna-logout-memory', onLogout)
+    const onHide = () => {
+      if (memoryFiredRef.current) return
+      memoryFiredRef.current = true
+      syncLocalMemory()
     }
-  }, [sendEndSession, saveHistoryToSupabase])
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') onHide() })
+    window.addEventListener('diah-anna-logout-memory', onHide)
+    return () => {
+      window.removeEventListener('diah-anna-logout-memory', onHide)
+    }
+  }, [syncLocalMemory])
 
   const pushBot = useCallback((text, quickReplies = null) => {
     setMessages(prev => [...prev, { id: Date.now() + Math.random(), role: 'bot', text, quickReplies }])
@@ -402,16 +466,14 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
     setMessages(prev => [...prev, { id: Date.now() + Math.random(), role: 'user', text }])
   }, [])
 
-  // Sama seperti pushBot, tapi juga ikut disimpan ke coachHistory + Supabase —
+  // Sama seperti pushBot, tapi juga ikut disimpan ke coachHistory (lokal) —
   // dipakai untuk pesan "custom" (bukan balasan langsung dari /api/career-coach)
   // supaya tidak hilang saat reload, seperti balasan normal lainnya.
   const pushBotAndPersist = useCallback((text) => {
     pushBot(text)
     const entry = { id: Date.now() + Math.random(), role: 'assistant', content: text, text }
-    const nextHistory = [...coachHistoryRef.current, entry]
-    setCoachHistory(nextHistory)
-    saveHistoryToSupabase(nextHistory, false)
-  }, [pushBot, setCoachHistory, saveHistoryToSupabase])
+    setCoachHistory([...coachHistoryRef.current, entry]) // setCoachHistory sudah auto-save ke IndexedDB
+  }, [pushBot, setCoachHistory])
 
   // 1. Dashboard Mission Synchronization
   useEffect(() => {
@@ -423,7 +485,7 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
       setCoachHistory(newHistory);
       setLoading(true);
       
-      apiFetch('/api/career-coach', { messages: newHistory, userId: user.id })
+      apiFetch('/api/career-coach', { messages: newHistory, userId: user.id, localMemory: localMemoryRef.current })
         .then(data => {
           pushBot(data.reply);
           setCoachHistory([...newHistory, { role: 'assistant', content: data.reply }]);
@@ -444,15 +506,16 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
   // api/coach-hub.js, bukan lewat popup/form terpisah lagi.)
 
   // 3. Proactive greeting — 1x per hari
-  // Trigger hanya kalau historyLoaded=true DAN greetingFiredRef masih false
-  // greetingFiredRef di-set true oleh load useEffect kalau ada history hari ini
+  // Trigger hanya kalau historyLoaded=true, localMemoryReady=true, DAN
+  // greetingFiredRef masih false (di-set true oleh load useEffect kalau ada
+  // history lokal tersimpan).
   useEffect(() => {
-    if (!user || subLoading || !historyLoaded || greetingFiredRef.current) return
+    if (!user || subLoading || !historyLoaded || !localMemoryReady || greetingFiredRef.current) return
 
     greetingFiredRef.current = true
     const firstName = (user.user_metadata?.name || user.user_metadata?.full_name || '').split(' ')[0]
 
-    apiFetch('/api/career-coach', { action: 'init-chat', userId: user.id })
+    apiFetch('/api/career-coach', { action: 'init-chat', userId: user.id, localMemory: localMemoryRef.current })
       .then(data => {
         pushBot(data.openingMessage)
         setCoachHistory([
@@ -463,7 +526,8 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
       .catch(() => {
         pushBot(`Halo ${firstName || 'Sobat'} 👋\n\nAku Diah Anna. Cerita aja apa yang lagi kamu pikirin — aku dengerin.`)
       })
-  }, [user?.id, subLoading, historyLoaded])
+  }, [user?.id, subLoading, historyLoaded, localMemoryReady])
+
 
   useEffect(() => {
     if (!storageKey || messages.length === 0) return
@@ -516,8 +580,7 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
     setInput(''); pushUser(msg)
     const msgId = Date.now()
     const newHistory = [...coachHistoryRef.current, { id: msgId, role: 'user', content: msg, text: msg }]
-    setCoachHistory(newHistory)
-    saveHistoryToSupabase(newHistory, false)
+    setCoachHistory(newHistory) // auto-save ke IndexedDB device
     setLoading(true)
 
     if (plan !== 'premium' && waitingForPositive && isPositiveResponse(msg)) {
@@ -527,35 +590,28 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
       }, 800)
     }
 
-    apiFetch('/api/career-coach', { messages: newHistory, userId: user?.id })
+    // LOCAL-FIRST: kirim ringkasan + RSI patterns dari IndexedDB device user
+    // langsung di body request — server pakai ini, TIDAK query Supabase untuk
+    // konten personal user ini sama sekali (lihat api/coach-hub.js).
+    apiFetch('/api/career-coach', {
+      messages: newHistory,
+      userId: user?.id,
+      localMemory: localMemoryRef.current,
+    })
     .then(data => {
       const replyId = Date.now() + 1
       pushBot(data.reply)
       const fullHistory = [...newHistory, { id: replyId, role: 'assistant', content: data.reply, text: data.reply }]
-      setCoachHistory(fullHistory)
-      // Save langsung dengan fullHistory yang sudah pasti lengkap
-      saveHistoryToSupabase(fullHistory, false)
+      setCoachHistory(fullHistory) // auto-save ke IndexedDB device
       if (plan !== 'premium' && data.persuasiAktif) {
         setWaitingForPositive(true)
       }
-      const userMsgCount = fullHistory.filter(m => m.role === 'user').length
-      if (userMsgCount % 5 === 0) {
-        apiFetch('/api/extract-profile', { userId: user?.id, messages: fullHistory }).catch(() => {})
-      }
 
-      // Income Engine: Diah Anna otomatis mendeteksi topik income dari
-      // percakapan (tanpa mode/tombol terpisah) dan menghitung strategi di
-      // backend begitu data cukup. Kalau hasilnya ada, tampilkan sebagai
-      // bubble berikutnya, dipersist juga supaya tidak hilang saat reload.
-      if (data.strategy) {
-        setTimeout(() => {
-          pushBotAndPersist(formatIncomeStrategy(data.strategy))
-        }, 400)
-      } else if (data.strategyLimitReached) {
-        setTimeout(() => {
-          pushBotAndPersist('Data income kamu sudah lengkap, tapi kuota Income Strategy gratis kamu sudah dipakai 🙏 Upgrade ke Premium untuk generate strategi kapan saja.')
-          window.dispatchEvent(new CustomEvent('show-upgrade', { detail: {} }))
-        }, 400)
+      // Sinkronisasi memori lokal tiap kelipatan 8 pesan user (bukan lagi
+      // extract-profile ke Supabase) — hasil ringkasan disimpan ke IndexedDB.
+      const userMsgCount = fullHistory.filter(m => m.role === 'user').length
+      if (userMsgCount > 0 && userMsgCount % 8 === 0) {
+        syncLocalMemory()
       }
     })
     .catch((err) => {
