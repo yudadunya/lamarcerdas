@@ -540,6 +540,10 @@ export default function Discovery() {
       try { localStorage.setItem('lc_discovery_messages', JSON.stringify(withReply)); localStorage.setItem('lc_discovery_saved_at', String(Date.now())) } catch {}
       if (data.showResultButton) setShowResultBtn(true)
     } catch (err) {
+      // Sebelumnya error di sini tidak pernah di-log — jadi kalau
+      // /api/discovery-coach gagal, kita tidak pernah tahu kenapa. Buka
+      // DevTools > Console kalau ini muncul lagi buat lihat detail aslinya.
+      console.error('[Discovery] /api/discovery-coach gagal:', err.message, err)
       setMessages(prev => [...prev, {
         role: 'bot',
         text: 'Waduh, ada gangguan koneksi. 🙏\n\nSilakan ketik ulang pesanmu atau refresh halaman.',

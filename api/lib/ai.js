@@ -46,11 +46,11 @@ const MODELS = {
   free: {
     fast: {
       model:     process.env.OPENROUTER_MODEL_FREE_FAST  || 'openai/gpt-oss-20b:free',
-      fallbacks: ['google/gemini-3.7-flash-lite', 'deepseek/deepseek-chat'],
+      fallbacks: ['google/gemini-3.5-flash-lite', 'deepseek/deepseek-chat'],
     },
     smart: {
       model:     process.env.OPENROUTER_MODEL_FREE_SMART || 'deepseek/deepseek-chat',
-      fallbacks: ['google/gemini-3.7-flash-lite', 'openai/gpt-oss-20b:free'],
+      fallbacks: ['google/gemini-3.5-flash-lite', 'openai/gpt-oss-20b:free'],
     },
   },
   premium: {
