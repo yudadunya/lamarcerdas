@@ -1,7 +1,7 @@
 {
-  "name": "lamarcerdas",
+  "name": "verneks",
   "version": "1.0.0",
-  "description": "AI Career Platform Indonesia",
+  "description": "Verneks - Teman Curhat AI Indonesia",
   "type": "module",
   "scripts": {
     "dev": "vite",

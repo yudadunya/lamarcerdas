@@ -120,17 +120,9 @@ export default function Home({ user }) {
   // ── Auth guard ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (user) {
-      // TODO(tahap onboarding): setelah Discovery/onboarding disederhanakan,
-      // arahkan langsung ke /chat untuk semua user yang sudah pernah
-      // menyelesaikan onboarding ringan. Untuk sekarang tetap pakai flag
-      // lama supaya tidak merusak alur onboarding yang belum di-pivot.
-      supabase.from('user_career_profiles')
-        .select('career_readiness')
-        .eq('user_id', user.id)
-        .maybeSingle()
-        .then(({ data }) => {
-          window.location.href = data?.career_readiness != null ? '/chat' : '/discovery'
-        })
+      // PIVOT selesai: nggak ada lagi onboarding wajib — user yang sudah
+      // login langsung ke /chat, apapun status career profile-nya.
+      window.location.href = '/chat'
       return
     }
     setTimeout(() => setVisible(true), 80)

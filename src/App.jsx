@@ -50,9 +50,15 @@ function loadMessages(userId) {
 async function syncDiscoveryData(u, setChatMessages) {
   setChatMessages(loadMessages(u.id))
 
+  // PIVOT: Verneks udah nggak lagi gate user baru ke /discovery berdasarkan
+  // kelengkapan career profile — semua user (baru maupun lama) langsung ke
+  // /chat setelah sign-in, nggak ada onboarding wajib. Bagian di bawah ini
+  // (sync ke Supabase) tetap dijalankan di background KALAU kebetulan ada
+  // sisa data lokal dari flow /discovery (halaman itu masih ada, dipakai
+  // opsional buat self-care check-in), tapi hasilnya nggak lagi menentukan
+  // ke mana user diarahkan.
   const discoveryResult = localStorage.getItem('lc_discovery_result')
   const discoveryMessages = localStorage.getItem('lc_discovery_messages')
-  let hasCareerData = false
 
   if (discoveryResult) {
     try {
@@ -145,7 +151,6 @@ async function syncDiscoveryData(u, setChatMessages) {
         }
       }
 
-      hasCareerData = true
     } catch (e) {
       console.warn('[discovery-save] error:', e.message)
     }
@@ -154,28 +159,10 @@ async function syncDiscoveryData(u, setChatMessages) {
     sessionStorage.removeItem(`lc_job_matches_${u.id}`)
   }
 
-  if (!hasCareerData) {
-    try {
-      const { data: cp } = await supabase
-        .from('user_career_profiles')
-        .select('career_readiness, target_posisi')
-        .eq('user_id', u.id)
-        .maybeSingle()
-      // FIX: sebelumnya cuma cek career_readiness != null — user yang
-      // profile-nya "setengah jadi" (career_readiness sempat tersimpan tapi
-      // target_posisi/genome gagal, misal karena onboarding sempat crash di
-      // tengah jalan) dianggap "sudah lengkap" dan dikunci ke /chat, padahal
-      // fitur lain (Opportunity Matching, dst) tetap gagal karena butuh
-      // target_posisi. Sekarang keduanya harus ada baru dianggap lengkap.
-      hasCareerData = cp?.career_readiness != null && !!cp?.target_posisi
-    } catch (err) {
-      console.warn('[App redirect] cek career_readiness gagal:', err.message)
-    }
-  }
-
-  const target = hasCareerData ? '/chat' : '/discovery'
-  if (window.location.pathname !== target) {
-    window.location.replace(target)
+  // Nggak ada lagi gate berdasarkan career_readiness — semua user sign-in
+  // langsung diarahkan ke /chat.
+  if (window.location.pathname !== '/chat') {
+    window.location.replace('/chat')
   }
 }
 
@@ -516,7 +503,7 @@ export default function App() {
         <Route path="/blog"          element={<Blog user={user} />} />
         <Route path="/blog/:slug"    element={<BlogPost user={user} />} />
         
-        {/* NEW: Career Library Routes */}
+        {/* Panduan Self-Care (Library) Routes */}
         <Route path="/library"           element={<LibraryList user={user} />} />
         <Route path="/library/:slug"     element={<GuideDetail user={user} />} />
         

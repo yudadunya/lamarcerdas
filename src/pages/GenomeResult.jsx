@@ -1,21 +1,24 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+// PIVOT: dulu "Career Genome" (6 trait karier + career_fit per trait).
+// Sekarang trait self-awareness/emosional — key tetap sama biar cocok
+// dengan data lama di localStorage/Supabase, cuma label & insight-nya diganti.
 const GENOME_MAP = [
-  { key: 'analytical',    label: 'Analytical',    emoji: '🧠', color: '#34B7F1', insight: 'Kamu berpikir sistematis dan suka menganalisis data sebelum memutuskan. Ini aset besar di era berbasis data.', career_fit: 'Data Scientist, Business Analyst, Strategy Consultant' },
-  { key: 'leadership',    label: 'Leadership',    emoji: '👑', color: '#F48FB1', insight: 'Kamu punya insting untuk memimpin dan mengarahkan orang lain. Tim yang kamu pimpin cenderung punya arah yang jelas.', career_fit: 'Product Manager, Team Lead, Operations Director' },
-  { key: 'builder',       label: 'Builder',       emoji: '⚙️', color: '#25D366', insight: 'Kamu suka membangun sesuatu dari nol dan mengeksekusi ide. Gap antara konsep dan produk terasa kecil di tanganmu.', career_fit: 'Software Engineer, Project Manager, Entrepreneur' },
-  { key: 'creator',       label: 'Creator',       emoji: '🎨', color: '#FFB74D', insight: 'Kamu nyaman dengan ambiguitas dan selalu punya sudut pandang segar. Kreativitasmu bukan sekadar estetika — tapi problem-solving.', career_fit: 'UX Designer, Content Creator, Marketing Strategist' },
-  { key: 'communication', label: 'Communication', emoji: '💬', color: '#CE93D8', insight: 'Kamu mampu menyederhanakan hal kompleks dan membuat orang mengerti. Skill ini makin langka dan makin berharga.', career_fit: 'Sales, Public Relations, Training & Development' },
-  { key: 'risk_taking',   label: 'Risk Taking',   emoji: '🚀', color: '#EF9A9A', insight: 'Kamu nyaman mencoba hal baru dibanding kebanyakan orang. Toleransi risikomu tinggi — modal utama builder dan founder.', career_fit: 'Founder, Business Development, Investment Banker' },
+  { key: 'analytical',    label: 'Self-Awareness',   emoji: '🧠', color: '#34B7F1', insight: 'Kamu bisa ngenalin pola pikirmu sendiri sebelum keburu larut di dalamnya. Ini aset besar buat siapapun yang lagi belajar lebih ngerti diri sendiri.', self_care_fit: 'Journaling, meditasi reflektif, baca soal psikologi ringan' },
+  { key: 'leadership',    label: 'Resilience',       emoji: '🌱', color: '#F48FB1', insight: 'Kamu punya cara buat bangkit lagi meski lagi berat. Orang di sekitarmu mungkin sering minta kekuatan itu darimu juga.', self_care_fit: 'Olahraga rutin, habit tracking, rutinitas pagi yang konsisten' },
+  { key: 'builder',       label: 'Coping Kreatif',   emoji: '⚙️', color: '#25D366', insight: 'Kamu lega kalau perasaan disalurkan lewat aktivitas nyata. Gap antara "ngerasa berat" dan "ngelakuin sesuatu soal itu" kecil di kamu.', self_care_fit: 'Beberes/decluttering, olahraga, bikin sesuatu pakai tangan' },
+  { key: 'creator',       label: 'Keterbukaan',      emoji: '🌤️', color: '#FFB74D', insight: 'Kamu nyaman dengan sudut pandang baru soal dirimu sendiri. Keterbukaan ini bukan cuma soal ide — tapi modal besar buat berubah.', self_care_fit: 'Menulis kreatif, menggambar, eksplorasi hobi baru' },
+  { key: 'communication', label: 'Komunikasi Emosi', emoji: '💬', color: '#CE93D8', insight: 'Kamu mampu menyederhanakan perasaan rumit jadi kata-kata yang orang lain bisa ngerti. Skill ini bikin hubunganmu terasa lebih jujur.', self_care_fit: 'Cerita ke teman dekat, support group, konseling' },
+  { key: 'risk_taking',   label: 'Empati',           emoji: '💗', color: '#EF9A9A', insight: 'Kamu peka sama perasaan diri sendiri maupun orang lain. Kepekaan ini besar — asal jangan lupa arahkan ke diri sendiri juga.', self_care_fit: 'Volunteering, quality time, merawat hewan/tanaman' },
 ]
 
 const READINESS_FACTORS = [
-  { label: 'Ambisi & Goal Clarity',   desc: 'Seberapa jelas tujuan karirmu' },
-  { label: 'Pengalaman Relevan',       desc: 'Track record di bidang target' },
-  { label: 'Skill Match',             desc: 'Kecocokan skill dengan target posisi' },
-  { label: 'Career Genome Score',     desc: 'Kekuatan natural sesuai karir target' },
-  { label: 'Kesiapan Mental',         desc: 'Keterbukaan menghadapi tantangan baru' },
+  { label: 'Kejelasan Tujuan',        desc: 'Seberapa jelas kamu tahu apa yang lagi kamu hadapi' },
+  { label: 'Pengalaman Coping',       desc: 'Seberapa sering kamu udah coba cara-cara mengelola perasaan' },
+  { label: 'Kecocokan Pola',          desc: 'Kecocokan gaya copingmu dengan yang kamu butuhkan sekarang' },
+  { label: 'Skor Trait Diri',         desc: 'Kekuatan natural yang bisa kamu andalkan' },
+  { label: 'Kesiapan Mental',         desc: 'Keterbukaan menghadapi hal-hal baru soal dirimu' },
 ]
 
 export default function GenomeResult() {
@@ -34,7 +37,7 @@ export default function GenomeResult() {
     catch { navigate('/discovery') }
   }, [])
 
-  // Tampilkan CTA hanya setelah GPS Preview masuk viewport
+  // Tampilkan CTA hanya setelah Langkah Self-Care Preview masuk viewport
   useEffect(() => {
     if (!ctaTriggerRef.current) return
     const obs = new IntersectionObserver(
@@ -74,7 +77,7 @@ export default function GenomeResult() {
       {/* Header */}
       <div style={{ background:'rgba(255,255,255,0.03)', borderBottom:'1px solid rgba(255,255,255,0.07)', padding:'14px 18px', display:'flex', alignItems:'center', justifyContent:'space-between', position:'sticky', top:0, zIndex:10, backdropFilter:'blur(8px)' }}>
         <button onClick={() => navigate('/discovery')} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.4)', cursor:'pointer', fontSize:'0.82rem' }}>← Ulangi</button>
-        <span style={{ color:'#fff', fontWeight:700, fontSize:'0.9rem' }}>Career DNA Kamu</span>
+        <span style={{ color:'#fff', fontWeight:700, fontSize:'0.9rem' }}>Diri Kamu</span>
         <div style={{ width:60 }} />
       </div>
 
@@ -87,15 +90,15 @@ export default function GenomeResult() {
           <div style={{ color:'#fff', fontWeight:800, fontSize:'1.7rem', marginBottom:6 }}>{top.label}</div>
           {p.target_posisi && (
             <div style={{ display:'inline-block', background:'rgba(37,211,102,0.1)', border:'1px solid rgba(37,211,102,0.2)', borderRadius:99, padding:'4px 14px', color:'#25D366', fontSize:'0.8rem', fontWeight:600 }}>
-              🎯 Target: {p.target_posisi}
+              🎯 Fokus: {p.target_posisi}
             </div>
           )}
         </div>
 
-        {/* 2. CAREER READINESS */}
+        {/* 2. KESIAPAN DIRI */}
         <div style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:16, padding:'18px', marginBottom:16, ...fade(0.07) }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-            <div style={{ color:'#fff', fontWeight:700, fontSize:'0.92rem' }}>📊 Career Readiness</div>
+            <div style={{ color:'#fff', fontWeight:700, fontSize:'0.92rem' }}>📊 Kesiapan Diri</div>
             <div style={{ textAlign:'right' }}>
               <div style={{ color:'#25D366', fontWeight:900, fontSize:'1.5rem', lineHeight:1 }}>{readiness}%</div>
               <button onClick={() => setShowReadiness(!showReadiness)} style={{ background:'none', border:'none', color:'rgba(52,183,241,0.7)', fontSize:'0.68rem', cursor:'pointer', padding:0, textDecoration:'underline', textUnderlineOffset:'2px' }}>
@@ -131,9 +134,9 @@ export default function GenomeResult() {
           )}
         </div>
 
-        {/* 3. CAREER GENOME */}
+        {/* 3. TRAIT DIRI KAMU */}
         <div style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:16, padding:'18px', marginBottom:16, ...fade(0.12) }}>
-          <div style={{ color:'#fff', fontWeight:700, fontSize:'0.92rem', marginBottom:16 }}>🧬 Career Genome</div>
+          <div style={{ color:'#fff', fontWeight:700, fontSize:'0.92rem', marginBottom:16 }}>🧬 Trait Diri Kamu</div>
           {sortedGenome.map((g,i) => {
             const val = gs[g.key] || 0
             if (val === 0) return null
@@ -156,7 +159,7 @@ export default function GenomeResult() {
                   <div style={{ marginTop:8, padding:'10px 12px', background:`${g.color}11`, border:`1px solid ${g.color}22`, borderRadius:9 }}>
                     <div style={{ fontSize:'0.8rem', color:'rgba(255,255,255,0.6)', lineHeight:1.6, marginBottom:8 }}>{g.insight}</div>
                     <div style={{ fontSize:'0.75rem', color:g.color, fontWeight:600, borderTop:`1px solid ${g.color}33`, paddingTop:8 }}>
-                      🎯 Cocok untuk: {g.career_fit}
+                      🌿 Coba: {g.self_care_fit}
                     </div>
                   </div>
                 )}
@@ -166,15 +169,15 @@ export default function GenomeResult() {
           <div style={{ color:'rgba(255,255,255,0.22)', fontSize:'0.7rem' }}>Klik nama untuk lihat insight</div>
         </div>
 
-        {/* 4. GAP ANALYSIS */}
+        {/* 4. ANALISIS POLA */}
         <div style={{ background:'rgba(255,183,77,0.06)', border:'1px solid rgba(255,183,77,0.18)', borderRadius:16, padding:'18px', marginBottom:16, ...fade(0.17) }}>
-          <div style={{ color:'#FFB74D', fontWeight:700, fontSize:'0.92rem', marginBottom:14 }}>📍 Career Gap Analysis</div>
+          <div style={{ color:'#FFB74D', fontWeight:700, fontSize:'0.92rem', marginBottom:14 }}>📍 Analisis Pola Kamu</div>
           {result.gap_summary && (
             <div style={{ color:'rgba(255,255,255,0.58)', fontSize:'0.83rem', lineHeight:1.65, marginBottom:14 }}>{result.gap_summary}</div>
           )}
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
             <div>
-              <div style={{ color:'rgba(255,255,255,0.3)', fontSize:'0.68rem', letterSpacing:'1px', marginBottom:8 }}>GAP UTAMA:</div>
+              <div style={{ color:'rgba(255,255,255,0.3)', fontSize:'0.68rem', letterSpacing:'1px', marginBottom:8 }}>MASIH PERLU DILATIH:</div>
               <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
                 {gapSkills.length > 0 ? gapSkills.map((skill,i) => (
                   <div key={i} style={{ display:'flex', alignItems:'center', gap:6, fontSize:'0.82rem', color:'rgba(255,255,255,0.65)' }}>
@@ -196,14 +199,14 @@ export default function GenomeResult() {
           </div>
         </div>
 
-        {/* 5. GPS PREVIEW — CTA trigger ada di sini */}
+        {/* 5. LANGKAH SELF-CARE PREVIEW — CTA trigger ada di sini */}
         {gpsSteps.length > 0 && (
           <div ref={ctaTriggerRef} style={{ background:'rgba(52,183,241,0.06)', border:'1px solid rgba(52,183,241,0.2)', borderRadius:16, padding:'18px', ...fade(0.22) }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:4 }}>
-              <div style={{ color:'#34B7F1', fontWeight:700, fontSize:'0.92rem' }}>🚀 Career GPS Kamu</div>
+              <div style={{ color:'#34B7F1', fontWeight:700, fontSize:'0.92rem' }}>🚀 Langkah Self-Care Kamu</div>
               <div style={{ background:'rgba(52,183,241,0.15)', color:'#34B7F1', fontSize:'0.65rem', fontWeight:700, padding:'2px 9px', borderRadius:99 }}>PREVIEW</div>
             </div>
-            <div style={{ color:'rgba(255,255,255,0.35)', fontSize:'0.75rem', marginBottom:14 }}>Roadmap personal untuk menutup gap di atas 👆</div>
+            <div style={{ color:'rgba(255,255,255,0.35)', fontSize:'0.75rem', marginBottom:14 }}>Langkah personal biar kamu ngerasa lebih tenang 👆</div>
             <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
               {gpsSteps.map((step,i) => {
                 const isFree = i < 3
@@ -235,7 +238,7 @@ export default function GenomeResult() {
 
       </div>
 
-      {/* CTA — muncul hanya setelah GPS Preview terlihat */}
+      {/* CTA — muncul hanya setelah Langkah Self-Care Preview terlihat */}
       <div style={{
         position:'fixed', bottom:0, left:'50%',
         width:'100%', maxWidth:480, padding:'16px 18px 32px',
@@ -249,14 +252,14 @@ export default function GenomeResult() {
           <img src="/diah-anna.png" alt="" style={{ width:28, height:28, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
           <div style={{ fontSize:'0.82rem', color:'rgba(255,255,255,0.75)', lineHeight:1.55 }}>
             <strong style={{ color:'#25D366' }}>Diah Anna:</strong>{' '}
-            Saya sudah menyiapkan roadmap lengkap dengan {lockedCount} langkah personal untuk menutup gap kamu. Unlock sekarang untuk mulai bertumbuh.
+            Aku udah siapin {lockedCount} langkah personal lagi biar kamu bisa ngerasa lebih tenang. Unlock sekarang buat lanjutin.
           </div>
         </div>
         <button onClick={() => navigate('/paywall')} style={{ width:'100%', padding:'15px', background:'linear-gradient(135deg,#25D366,#128C7E)', color:'#fff', fontWeight:800, fontSize:'1rem', borderRadius:14, border:'none', cursor:'pointer', boxShadow:'0 4px 24px rgba(37,211,102,0.45)' }}>
-          🎯 Buka Roadmap Lengkap — Gratis 7 Hari
+          🎯 Buka Langkah Lengkap — Gratis 7 Hari
         </button>
         <div style={{ textAlign:'center', marginTop:7, color:'rgba(255,255,255,0.2)', fontSize:'0.68rem' }}>
-          Career GPS · Unlimited Chat dengan Diah Anna · Progress Tracking · Batal Kapan Saja
+          Langkah Self-Care Personal · Unlimited Chat dengan Diah Anna · Progress Tracking · Batal Kapan Saja
         </div>
       </div>
     </div>

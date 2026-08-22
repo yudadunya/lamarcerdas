@@ -89,12 +89,12 @@ export default function Opportunities({ user, loading = false }) {
       alignItems: 'center', justifyContent: 'center',
       padding: '0 24px', textAlign: 'center', paddingBottom: 90,
     }}>
-      <div style={{ fontSize: '3rem', marginBottom: 16 }}>💼</div>
+      <div style={{ fontSize: '3rem', marginBottom: 16 }}>🌿</div>
       <div style={{ color: '#fff', fontWeight: 800, fontSize: '1.1rem', marginBottom: 10 }}>
-        Opportunity Matching
+        Rekomendasi Self-Care
       </div>
       <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem', lineHeight: 1.7, marginBottom: 28 }}>
-        Lihat lowongan yang benar-benar cocok<br />dengan DNA karier kamu.<br /><br />
+        Lihat aktivitas self-care yang benar-benar cocok<br />dengan pola diri kamu.<br /><br />
         Fitur ini tersedia untuk pengguna Premium.
       </div>
       <button
@@ -120,7 +120,7 @@ export default function Opportunities({ user, loading = false }) {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--wa-bg)', paddingBottom: '80px' }}>
       <div className="wa-header">
-        <div className="wa-header-title">💼 Opportunity Matching</div>
+        <div className="wa-header-title">🌿 Rekomendasi Self-Care</div>
       </div>
 
       <div style={{ padding: '16px' }}>
@@ -130,7 +130,7 @@ export default function Opportunities({ user, loading = false }) {
           <div style={{ textAlign: 'center', padding: '48px 0' }}>
             <div style={{ fontSize: '2rem', marginBottom: 12 }}>🔍</div>
             <div style={{ color: '#666', fontSize: '0.85rem', lineHeight: 1.7 }}>
-              Diah Anna sedang mencarikan<br />lowongan terbaik untukmu...
+              Diah Anna sedang nyariin<br />aktivitas terbaik buat kamu...
             </div>
           </div>
         )}
@@ -157,7 +157,7 @@ export default function Opportunities({ user, loading = false }) {
         {!dataLoading && !error && jobs.length > 0 && (
           <>
             <div style={{ color: '#999', fontSize: '0.75rem', marginBottom: 12 }}>
-              {jobs.length} lowongan cocok dengan profil kamu
+              {jobs.length} aktivitas cocok dengan pola kamu
             </div>
 
             {jobs.map((job, i) => (

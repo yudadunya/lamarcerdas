@@ -16,13 +16,12 @@ const PLANS = [
     ctaStyle: 'ghost',
     features: [
       '15 chat per hari dengan Diah Anna',
-      'CV Review (1x/bulan)',
-      'ATS Checker (1x/bulan)',
-      'Mock Interview (1x/bulan)',
-      'CV Maker AI (1x/bulan)',
+      'Curhat soal overthinking, kesehatan mental, hubungan, & self-care',
+      'Akses penuh artikel Blog & Panduan self-care',
+      'Diah Anna tetap inget cerita kamu sebelumnya',
     ],
     locked: [
-      'Chat reset tiap tengah malam, fitur reset tiap awal bulan',
+      'Chat reset tiap tengah malam',
     ],
   },
   {
@@ -37,14 +36,11 @@ const PLANS = [
     ctaStyle: 'green',
     badge: '⭐ PALING WORTH IT',
     features: [
-      'Chat unlimited dengan Diah Anna',
-      'CV Review unlimited',
-      'ATS Checker unlimited',
-      'Mock Interview unlimited',
-      'CV Maker AI unlimited',
-      'Career GPS personal (roadmap 6 bulan)',
-      'Progress tracking harian',
-      'Weekly coaching report',
+      'Chat unlimited dengan Diah Anna, kapan saja',
+      'Personalisasi lebih dalam — Diah Anna makin "kenal" pola & kebiasaanmu',
+      'Ringkasan & insight mingguan dari obrolanmu',
+      'Prioritas respons lebih cepat',
+      'Akses penuh semua panduan self-care premium',
     ],
   },
 ]
@@ -52,9 +48,9 @@ const PLANS = [
 const FAQ = [
   { q: 'Bisa cancel kapan saja?', a: 'Bisa. Tidak ada komitmen jangka panjang. Batalkan sebelum tanggal perpanjangan dan kamu tidak ditagih lagi.' },
   { q: 'Cara bayar gimana?', a: 'Pembayaran lewat Lynk.id — bisa GoPay, OVO, Dana, QRIS, transfer bank, atau kartu kredit/debit.' },
-  { q: 'Apakah data CV saya aman?', a: 'Ya. CV dan percakapan kamu tidak disimpan untuk keperluan apapun selain memproses permintaanmu.' },
-  { q: 'Bedanya Free dan Premium apa?', a: 'Free cukup untuk coba semua fitur dengan batasan 15 chat per hari. Premium untuk yang serius cari kerja — semua fitur unlimited, plus Career GPS dan progress tracking.' },
-  { q: 'Kuota Free reset kapan?', a: 'Chat 15x/hari reset setiap tengah malam (00:00 WIB). Kuota fitur (CV Review, ATS, Interview, CV Maker) masing-masing 1x reset setiap awal bulan.' },
+  { q: 'Apakah data curhatanku aman?', a: 'Ya. Chat dan cerita kamu tersimpan di device kamu sendiri, bukan di server kami, dan tidak dipakai untuk keperluan lain selain menjawab kamu.' },
+  { q: 'Bedanya Free dan Premium apa?', a: 'Free cukup buat curhat harian dengan batasan 15 chat/hari. Premium buat yang mau ngobrol tanpa batas plus insight mingguan soal mood & pola dirimu.' },
+  { q: 'Kuota Free reset kapan?', a: 'Chat 15x/hari reset setiap tengah malam (00:00 WIB).' },
 ]
 
 export default function Pricing({ user }) {
@@ -66,7 +62,7 @@ export default function Pricing({ user }) {
 
   useSEO({
     title: 'Harga & Paket Verneks Premium',
-    description: 'Verneks Premium Rp99.000 sekali bayar — akses penuh 30 hari: coaching unlimited, CV Review, ATS Check, Mock Interview, dan roadmap karir personal bersama Diah Anna.',
+    description: 'Verneks Premium Rp99.000 — akses 30 hari chat unlimited dengan Diah Anna, teman curhat AI buat overthinking, kesehatan mental, hubungan, dan self-care, plus insight mingguan soal mood & pola dirimu.',
     path: '/pricing',
     breadcrumb: generateBreadcrumb([{ name: 'Harga', path: '/pricing' }]),
     faq: FAQ.map(item => ({ question: item.q, answer: item.a })),
@@ -110,7 +106,7 @@ export default function Pricing({ user }) {
             <span style={{ background: 'linear-gradient(90deg, #25D366, #34B7F1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>tepat buatmu</span>
           </h1>
           <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem', lineHeight: 1.6 }}>
-            Coba dulu gratis. Upgrade kalau sudah siap<br/>ngegas karir tanpa batas.
+            Coba dulu gratis. Upgrade kalau kamu mau<br/>ngobrol sama Diah Anna tanpa batas.
           </p>
         </div>
 
@@ -192,12 +188,11 @@ export default function Pricing({ user }) {
 
         {/* Value comparison */}
         <div style={{ background: 'rgba(37,211,102,0.06)', border: '1px solid rgba(37,211,102,0.15)', borderRadius: 14, padding: '16px', marginBottom: 28 }}>
-          <div style={{ color: '#25D366', fontWeight: 700, fontSize: '0.82rem', marginBottom: 10 }}>💡 Bandingin sama career coach konvensional:</div>
+          <div style={{ color: '#25D366', fontWeight: 700, fontSize: '0.82rem', marginBottom: 10 }}>💡 Bandingin sama konseling konvensional:</div>
           {[
-            { label: 'Sesi career coach 1 jam', price: 'Rp 500rb–1jt' },
-            { label: 'Review CV profesional', price: 'Rp 150rb–300rb' },
-            { label: 'Kursus mock interview', price: 'Rp 300rb–500rb' },
-            { label: 'Verneks Premium/bulan', price: 'Rp 99rb', highlight: true },
+            { label: 'Sesi konseling/psikolog 1x', price: 'Rp 300rb–600rb' },
+            { label: 'Sesi terapi lanjutan/bulan (4x)', price: 'Rp 1,2jt–2,4jt' },
+            { label: 'Verneks Premium/bulan, unlimited', price: 'Rp 99rb', highlight: true },
           ].map(item => (
             <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
               <span style={{ color: item.highlight ? '#fff' : 'rgba(255,255,255,0.45)', fontSize: '0.8rem', fontWeight: item.highlight ? 700 : 400 }}>{item.label}</span>

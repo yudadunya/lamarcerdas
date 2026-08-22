@@ -1,8 +1,11 @@
 /**
  * src/pages/Library/index.jsx
  * 
- * Career Library List Page
- * Shows all 20 guides dengan search & filter
+ * Panduan Self-Care — List Page
+ * Shows semua guide dengan search & filter
+ * CATATAN PIVOT: chrome halaman ini sudah self-care, tapi ISI 20 guide di
+ * tabel Supabase `career_library` masih konten lama (career). Perlu ditulis
+ * ulang terpisah — lihat catatan di ringkasan akhir.
  */
 
 import { useEffect, useState } from 'react'
@@ -22,10 +25,10 @@ export default function LibraryList({ user }) {
 
   // Set page meta tags
   useEffect(() => {
-    document.title = 'Career Library - Verneks'
+    document.title = 'Panduan Self-Care - Verneks'
     const metaDesc = document.querySelector('meta[name="description"]')
     if (metaDesc) {
-      metaDesc.content = 'Jelajahi koleksi 20 career guides lengkap dari Diah Anna. Panduan praktis untuk pivot, skill development, networking, dan lebih banyak lagi.'
+      metaDesc.content = 'Jelajahi koleksi panduan self-care lengkap dari Diah Anna. Panduan praktis buat overthinking, kesehatan mental, hubungan, dan self-care.'
     }
   }, [])
 
@@ -102,8 +105,8 @@ export default function LibraryList({ user }) {
       <div className="library-container">
       {/* Header */}
       <div className="library-header">
-        <h1>Career Library</h1>
-        <p>Jelajahi panduan lengkap untuk memajukan karier kamu</p>
+        <h1>Panduan Self-Care</h1>
+        <p>Jelajahi panduan lengkap buat ngerawat diri & pikiran kamu</p>
       </div>
 
       {/* Search */}
@@ -169,8 +172,8 @@ export default function LibraryList({ user }) {
       {/* Footer */}
       <div className="library-footer">
         <p>
-          Ingin diskusi lebih dalam tentang karier kamu?{' '}
-          <Link to="/chat">Chat dengan Diah Anna 🎯</Link>
+          Ingin cerita lebih dalam soal ini?{' '}
+          <Link to="/chat">Chat dengan Diah Anna 💬</Link>
         </p>
       </div>
       </div>

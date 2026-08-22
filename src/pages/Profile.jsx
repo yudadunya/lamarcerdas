@@ -262,7 +262,7 @@ export default function Profile({ user, loading = false, subscription = DEFAULT_
                 {depthScore < 30
                   ? 'Diah Anna baru mengenalmu — terus ngobrol!'
                   : depthScore < 60
-                  ? 'Diah Anna mulai memahami pola karirmu'
+                  ? 'Diah Anna mulai memahami pola dirimu'
                   : depthScore < 85
                   ? 'Diah Anna sudah sangat mengenalmu 🧠'
                   : 'Diah Anna mengenalmu lebih dalam dari siapapun ✨'}
@@ -289,25 +289,25 @@ export default function Profile({ user, loading = false, subscription = DEFAULT_
           <InfoRow label="Email" value={email} icon="📧" last />
         </div>
 
-        {/* ── Info Karier ── */}
+        {/* ── Info Diri ── */}
         <div style={{
           background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
           borderRadius: 16, marginBottom: 12, overflow: 'hidden',
           ...fade(0.16),
         }}>
           <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-            <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.62rem', letterSpacing: '1px', marginBottom: 2 }}>KARIER</div>
+            <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.62rem', letterSpacing: '1px', marginBottom: 2 }}>DIRI KAMU</div>
           </div>
 
-          <InfoRow label="Target Karier" value={loading ? '—' : (target || 'Belum diisi')} icon="🎯" />
-          <InfoRow label="Posisi Saat Ini" value={loading ? '—' : (posisi || 'Belum diisi')} icon="💼" />
+          <InfoRow label="Fokus Utama" value={loading ? '—' : (target || 'Belum diisi')} icon="🎯" />
+          <InfoRow label="Kondisi Saat Ini" value={loading ? '—' : (posisi || 'Belum diisi')} icon="💭" />
 
           {/* Readiness */}
           <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: '0.9rem' }}>📊</span>
-                <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem' }}>Career Readiness</span>
+                <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem' }}>Kesiapan Diri</span>
               </div>
               <span style={{ color: '#25D366', fontWeight: 800, fontSize: '0.95rem' }}>{loading ? '—' : `${readiness}%`}</span>
             </div>

@@ -1,7 +1,7 @@
 /**
  * src/pages/Library/GuideDetail.jsx
  * 
- * Single Career Guide Page
+ * Single Guide Page (self-care)
  * Shows full content, meta tags, schema, related guides, CTA
  */
 
@@ -45,7 +45,7 @@ export default function GuideDetail({ user }) {
         setGuide(guideData)
 
         // Set page title & meta
-        document.title = `${guideData.title} - Verneks Career Library`
+        document.title = `${guideData.title} - Verneks`
         const metaDesc = document.querySelector('meta[name="description"]')
         if (metaDesc) {
           metaDesc.content = guideData.meta_description
@@ -60,7 +60,7 @@ export default function GuideDetail({ user }) {
           author: {
             '@type': 'Person',
             name: 'Diah Anna',
-            description: 'AI Career Coach at Verneks'
+            description: 'Teman Curhat AI di Verneks'
           },
           datePublished: guideData.published_at,
           dateModified: guideData.published_at,
@@ -211,7 +211,7 @@ export default function GuideDetail({ user }) {
           {/* CTA */}
           <div className="guide-cta">
             <h3>Butuh bimbingan lebih detail?</h3>
-            <p>Chat dengan Diah Anna untuk diskusi personal tentang karier kamu</p>
+            <p>Chat dengan Diah Anna untuk cerita lebih personal soal ini</p>
             <Link to="/chat" className="cta-button">
               Chat dengan Diah Anna 🎯
             </Link>

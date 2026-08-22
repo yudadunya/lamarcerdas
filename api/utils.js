@@ -389,7 +389,7 @@ Output JSON:
           .eq('user_id', userId).maybeSingle(),
       ])
 
-      // Profil belum cukup lengkap untuk matching yang akurat — pesan ini
+      // Profil belum cukup lengkap untuk rekomendasi yang akurat — pesan ini
       // dicek secara eksak oleh Opportunities.jsx untuk redirect ke Discovery.
       if (!careerProfile?.target_posisi || !genomeData) {
         return res.status(400).json({ error: 'Profil belum lengkap' })
@@ -404,32 +404,37 @@ Output JSON:
         .map(([k, v]) => `${k}: ${v || 0}`)
         .join(', ')
 
-      const jobMatchPrompt = `Profil karier user:
-- Target posisi: ${careerProfile.target_posisi}
-- Posisi saat ini: ${careerProfile.posisi_saat_ini || 'belum diketahui'}
-- Industri diminati: ${careerProfile.industri || 'belum ditentukan'}
-- Hambatan utama: ${careerProfile.hambatan || 'tidak ada catatan'}
-- Skill gap: ${(careerProfile.skill_gaps || []).join(', ') || 'belum teridentifikasi'}
-- Career readiness: ${careerProfile.career_readiness || 0}%
-- Genome scores: ${genomeSummary}
-- Kekuatan utama (top strength): ${genomeData.top_strength || 'belum terdeteksi'}
+      // PIVOT: dulu job-matching karier, sekarang rekomendasi aktivitas
+      // self-care. Nama kolom Supabase (target_posisi, career_readiness, dst)
+      // sengaja dibiarkan sama, cuma artinya yang beda — lihat komentar di
+      // api/compute-genome.js. Key genome (analytical/leadership/dst) juga
+      // sekarang berarti Self-Awareness/Resilience/dst.
+      const jobMatchPrompt = `Profil diri user:
+- Fokus utama: ${careerProfile.target_posisi}
+- Kondisi saat ini: ${careerProfile.posisi_saat_ini || 'belum diketahui'}
+- Sumber tekanan: ${careerProfile.industri || 'belum ditentukan'}
+- Pola yang bikin susah: ${careerProfile.hambatan || 'tidak ada catatan'}
+- Hal yang masih perlu dilatih: ${(careerProfile.skill_gaps || []).join(', ') || 'belum teridentifikasi'}
+- Skor kesiapan diri: ${careerProfile.career_readiness || 0}%
+- Trait diri (Self-Awareness/Resilience/Coping Kreatif/Keterbukaan/Komunikasi Emosi/Empati): ${genomeSummary}
+- Kekuatan utama: ${genomeData.top_strength || 'belum terdeteksi'}
 
-Berdasarkan profil di atas, buat 5 rekomendasi jenis peran/lowongan yang PALING relevan untuk pasar kerja Indonesia saat ini. Ini bukan lowongan riil dari job board — ini rekomendasi tipe peran & tipe perusahaan yang cocok dengan profil user, jadi field "company" HARUS berupa deskripsi tipe perusahaan (contoh: "Startup Fintech Seri A", "Perusahaan Multinasional FMCG", "Digital Agency Menengah"), BUKAN nama perusahaan riil spesifik.
+Berdasarkan profil di atas, buat 5 rekomendasi aktivitas self-care yang PALING relevan buat kondisi user sekarang. Ini rekomendasi aktivitas nyata yang bisa dicoba sehari-hari (bukan produk berbayar atau jasa profesional spesifik), jadi field "company" HARUS berupa kategori aktivitasnya (contoh: "Rutinitas Malam", "Coping Lewat Aksi", "Ekspresi Kreatif", "Terhubung ke Orang Lain"), BUKAN nama bisnis/brand riil.
 
 Output HANYA JSON array valid (tanpa markdown, tanpa teks lain), format:
 [
   {
-    "role": "nama posisi spesifik",
-    "company": "tipe/kategori perusahaan (bukan nama riil)",
-    "salary": "range gaji realistis format Rp, contoh: Rp15-20jt/bulan",
+    "role": "nama aktivitas spesifik",
+    "company": "kategori aktivitas",
+    "salary": "estimasi durasi/frekuensi realistis, contoh: 10-15 menit/hari atau 1x seminggu",
     "match": angka_0_sampai_100,
-    "reason": "1-2 kalimat kenapa ini cocok, kaitkan dengan genome/skill/target user"
+    "reason": "1-2 kalimat kenapa ini cocok, kaitkan dengan trait/pola user"
   }
 ]
-Urutkan dari match tertinggi. Gaji harus realistis untuk pasar Indonesia sesuai level & posisi.`
+Urutkan dari match tertinggi. Aktivitas harus realistis dan bisa langsung dicoba, bukan saran generik seperti "kelola stres dengan baik".`
 
       const raw = await generateText({
-        system: 'Kamu adalah Diah Anna, career matching engine Verneks. Output HANYA JSON array valid, tanpa backtick markdown, tanpa penjelasan tambahan.',
+        system: 'Kamu adalah Diah Anna, self-care activity matching engine Verneks. Output HANYA JSON array valid, tanpa backtick markdown, tanpa penjelasan tambahan.',
         prompt: jobMatchPrompt,
         maxTokens: 900,
         tier: 'fast',
@@ -451,7 +456,7 @@ Urutkan dari match tertinggi. Gaji harus realistis untuk pasar Indonesia sesuai 
       return res.status(200).json({ success: true, jobs })
     } catch (e) {
       console.error('[job-match] error:', e.message)
-      return res.status(500).json({ error: 'Gagal memuat rekomendasi lowongan.' })
+      return res.status(500).json({ error: 'Gagal memuat rekomendasi aktivitas.' })
     }
   }
 

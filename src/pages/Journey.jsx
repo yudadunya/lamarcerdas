@@ -8,11 +8,11 @@ import BottomNav from '../components/BottomNav'
 // Estimasi timeline berdasarkan progress & career stage
 function getTimeline(stage, progress) {
   const base = {
-    'Career Explorer':     12,
-    'Career Builder':      9,
-    'Career Professional': 6,
-    'Career Expert':       4,
-    'Career Leader':       2,
+    'Baru Mulai Sadar':      12,
+    'Belajar Mengelola':     9,
+    'Lebih Tenang':          6,
+    'Cukup Stabil':          4,
+    'Sudah Jadi Kebiasaan':  2,
   }
   const months = base[stage] || 10
   const remaining = Math.max(1, Math.round(months * (1 - (progress || 0) / 100)))
@@ -42,11 +42,11 @@ function buildPhases(steps = [], targetPosisi = '') {
       steps: padded.slice(4, 6),
     },
     {
-      id: 4, label: 'Phase 4', name: 'Pendaratan',
+      id: 4, label: 'Phase 4', name: 'Konsistensi',
       emoji: '🏆', color: '#F48FB1',
       steps: [
-        { title: 'Apply Pekerjaan', done: false, locked: true },
-        { title: targetPosisi ? `First Role: ${targetPosisi}` : 'First Role', done: false, locked: true },
+        { title: 'Jadi Kebiasaan', done: false, locked: true },
+        { title: targetPosisi ? `Lebih Tenang Soal: ${targetPosisi}` : 'Lebih Tenang', done: false, locked: true },
       ],
     },
   ]
@@ -342,7 +342,7 @@ export default function Journey({ user, loading = false, subscription = DEFAULT_
   }
 
   const handleChatAboutStep = (stepTitle) => {
-    localStorage.setItem('lc_chat_topic', `Jelaskan langkah "${stepTitle}" di career GPS saya dan apa yang harus saya lakukan sekarang.`)
+    localStorage.setItem('lc_chat_topic', `Jelaskan langkah "${stepTitle}" di langkah self-care saya dan apa yang bisa aku coba sekarang.`)
     navigate('/chat')
   }
 
@@ -351,7 +351,7 @@ export default function Journey({ user, loading = false, subscription = DEFAULT_
     <div style={{ minHeight: '100vh', background: '#0a0f0d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontSize: '2rem', marginBottom: 12 }}>🗺️</div>
-        <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.85rem' }}>Memuat Career Journey...</div>
+        <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.85rem' }}>Memuat Journey Diri Kamu...</div>
       </div>
     </div>
   )
@@ -359,9 +359,9 @@ export default function Journey({ user, loading = false, subscription = DEFAULT_
   if (isPremium === false) return (
     <div style={{ minHeight: '100vh', background: '#0a0f0d', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 28px', textAlign: 'center', paddingBottom: 90, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       <div style={{ fontSize: '3rem', marginBottom: 16 }}>🗺️</div>
-      <div style={{ color: '#fff', fontWeight: 800, fontSize: '1.1rem', marginBottom: 10 }}>Career Journey</div>
+      <div style={{ color: '#fff', fontWeight: 800, fontSize: '1.1rem', marginBottom: 10 }}>Journey Diri Kamu</div>
       <div style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.85rem', lineHeight: 1.75, marginBottom: 28 }}>
-        Lacak perjalanan karier kamu hari demi hari.<br />
+        Lacak perjalanan self-care kamu hari demi hari.<br />
         Fitur ini tersedia untuk pengguna Premium.
       </div>
       <button
@@ -398,17 +398,17 @@ export default function Journey({ user, loading = false, subscription = DEFAULT_
   if (!hasData) return (
     <div style={{ minHeight: '100vh', background: '#0a0f0d', paddingBottom: 90, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       <div style={{ background: 'rgba(255,255,255,0.025)', borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '14px 18px' }}>
-        <div style={{ color: '#fff', fontWeight: 800, fontSize: '1rem' }}>🗺️ Career Journey</div>
-        <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem', marginTop: 2 }}>Peta perjalanan karier kamu</div>
+        <div style={{ color: '#fff', fontWeight: 800, fontSize: '1rem' }}>🗺️ Journey Diri Kamu</div>
+        <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem', marginTop: 2 }}>Peta perjalanan self-care kamu</div>
       </div>
       <div style={{ textAlign: 'center', padding: '52px 24px' }}>
         <div style={{ fontSize: '3rem', marginBottom: 14 }}>🗺️</div>
         <div style={{ color: '#fff', fontWeight: 700, fontSize: '1rem', marginBottom: 8 }}>Journey belum terbentuk</div>
         <div style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.83rem', lineHeight: 1.7, marginBottom: 24 }}>
-          Selesaikan Career Discovery agar Diah Anna bisa memetakan roadmap personal kamu.
+          Cerita dulu ke Diah Anna, biar dia bisa memetakan langkah self-care personal kamu.
         </div>
         <button onClick={() => navigate('/discovery')} style={{ padding: '12px 28px', background: 'linear-gradient(135deg,#25D366,#128C7E)', color: '#fff', fontWeight: 700, borderRadius: 12, border: 'none', cursor: 'pointer' }}>
-          🚀 Mulai Career Discovery
+          🚀 Mulai Cerita ke Diah Anna
         </button>
       </div>
       <BottomNav isPremium={isPremium} />
@@ -421,8 +421,8 @@ export default function Journey({ user, loading = false, subscription = DEFAULT_
 
       {/* ── Header ── */}
       <div style={{ background: 'rgba(255,255,255,0.025)', borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '14px 18px' }}>
-        <div style={{ color: '#fff', fontWeight: 800, fontSize: '1rem' }}>🗺️ Career Journey</div>
-        <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem', marginTop: 2 }}>Peta perjalanan karier kamu</div>
+        <div style={{ color: '#fff', fontWeight: 800, fontSize: '1rem' }}>🗺️ Journey Diri Kamu</div>
+        <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem', marginTop: 2 }}>Peta perjalanan self-care kamu</div>
       </div>
 
       <div style={{ padding: '16px 16px 0', maxWidth: 480, margin: '0 auto' }}>
@@ -438,7 +438,7 @@ export default function Journey({ user, loading = false, subscription = DEFAULT_
           {/* Target + Timeline */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
             <div>
-              <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.63rem', letterSpacing: '0.8px', marginBottom: 5 }}>🎯 TARGET KARIER</div>
+              <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.63rem', letterSpacing: '0.8px', marginBottom: 5 }}>🎯 FOKUS UTAMA</div>
               <div style={{ color: '#fff', fontWeight: 800, fontSize: '1.05rem' }}>{targetPosisi || '—'}</div>
               {stage && (
                 <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem', marginTop: 3 }}>{stage}</div>
@@ -455,7 +455,7 @@ export default function Journey({ user, loading = false, subscription = DEFAULT_
           {/* Readiness bar */}
           <div style={{ marginBottom: 12 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', marginBottom: 6 }}>
-              <span style={{ color: 'rgba(255,255,255,0.4)' }}>Career Readiness</span>
+              <span style={{ color: 'rgba(255,255,255,0.4)' }}>Kesiapan Diri</span>
               <span style={{ color: '#25D366', fontWeight: 700 }}>{readiness}%</span>
             </div>
             <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 99, height: 8, overflow: 'hidden' }}>
@@ -485,7 +485,7 @@ export default function Journey({ user, loading = false, subscription = DEFAULT_
           transform: visible ? 'none' : 'translateY(14px)',
           transition: 'opacity 0.45s ease 0.1s, transform 0.45s ease 0.1s',
         }}>
-          <div style={{ color: '#fff', fontWeight: 700, fontSize: '0.88rem', marginBottom: 16 }}>🗺️ Career GPS</div>
+          <div style={{ color: '#fff', fontWeight: 700, fontSize: '0.88rem', marginBottom: 16 }}>🗺️ Langkah Self-Care</div>
 
           {phases.map((phase, pi) => (
             <PhaseBlock
@@ -586,7 +586,7 @@ export default function Journey({ user, loading = false, subscription = DEFAULT_
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ color: '#25D366', fontSize: '0.78rem', flexShrink: 0 }}>✓</span>
                   <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.8rem', flex: 1 }}>
-                    {ev.title || ev.description || 'Aktivitas karier'}
+                    {ev.title || ev.description || 'Aktivitas self-care'}
                   </span>
                   {ev.points && (
                     <span style={{ color: '#25D366', fontSize: '0.7rem', fontWeight: 700, flexShrink: 0 }}>

@@ -5,24 +5,21 @@ import BottomNav from '../components/BottomNav'
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const GENOME_MAP = [
-  { key: 'analytical',    label: 'Analytical',    emoji: '🧠', color: '#34B7F1' },
-  { key: 'leadership',    label: 'Leadership',    emoji: '👑', color: '#F48FB1' },
-  { key: 'builder',       label: 'Builder',       emoji: '⚙️', color: '#25D366' },
-  { key: 'creator',       label: 'Creator',       emoji: '🎨', color: '#FFB74D' },
-  { key: 'communication', label: 'Communication', emoji: '💬', color: '#CE93D8' },
-  { key: 'risk_taking',   label: 'Risk Taking',   emoji: '🚀', color: '#EF9A9A' },
+  { key: 'analytical',    label: 'Self-Awareness',   emoji: '🧠', color: '#34B7F1' },
+  { key: 'leadership',    label: 'Resilience',       emoji: '🌱', color: '#F48FB1' },
+  { key: 'builder',       label: 'Coping Kreatif',   emoji: '⚙️', color: '#25D366' },
+  { key: 'creator',       label: 'Keterbukaan',      emoji: '🌤️', color: '#FFB74D' },
+  { key: 'communication', label: 'Komunikasi Emosi', emoji: '💬', color: '#CE93D8' },
+  { key: 'risk_taking',   label: 'Empati',           emoji: '💗', color: '#EF9A9A' },
 ]
 
-// Peta arah karier → related roles berdasarkan kata kunci
+// Peta fokus utama → rekomendasi aktivitas self-care berdasarkan kata kunci
 const CAREER_RELATIVES = {
-  'data analyst':       [['Data Analyst', 88], ['Business Analyst', 82], ['Product Analyst', 76]],
-  'product manager':    [['Product Manager', 90], ['Product Analyst', 84], ['Growth Manager', 78]],
-  'software engineer':  [['Software Engineer', 91], ['Backend Engineer', 85], ['DevOps Engineer', 77]],
-  'ui ux':              [['UI/UX Designer', 89], ['Product Designer', 83], ['Researcher UX', 75]],
-  'marketing':          [['Digital Marketer', 87], ['Growth Hacker', 81], ['Brand Manager', 74]],
-  'finance':            [['Financial Analyst', 86], ['Business Analyst', 80], ['Risk Analyst', 72]],
-  'hr':                 [['HR Business Partner', 88], ['Talent Acquisition', 82], ['People Ops', 76]],
-  'default':            [['Posisi Target', 87], ['Posisi Terkait', 81], ['Posisi Alternatif', 74]],
+  'overthinking':      [['Journaling Malam', 88], ['Teknik Grounding', 82], ['Meditasi 10 Menit', 76]],
+  'kesehatan mental':  [['Konseling/Terapi', 90], ['Rutinitas Tidur', 84], ['Olahraga Ringan', 78]],
+  'hubungan':          [['Komunikasi Asertif', 89], ['Support Group', 83], ['Quality Time', 75]],
+  'self-care':         [['Rutinitas Pagi', 87], ['Digital Detox', 81], ['Hobi Kreatif', 74]],
+  'default':           [['Journaling', 87], ['Cerita ke Teman Dekat', 81], ['Me-Time Rutin', 74]],
 }
 
 function getOpportunities(targetPosisi, readiness) {
@@ -39,7 +36,7 @@ function getOpportunities(targetPosisi, readiness) {
   // Sesuaikan match % dengan readiness
   const delta = Math.round((readiness - 50) / 10)
   return found.map(([title, base]) => [
-    title === 'Posisi Target' ? targetPosisi : title,
+    title,
     Math.min(97, Math.max(55, base + delta))
   ])
 }
@@ -261,13 +258,13 @@ function FreeDashboard({ user, profile, genome, growth, onUpgrade, weeklyReview 
           <img src="/diah-anna.png" alt="Diah Anna" style={{ width: 38, height: 38, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(37,211,102,0.35)', flexShrink: 0 }} />
           <div>
             <div style={{ color: '#25D366', fontWeight: 700, fontSize: '0.83rem' }}>Diah Anna</div>
-            <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.62rem' }}>AI Career Mentor</div>
+            <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.62rem' }}>Teman Curhat AI</div>
           </div>
         </div>
         <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.85rem', lineHeight: 1.75 }}>
           {mentorMsg || (targetPosisi
-            ? `${firstName}, saya melihat potensi yang cukup kuat dalam diri kamu. Target ${targetPosisi} sangat realistis — kamu sudah ${readiness}% siap. ${gaps.length > 0 ? `Fokus utama sekarang adalah menutup gap di ${gaps.slice(0, 2).join(' dan ')}.` : ''}`
-            : `Halo ${firstName}! Saya siap membantu memetakan perjalanan karier kamu. Mulai ngobrol dengan saya untuk menemukan DNA karier terbaikmu.`
+            ? `${firstName}, aku lihat kamu udah cukup jalan soal ${targetPosisi}. Kamu udah ${readiness}% siap. ${gaps.length > 0 ? `Yang masih perlu dilatih sekarang: ${gaps.slice(0, 2).join(' dan ')}.` : ''}`
+            : `Halo ${firstName}! Aku siap nemenin kamu cerita apapun yang lagi dipikirin. Mulai ngobrol yuk, biar aku bisa mulai kenal pola diri kamu.`
           )}
         </div>
       </div>
@@ -275,7 +272,7 @@ function FreeDashboard({ user, profile, genome, growth, onUpgrade, weeklyReview 
       {/* ═══ SECTION 4 — CAREER GPS PREVIEW ═════════════════════════════════ */}
       {gpsSteps.length > 0 && (
         <div style={{ ...S.card({ position: 'relative', overflow: 'hidden' }), ...fade(0.2, visible) }}>
-          <div style={S.sectionTitle}>🚀 Career GPS Preview</div>
+          <div style={S.sectionTitle}>🚀 Langkah Self-Care Preview</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {gpsSteps.map((step, i) => {
               const unlocked = i < 2
@@ -306,7 +303,7 @@ function FreeDashboard({ user, profile, genome, growth, onUpgrade, weeklyReview 
             onClick={dispatchUpgrade}
             style={{ marginTop: 14, width: '100%', padding: '10px', background: 'rgba(37,211,102,0.1)', border: '1px solid rgba(37,211,102,0.25)', color: '#25D366', fontWeight: 700, fontSize: '0.82rem', borderRadius: 10, cursor: 'pointer' }}
           >
-            🔓 Buka Roadmap Lengkap
+            🔓 Buka Langkah Lengkap
           </button>
         </div>
       )}
@@ -314,7 +311,7 @@ function FreeDashboard({ user, profile, genome, growth, onUpgrade, weeklyReview 
       {/* ═══ SECTION 5 — OPPORTUNITY PREVIEW ════════════════════════════════ */}
       {opportunities.length > 0 && (
         <div style={{ ...S.card(), ...fade(0.25, visible) }}>
-          <div style={S.sectionTitle}>💼 Cocok Untuk DNA Kamu</div>
+          <div style={S.sectionTitle}>🌿 Cocok Untuk Kamu</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {opportunities.map(([title, match], i) => (
               <div
@@ -324,7 +321,7 @@ function FreeDashboard({ user, profile, genome, growth, onUpgrade, weeklyReview 
               >
                 <div>
                   <div style={{ color: '#fff', fontSize: '0.84rem', fontWeight: 600, marginBottom: 2 }}>{title}</div>
-                  {i === 0 && <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem' }}>Paling cocok dengan DNA kamu</div>}
+                  {i === 0 && <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem' }}>Paling cocok dengan pola dirimu</div>}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <div style={{ color: i === 0 ? '#25D366' : 'rgba(255,255,255,0.35)', fontWeight: 800, fontSize: '0.95rem' }}>
@@ -342,15 +339,15 @@ function FreeDashboard({ user, profile, genome, growth, onUpgrade, weeklyReview 
       {!targetPosisi && gaps.length === 0 && (
         <div style={{ textAlign: 'center', padding: '36px 16px', ...fade(0.1, visible) }}>
           <div style={{ fontSize: '2.8rem', marginBottom: 14 }}>🧬</div>
-          <div style={{ color: '#fff', fontWeight: 700, fontSize: '1rem', marginBottom: 8 }}>Career DNA belum terbentuk</div>
+          <div style={{ color: '#fff', fontWeight: 700, fontSize: '1rem', marginBottom: 8 }}>Profil diri belum terbentuk</div>
           <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.83rem', lineHeight: 1.65, marginBottom: 22 }}>
-            Selesaikan Career Discovery agar Diah Anna bisa memetakan DNA karier kamu secara personal.
+            Cerita dulu ke Diah Anna, biar dia bisa mulai memetakan pola diri kamu secara personal.
           </div>
           <button
             onClick={() => window.location.href = '/discovery'}
             style={{ padding: '13px 32px', background: 'linear-gradient(135deg,#25D366,#128C7E)', color: '#fff', fontWeight: 700, borderRadius: 13, border: 'none', cursor: 'pointer', boxShadow: '0 4px 18px rgba(37,211,102,0.35)' }}
           >
-            🚀 Mulai Career Discovery
+            🚀 Mulai Cerita ke Diah Anna
           </button>
         </div>
       )}
@@ -387,7 +384,7 @@ function PremiumDashboard({ user, profile, genome, growth, actions, events, week
   const todayMission = actions?.length > 0
     ? actions[0]
     : currentFocus
-      ? { title: `Pelajari ${currentFocus}`, duration_estimate: '60–90 menit', impact: 'Tinggi', reward_points: 2 }
+      ? { title: `Coba: ${currentFocus}`, duration_estimate: '15–30 menit', impact: 'Tinggi', reward_points: 2 }
       : null
 
   // Activity history
@@ -531,7 +528,7 @@ function PremiumDashboard({ user, profile, genome, growth, actions, events, week
 
       {/* ═══ SECTION 3 — PROGRESS OVERVIEW ══════════════════════════════════ */}
       <div style={{ ...S.card(), ...fade(0.15, visible) }}>
-        <div style={S.sectionTitle}>🔥 Career Momentum</div>
+        <div style={S.sectionTitle}>🔥 Momentum Diri</div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
           <span style={{ color: '#25D366', fontWeight: 900, fontSize: '2rem', lineHeight: 1 }}>{readiness}%</span>
           <div style={{ textAlign: 'right' }}>
@@ -552,7 +549,7 @@ function PremiumDashboard({ user, profile, genome, growth, actions, events, week
       {gpsSteps.length > 0 && (
         <div style={{ ...S.card(), ...fade(0.2, visible) }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <div style={S.sectionTitle}>🗺️ Career Journey</div>
+            <div style={S.sectionTitle}>🗺️ Langkah Self-Care</div>
             <button onClick={() => navigate('/journey')} style={{ background: 'none', border: 'none', color: '#25D366', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}>Lihat Semua →</button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -589,7 +586,7 @@ function PremiumDashboard({ user, profile, genome, growth, actions, events, week
         <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.85rem', lineHeight: 1.75 }}>
           {firstName}, {mentorMsg
             ? mentorMsg
-            : `saya melihat progres kamu meningkat ${weekProgress}% dalam 7 hari terakhir. ${targetPosisi ? `Jika ritme ini dipertahankan, target ${targetPosisi} bisa dicapai lebih cepat dari estimasi.` : 'Tetap konsisten ya!'}`
+            : `aku lihat progres kamu naik ${weekProgress}% dalam 7 hari terakhir. ${targetPosisi ? `Kalau ritme ini dipertahankan, kamu bakal ngerasa lebih baik soal ${targetPosisi} lebih cepat dari perkiraan.` : 'Tetap konsisten ya!'}`
           }
         </div>
         <button
@@ -604,7 +601,7 @@ function PremiumDashboard({ user, profile, genome, growth, actions, events, week
       {opportunities.length > 0 && (
         <div style={{ ...S.card(), ...fade(0.3, visible) }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <div style={S.sectionTitle}>💼 Peluang Terbaik Untukmu</div>
+            <div style={S.sectionTitle}>🌿 Rekomendasi Terbaik</div>
             <button onClick={() => navigate('/opportunities')} style={{ background: 'none', border: 'none', color: '#25D366', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}>Lihat Semua →</button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
@@ -632,7 +629,7 @@ function PremiumDashboard({ user, profile, genome, growth, actions, events, week
             {recentEvents.map((ev, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ color: '#25D366', fontSize: '0.75rem' }}>✓</span>
-                <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.8rem' }}>{ev.title || ev.description || 'Aktivitas karier'}</span>
+                <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.8rem' }}>{ev.title || ev.description || 'Aktivitas self-care'}</span>
                 {ev.points && <span style={{ marginLeft: 'auto', color: '#25D366', fontSize: '0.7rem', fontWeight: 600 }}>+{ev.points}%</span>}
               </div>
             ))}

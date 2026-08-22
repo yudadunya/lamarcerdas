@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 
 // Free:    Home | Chat | DNA | Profile          (4 tab)
-// Premium: Home | Mentor | Journey | Opportunities | Profile (5 tab)
+// Premium: Home | Chat | Journey | Rekomendasi | Profile (5 tab)
 export default function BottomNav({ isPremium = false }) {
   const location = useLocation()
 
@@ -14,9 +14,9 @@ export default function BottomNav({ isPremium = false }) {
 
   const premiumTabs = [
     { href: '/dashboard',     icon: '🏠', label: 'Home'        },
-    { href: '/chat',          icon: '💬', label: 'Mentor'      },
+    { href: '/chat',          icon: '💬', label: 'Curhat'      },
     { href: '/journey',       icon: '🗺️', label: 'Journey'     },
-    { href: '/opportunities', icon: '💼', label: 'Peluang'     },
+    { href: '/opportunities', icon: '🌿', label: 'Rekomendasi' },
     { href: '/profile',       icon: '👤', label: 'Profil'      },
   ]
 

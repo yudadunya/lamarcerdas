@@ -9,24 +9,21 @@ const OPENING = {
 }
 
 const GENOME_MAP = [
-  { key: 'analytical',    label: 'Analytical',    emoji: '🧠', color: '#34B7F1', insight: 'Kamu cenderung berpikir sistematis, suka data, dan membuat keputusan berbasis fakta. Cocok untuk peran yang butuh analisis mendalam dan pemecahan masalah kompleks.' },
-  { key: 'leadership',    label: 'Leadership',    emoji: '👑', color: '#F48FB1', insight: 'Kamu punya dorongan alami untuk memimpin, mengarahkan, dan menginspirasi orang lain. Peran manajerial atau kepemimpinan tim adalah arena terbaikmu.' },
-  { key: 'builder',       label: 'Builder',       emoji: '⚙️', color: '#25D366', insight: 'Kamu senang membangun sesuatu dari nol — sistem, produk, atau proses. Kamu paling produktif ketika bisa melihat hasil nyata dari pekerjaanmu.' },
-  { key: 'creator',       label: 'Creator',       emoji: '🎨', color: '#FFB74D', insight: 'Kamu punya kemampuan berpikir orisinal dan ekspresif. Kamu berkembang di lingkungan yang menghargai inovasi, desain, dan ide-ide segar.' },
-  { key: 'communication', label: 'Communication', emoji: '💬', color: '#CE93D8', insight: 'Kamu pandai menyampaikan ide dengan jelas dan membangun hubungan. Peran yang melibatkan presentasi, negosiasi, atau kolaborasi lintas tim adalah kekuatanmu.' },
-  { key: 'risk_taking',   label: 'Risk Taking',   emoji: '🚀', color: '#EF9A9A', insight: 'Kamu nyaman dengan ketidakpastian dan berani mengambil langkah besar. Lingkungan startup, entrepreneurship, atau peran strategis sangat cocok untukmu.' },
+  { key: 'analytical',    label: 'Self-Awareness',   emoji: '🧠', color: '#34B7F1', insight: 'Kamu cenderung bisa ngenalin pola pikir & emosimu sendiri kalau dikasih ruang buat mikir. Journaling atau meditasi reflektif bakal makin najemin ini.' },
+  { key: 'leadership',    label: 'Resilience',       emoji: '🌱', color: '#F48FB1', insight: 'Kamu punya dorongan alami buat bangkit lagi meski lagi berat. Orang di sekitarmu mungkin sering nyari kekuatan itu darimu juga.' },
+  { key: 'builder',       label: 'Coping Kreatif',   emoji: '⚙️', color: '#25D366', insight: 'Kamu lega kalau perasaan disalurkan lewat aktivitas nyata — olahraga, beberes, bikin sesuatu. Kamu paling ringan kalau bisa "ngelakuin sesuatu" soal apa yang dirasain.' },
+  { key: 'creator',       label: 'Keterbukaan',      emoji: '🌤️', color: '#FFB74D', insight: 'Kamu punya kemampuan lihat masalah dari sudut pandang baru. Kamu berkembang lewat eksplorasi cara ekspresi — nulis, gambar, atau apapun yang bikin perasaan punya bentuk.' },
+  { key: 'communication', label: 'Komunikasi Emosi', emoji: '💬', color: '#CE93D8', insight: 'Kamu pandai menyampaikan perasaan dengan kata-kata dan membangun hubungan yang jujur. Cerita ke orang yang kamu percaya adalah kekuatanmu.' },
+  { key: 'risk_taking',   label: 'Empati',           emoji: '💗', color: '#EF9A9A', insight: 'Kamu peka sama perasaan diri sendiri maupun orang lain. Kepekaan ini besar — asal jangan lupa arahkan ke diri sendiri juga.' },
 ]
 
-// Mapping posisi → roles yang cocok
+// Mapping fokus utama → aktivitas self-care yang cocok
 const CAREER_RELATIVES = {
-  'data analyst':      [['Data Analyst', 88], ['Business Analyst', 82], ['Product Analyst', 76]],
-  'product manager':   [['Product Manager', 90], ['Product Analyst', 84], ['Growth Manager', 78]],
-  'software engineer': [['Software Engineer', 91], ['Backend Engineer', 85], ['DevOps Engineer', 77]],
-  'ui ux':             [['UI/UX Designer', 89], ['Product Designer', 83], ['UX Researcher', 75]],
-  'marketing':         [['Digital Marketer', 87], ['Growth Hacker', 81], ['Brand Manager', 74]],
-  'finance':           [['Financial Analyst', 86], ['Business Analyst', 80], ['Risk Analyst', 72]],
-  'hr':                [['HR Business Partner', 88], ['Talent Acquisition', 82], ['People Ops', 76]],
-  'default':           [['Posisi Target', 87], ['Posisi Terkait', 81], ['Posisi Alternatif', 74]],
+  'overthinking':      [['Journaling Malam', 88], ['Teknik Grounding', 82], ['Meditasi 10 Menit', 76]],
+  'kesehatan mental':  [['Konseling/Terapi', 90], ['Rutinitas Tidur', 84], ['Olahraga Ringan', 78]],
+  'hubungan':          [['Komunikasi Asertif', 89], ['Support Group', 83], ['Quality Time', 75]],
+  'self-care':         [['Rutinitas Pagi', 87], ['Digital Detox', 81], ['Hobi Kreatif', 74]],
+  'default':           [['Journaling', 87], ['Cerita ke Teman Dekat', 81], ['Me-Time Rutin', 74]],
 }
 
 function getOpportunities(targetPosisi) {
@@ -97,7 +94,7 @@ function AnalysisResult({ result, onSave, saving }) {
           <img src="/diah-anna.png" alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
           <div>
             <div style={{ color: '#25D366', fontWeight: 700, fontSize: '0.82rem' }}>Diah Anna selesai menganalisis kamu</div>
-            <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.68rem' }}>Hasil Career Discovery · Verneks</div>
+            <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.68rem' }}>Hasil Discovery · Verneks</div>
           </div>
         </div>
       </div>
@@ -145,7 +142,7 @@ function AnalysisResult({ result, onSave, saving }) {
 
           {/* Readiness dengan counter */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem' }}>Career Readiness</div>
+            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem' }}>Kesiapan Diri</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
               <span style={{ color: '#25D366', fontWeight: 900, fontSize: '2rem', lineHeight: 1 }}>{readinessAnim}</span>
               <span style={{ color: '#25D366', fontWeight: 700, fontSize: '1rem' }}>%</span>
@@ -248,7 +245,7 @@ function AnalysisResult({ result, onSave, saving }) {
           ...fade(0.30)
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <div style={{ color: '#fff', fontWeight: 700, fontSize: '0.85rem' }}>🧠 Career Genome</div>
+            <div style={{ color: '#fff', fontWeight: 700, fontSize: '0.85rem' }}>🧠 Trait Diri Kamu</div>
             {topGenome && (
               <div style={{ background: `${topGenome.color}22`, border: `1px solid ${topGenome.color}44`, borderRadius: 99, padding: '3px 10px' }}>
                 <span style={{ color: topGenome.color, fontSize: '0.7rem', fontWeight: 700 }}>
@@ -295,13 +292,13 @@ function AnalysisResult({ result, onSave, saving }) {
             ...fade(0.38)
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-              <div style={{ color: '#25D366', fontWeight: 700, fontSize: '0.85rem' }}>🗺️ Career GPS Preview</div>
+              <div style={{ color: '#25D366', fontWeight: 700, fontSize: '0.85rem' }}>🗺️ Langkah Self-Care Preview</div>
               <div style={{ background: 'rgba(37,211,102,0.15)', color: '#25D366', fontSize: '0.62rem', fontWeight: 700, padding: '2px 8px', borderRadius: 99 }}>
                 {gpsSteps.length} LANGKAH
               </div>
             </div>
             <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.72rem', marginBottom: 12 }}>
-              Roadmap personal menuju {p.target_posisi || 'target kariermu'}
+              Langkah personal seputar {p.target_posisi || 'fokus utamamu'}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {gpsSteps.map((step, i) => {
@@ -362,7 +359,7 @@ function AnalysisResult({ result, onSave, saving }) {
               <img src="/diah-anna.png" alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
               <div>
                 <div style={{ color: '#25D366', fontWeight: 700, fontSize: '0.85rem' }}>Diah Anna</div>
-                <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem' }}>Career Coach · Verneks</div>
+                <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem' }}>Teman Curhat AI · Verneks</div>
               </div>
             </div>
             <div style={{ color: 'rgba(255,255,255,0.82)', fontSize: '0.88rem', lineHeight: 1.75, paddingLeft: 4 }}>
@@ -385,7 +382,7 @@ function AnalysisResult({ result, onSave, saving }) {
       }}>
         <div style={{ marginBottom: 10, padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10 }}>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {['🗺️ Career GPS Lengkap', '🎯 Roadmap Personal', '📊 Progress Tracking', '💬 Coaching Unlimited'].map(f => (
+            {['🗺️ Langkah Self-Care Lengkap', '🎯 Panduan Personal', '📊 Progress Tracking', '💬 Chat Unlimited'].map(f => (
               <span key={f} style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', gap: 3 }}>
                 <span style={{ color: '#25D366', fontSize: '0.6rem' }}>🔒</span> {f}
               </span>
@@ -615,7 +612,7 @@ export default function Discovery() {
             Diah Anna
             <img src="/icons/verified.png" width="16" height="16" alt="verified" style={{ flexShrink: 0 }} />
           </div>
-          <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.72rem' }}>Career Discovery Coach</div>
+          <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.72rem' }}>Teman Curhat AI</div>
         </div>
         <button onClick={() => navigate('/')}
           style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', fontSize: '1.2rem', cursor: 'pointer', padding: '4px 8px' }}>
@@ -658,7 +655,7 @@ export default function Discovery() {
           </div>
         )}
 
-        {/* Tombol "Lihat Career DNA" muncul setelah cukup data */}
+        {/* Tombol "Lihat Hasil" muncul setelah cukup data */}
         {showResultBtn && !loading && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '16px 0 8px' }}>
             <div style={{ background: '#fff', border: '1px solid #e0e0e0', borderRadius: '3px 12px 12px 12px', padding: '10px 14px', fontSize: '0.85rem', color: '#333', marginBottom: 10, maxWidth: '85%', boxShadow: '0 1px 2px rgba(0,0,0,0.08)' }}>

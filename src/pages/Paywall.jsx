@@ -2,15 +2,15 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
-const FREE_FEATURES = ['Career DNA Test','Career Genome','Career Gap Analysis','Career Readiness %','3 Langkah Pertama GPS']
+const FREE_FEATURES = ['Profil Diri Kamu','Trait Diri Kamu','Analisis Pola','Skor Kesiapan Diri','3 Langkah Pertama Self-Care']
 
 const PREMIUM_FEATURES = [
-  { icon:'🗺️', text:'Career GPS Lengkap — roadmap personal step by step, tidak ada yang ketinggalan' },
-  { icon:'💬', text:'Diah Anna AI Mentor unlimited — tanya apapun, kapanpun, tanpa batas pesan' },
-  { icon:'📈', text:'Progress Tracking harian — pantau seberapa dekat kamu ke target' },
-  { icon:'📋', text:'Weekly Coaching Report — ringkasan kemajuan & rekomendasi minggu ini' },
-  { icon:'💼', text:'Opportunity Matching — notifikasi lowongan yang benar-benar cocok DNA-mu' },
-  { icon:'✅', text:'Personal Action Plan — to-do spesifik yang bisa langsung dijalankan hari ini' },
+  { icon:'🗺️', text:'Langkah Self-Care Lengkap — panduan personal step by step, tidak ada yang ketinggalan' },
+  { icon:'💬', text:'Diah Anna unlimited — cerita apapun, kapanpun, tanpa batas pesan' },
+  { icon:'📈', text:'Progress Tracking harian — pantau seberapa jauh kamu udah berkembang' },
+  { icon:'📋', text:'Ringkasan Mingguan — insight mood & pola dirimu minggu ini' },
+  { icon:'🌿', text:'Rekomendasi Aktivitas — saran self-care yang benar-benar cocok sama kondisimu' },
+  { icon:'✅', text:'Personal Action Plan — langkah kecil spesifik yang bisa langsung dicoba hari ini' },
 ]
 
 // Scarcity: kuota tersisa (bisa dibuat dinamis dari backend nanti)
@@ -118,12 +118,12 @@ export default function Paywall() {
   const mentorMsg   = result.mentor_message
   const gs          = result.genome_scores || {}
   const GMAP        = [
-    {key:'analytical',label:'Analytical',emoji:'🧠',color:'#34B7F1'},
-    {key:'leadership',label:'Leadership',emoji:'👑',color:'#F48FB1'},
-    {key:'builder',   label:'Builder',   emoji:'⚙️',color:'#25D366'},
-    {key:'creator',   label:'Creator',   emoji:'🎨',color:'#FFB74D'},
-    {key:'communication',label:'Communication',emoji:'💬',color:'#CE93D8'},
-    {key:'risk_taking',  label:'Risk Taking',  emoji:'🚀',color:'#EF9A9A'},
+    {key:'analytical',label:'Self-Awareness',emoji:'🧠',color:'#34B7F1'},
+    {key:'leadership',label:'Resilience',emoji:'🌱',color:'#F48FB1'},
+    {key:'builder',   label:'Coping Kreatif',   emoji:'⚙️',color:'#25D366'},
+    {key:'creator',   label:'Keterbukaan',   emoji:'🌤️',color:'#FFB74D'},
+    {key:'communication',label:'Komunikasi Emosi',emoji:'💬',color:'#CE93D8'},
+    {key:'risk_taking',  label:'Empati',  emoji:'💗',color:'#EF9A9A'},
   ]
   const topGenome = GMAP.reduce((b,g) => (gs[g.key]||0) > (gs[b.key]||0) ? g : b, GMAP[0])
 
@@ -139,7 +139,7 @@ export default function Paywall() {
       {/* Header */}
       <div style={{ background:'rgba(255,255,255,0.03)', borderBottom:'1px solid rgba(255,255,255,0.07)', padding:'14px 18px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
         <button onClick={() => navigate('/genome-result')} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.4)', cursor:'pointer', fontSize:'0.82rem' }}>← Kembali</button>
-        <span style={{ color:'#fff', fontWeight:700, fontSize:'0.9rem' }}>Career GPS</span>
+        <span style={{ color:'#fff', fontWeight:700, fontSize:'0.9rem' }}>Langkah Self-Care</span>
         <div style={{ width:60 }} />
       </div>
 
@@ -162,17 +162,17 @@ export default function Paywall() {
             <img src="/diah-anna.png" alt="Diah Anna" style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover', border:'2px solid rgba(37,211,102,0.35)', flexShrink:0 }} />
             <div>
               <div style={{ color:'#25D366', fontWeight:700, fontSize:'0.85rem' }}>Diah Anna</div>
-              <div style={{ color:'rgba(255,255,255,0.3)', fontSize:'0.68rem' }}>AI Career Mentor · Verneks</div>
+              <div style={{ color:'rgba(255,255,255,0.3)', fontSize:'0.68rem' }}>Teman Curhat AI · Verneks</div>
             </div>
           </div>
 
           <div style={{ color:'rgba(255,255,255,0.82)', fontSize:'0.9rem', lineHeight:1.75, marginBottom:16 }}>
-            {mentorMsg || `${p.nama ? `${p.nama}, ` : ''}saya sudah menganalisis percakapan kita dengan seksama.${p.target_posisi ? ` Tujuanmu menjadi ${p.target_posisi} itu realistis dan bisa dicapai.` : ''} ${p.hambatan_utama ? `Hambatan terbesar saat ini bukan kemampuanmu — melainkan ${p.hambatan_utama}.` : 'Kamu punya potensi nyata yang belum teroptimalkan.'}`}
+            {mentorMsg || `${p.nama ? `${p.nama}, ` : ''}aku udah dengerin cerita kita dengan seksama.${p.target_posisi ? ` Soal ${p.target_posisi} yang lagi kamu hadapi, itu wajar dan bisa dilewatin pelan-pelan.` : ''} ${p.hambatan_utama ? `Yang bikin susah lega selama ini bukan salahmu — melainkan ${p.hambatan_utama}.` : 'Kamu punya kekuatan buat ngerasa lebih baik, cuma belum sepenuhnya kepakai.'}`}
           </div>
 
-          {/* Roadmap setengah terbuka */}
+          {/* Langkah setengah terbuka */}
           <div style={{ borderTop:'1px solid rgba(37,211,102,0.15)', paddingTop:14 }}>
-            <div style={{ color:'rgba(255,255,255,0.35)', fontSize:'0.7rem', letterSpacing:'1px', marginBottom:10 }}>ROADMAP YANG SUDAH SAYA SIAPKAN:</div>
+            <div style={{ color:'rgba(255,255,255,0.35)', fontSize:'0.7rem', letterSpacing:'1px', marginBottom:10 }}>LANGKAH YANG SUDAH AKU SIAPKAN:</div>
             <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
               {gpsSteps.slice(0,3).map((step,i) => (
                 <div key={i} style={{ display:'flex', alignItems:'center', gap:8, fontSize:'0.85rem' }}>
@@ -190,16 +190,16 @@ export default function Paywall() {
               ))}
             </div>
             <div style={{ marginTop:12, fontSize:'0.78rem', color:'rgba(255,255,255,0.38)', lineHeight:1.55 }}>
-              Saya tahu persis langkah mana yang harus kamu ambil sekarang. Tapi untuk membukanya, kamu perlu satu keputusan kecil.
+              Aku tahu persis langkah mana yang cocok buat kamu coba sekarang. Tapi untuk membukanya, kamu perlu satu keputusan kecil.
             </div>
           </div>
         </div>
 
         {/* ── APA YANG KAMU DAPATKAN ── */}
         <div style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:16, padding:'18px', marginBottom:14, ...fade(0.14) }}>
-          <div style={{ color:'#fff', fontWeight:800, fontSize:'1rem', marginBottom:4 }}>🎯 Career GPS Kamu Sudah Siap</div>
+          <div style={{ color:'#fff', fontWeight:800, fontSize:'1rem', marginBottom:4 }}>🎯 Langkah Self-Care Kamu Sudah Siap</div>
           <div style={{ color:'rgba(255,255,255,0.38)', fontSize:'0.8rem', marginBottom:16, lineHeight:1.5 }}>
-            Satu paket lengkap untuk memperpendek jarak antara kamu hari ini dan karir yang kamu inginkan.
+            Satu paket lengkap buat nemenin kamu ngerasa lebih tenang, selangkah demi selangkah.
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:11 }}>
             {PREMIUM_FEATURES.map((f,i) => (
@@ -285,7 +285,7 @@ export default function Paywall() {
             boxShadow: loginLoading ? 'none' : '0 4px 22px rgba(37,211,102,0.45)',
             display:'flex', alignItems:'center', justifyContent:'center', gap:8,
           }}>
-          {loginLoading && plan==='premium' ? '⏳ Mengarahkan...' : '🚀 Upgrade Premium — Buka Career GPS'}
+          {loginLoading && plan==='premium' ? '⏳ Mengarahkan...' : '🚀 Upgrade Premium — Buka Langkah Self-Care'}
         </button>
 
         {/* Free CTA */}

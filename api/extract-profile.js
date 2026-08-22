@@ -1,4 +1,9 @@
-// api/extract-profile.js — Career Memory Engine V3
+// api/extract-profile.js — Self-Care Memory Engine V3
+// PIVOT: dulu "Career Memory Engine" (ekstrak data karier tiap sesi chat).
+// Sekarang ekstrak pola emosional & self-care. Nama tabel/kolom Supabase
+// SENGAJA dibiarkan sama (user_career_profiles, target_posisi, career_dna,
+// dst) supaya tidak perlu migrasi skema — cuma arti & instruksi promptnya
+// yang berubah. Lihat komentar serupa di api/compute-genome.js.
 import { generateText } from './lib/ai.js'
 import { createClient } from '@supabase/supabase-js'
 
@@ -32,8 +37,6 @@ export default async function handler(req, res) {
           industri: existingProfile.industri,
           lama_pengalaman: existingProfile.lama_pengalaman,
           skill_utama: existingProfile.skill_utama,
-          target_gaji: existingProfile.target_gaji,
-          perusahaan_impian: existingProfile.perusahaan_impian,
           motivasi: existingProfile.motivasi,
           hambatan: existingProfile.hambatan,
           summary: existingProfile.summary,
@@ -46,10 +49,10 @@ export default async function handler(req, res) {
       .map(m => `${m.role === 'user' ? 'User' : 'Diah Anna'}: ${m.content}`)
       .join('\n')
 
-    // ── Career Memory Engine V3 prompt ──
-    const systemPrompt = `Kamu adalah Career Memory Engine V3 milik Verneks.
+    // ── Self-Care Memory Engine V3 prompt ──
+    const systemPrompt = `Kamu adalah Self-Care Memory Engine V3 milik Verneks.
 
-Baca percakapan antara user dan Diah Anna (career coach AI), lalu ekstrak dan analisis semua informasi karir user.
+Baca percakapan antara user dan Diah Anna (teman curhat AI), lalu ekstrak dan analisis pola emosional & self-care user — bukan data karier.
 
 Kembalikan HANYA JSON VALID, tidak ada teks pengantar/penutup, tidak ada backtick markdown (\`\`\`json), tidak ada preamble.
 
@@ -60,32 +63,32 @@ Kembalikan HANYA JSON VALID, tidak ada teks pengantar/penutup, tidak ada backtic
     "domisili": "kota tempat tinggal jika ada, null jika tidak",
     "pendidikan": "jenjang pendidikan terakhir jika ada, null jika tidak",
     "jurusan": "jurusan jika ada, null jika tidak",
-    "posisi_saat_ini": "jabatan saat ini atau 'fresh grad' jika baru lulus, null jika tidak ada",
-    "perusahaan": "nama perusahaan saat ini jika ada, null jika tidak",
-    "industri": "industri saat ini jika ada, null jika tidak",
-    "lama_pengalaman": "total pengalaman kerja jika ada, null jika tidak",
-    "skill_utama": ["skill1", "skill2"] atau null,
-    "gaji_sekarang": "gaji saat ini jika disebutkan, null jika tidak",
-    "target_posisi": "posisi yang dituju jika ada, null jika tidak",
-    "target_industri": "industri yang dituju jika ada, null jika tidak",
-    "target_gaji": "target gaji jika disebutkan, null jika tidak",
-    "perusahaan_impian": "perusahaan impian jika disebutkan, null jika tidak",
-    "timeline_karir": "kapan ingin mencapai goal jika disebutkan, null jika tidak",
-    "tantangan_karir": "tantangan utama yang sedang dihadapi, null jika tidak",
-    "motivasi": "motivasi atau goals jangka panjang jika ada, null jika tidak",
-    "progress_lamaran": "update lamaran aktif jika ada, null jika tidak",
-    "hambatan": "hambatan atau kekhawatiran jika ada, null jika tidak",
-    "gaya_kerja": "preferensi kerja (remote/hybrid/dll) jika ada, null jika tidak",
-    "emotional_state": "kondisi emosional saat ini dalam 1-2 kata (positif/semangat/bingung/khawatir/frustasi/optimis/lelah/excited), null jika tidak jelas",
-    "summary": "2-3 paragraf narasi briefing untuk career coach: siapa user ini, di mana posisinya sekarang, apa yang dia mau, tantangan utama, dan aspek penting lain untuk coaching. Pakai bahasa Indonesia natural.",
+    "posisi_saat_ini": "gambaran singkat kondisi/perasaan user belakangan ini, null jika tidak ada",
+    "perusahaan": "tempat kerja/aktivitas utama user jika disebutkan (konteks saja), null jika tidak",
+    "industri": "sumber tekanan utama yang terungkap — misalnya pekerjaan, keluarga, pertemanan, percintaan, atau diri sendiri, null jika tidak jelas",
+    "lama_pengalaman": "sudah berapa lama user menghadapi kondisi/pola ini jika disebutkan, null jika tidak",
+    "skill_utama": ["kekuatan atau cara coping yang teridentifikasi"] atau null,
+    "gaji_sekarang": null,
+    "target_posisi": "fokus utama user SEKARANG — salah satu: Overthinking / Kesehatan Mental / Hubungan / Self-Care, null jika belum jelas",
+    "target_industri": null,
+    "target_gaji": null,
+    "perusahaan_impian": null,
+    "timeline_karir": null,
+    "tantangan_karir": "pola pikir/kebiasaan yang bikin user susah lega, null jika tidak",
+    "motivasi": "apa yang bikin user pengen ngerasa lebih baik/lebih tenang, null jika ada",
+    "progress_lamaran": null,
+    "hambatan": "pola atau kebiasaan NYATA yang bikin user susah lega — bukan surface level, tapi akar polanya, null jika tidak",
+    "gaya_kerja": "gaya coping yang terdeteksi (memendam sendiri/cerita ke orang lain/mengalihkan ke aktivitas/dll), null jika tidak",
+    "emotional_state": "kondisi emosional saat ini dalam 1-2 kata (tenang/cemas/sedih/bingung/lega/overwhelmed/optimis/lelah), null jika tidak jelas",
+    "summary": "2-3 paragraf narasi briefing untuk Diah Anna: siapa user ini, apa yang lagi dia hadapi, cara dia biasanya coping, pola yang berulang, dan aspek penting lain supaya sesi curhat berikutnya terasa nyambung. Pakai bahasa Indonesia natural.",
     "topik_dibahas": ["topik1", "topik2"]
   },
   "career_dna": {
-    "ambisi": "1 kalimat tentang ambisi karir user berdasarkan percakapan",
+    "ambisi": "1 kalimat tentang apa yang sebenarnya user pengen rasakan/capai secara emosional, berdasarkan percakapan",
     "gaya_komunikasi": "direct/reflective/ekspresif/analitis berdasarkan cara user bicara",
     "kekhawatiran_utama": "kekhawatiran terbesar yang tersirat dari percakapan",
-    "preferensi_industri": ["industri1", "industri2"],
-    "nilai_kerja": "hal yang paling penting bagi user dalam bekerja (growth/stabilitas/impact/kreativitas/dll)"
+    "preferensi_industri": ["topik yang paling sering user angkat — overthinking/kesehatan mental/hubungan/self-care"],
+    "nilai_kerja": "hal yang paling penting bagi user dalam merawat dirinya (ketenangan/keterhubungan/kejujuran emosi/kemandirian/dll)"
   },
   "genome_scores": {
     "analytical": 0,
@@ -96,14 +99,14 @@ Kembalikan HANYA JSON VALID, tidak ada teks pengantar/penutup, tidak ada backtic
     "risk_taking": 0
   },
   "growth_state": {
-    "career_stage": "Career Explorer",
+    "career_stage": "Baru Mulai Sadar",
     "progress_percent": 0,
-    "current_focus": "apa yang sedang difokuskan user sekarang",
-    "next_milestone": "milestone karir berikutnya yang realistis",
+    "current_focus": "apa yang sedang jadi fokus user sekarang",
+    "next_milestone": "milestone self-care berikutnya yang realistis",
     "streak_estimate": 0
   },
   "next_action": {
-    "title": "1 aksi konkret yang paling penting dilakukan user sekarang",
+    "title": "1 aksi kecil paling penting buat user coba sekarang",
     "description": "penjelasan singkat kenapa aksi ini penting dan bagaimana melakukannya",
     "estimated_days": 7
   }
@@ -111,15 +114,15 @@ Kembalikan HANYA JSON VALID, tidak ada teks pengantar/penutup, tidak ada backtic
 
 ATURAN STRICT FORMATTING & ANALISIS:
 1. JANGAN PERNAH membuat karakter raw newline (pindah baris dengan tombol Enter) di dalam isi value string teks JSON, khususnya pada bagian 'summary'. Gunakan literal \\n jika ingin memisahkan paragraf.
-2. genome_scores (nilai 0-100, berdasarkan sinyal percakapan):
-   - analytical: data, logika, riset, problem solving
-   - leadership: cerita memimpin, inisiatif, punya tim, visioner
-   - builder: eksekutor, suka bikin sesuatu, teknis, detail
-   - creator: kreatif, inovatif, suka ide baru, estetika
-   - communication: artikulatif, suka presentasi, jaringan, persuasi
-   - risk_taking: berani ambil keputusan besar, entrepreneurial, toleran ketidakpastian
-3. career_stage (pilih SATU): Career Explorer / Career Builder / Career Professional / Career Expert / Career Leader
-4. progress_percent: estimasi seberapa jauh user dari target karir mereka (0-100).
+2. genome_scores (nilai 0-100, berdasarkan sinyal percakapan) — 6 trait self-awareness & emosional:
+   - analytical → Self-Awareness: paham & bisa mendeskripsikan pola pikir/emosinya sendiri
+   - leadership → Resilience: mampu bangkit dan tetap jalan meski lagi berat
+   - builder → Coping Kreatif: mengelola emosi lewat tindakan/aktivitas konstruktif
+   - creator → Keterbukaan: terbuka mencoba cara pandang atau pengalaman baru soal dirinya
+   - communication → Komunikasi Emosi: bisa mengungkapkan perasaan dengan kata-kata
+   - risk_taking → Empati: peka terhadap perasaan diri sendiri maupun orang lain
+3. career_stage (pilih SATU): Baru Mulai Sadar / Belajar Mengelola / Lebih Tenang / Cukup Stabil / Sudah Jadi Kebiasaan
+4. progress_percent: estimasi seberapa jauh user sudah membangun kesadaran & kebiasaan coping yang sehat (0-100).
 ${existingContext}`
 
     const raw = await generateText({
@@ -216,7 +219,7 @@ ${existingContext}`
 
     await supabase.from('user_growth_state').upsert({
       user_id:         userId,
-      career_stage:    gw.career_stage    || existingGrowth?.career_stage    || 'Career Explorer',
+      career_stage:    gw.career_stage    || existingGrowth?.career_stage    || 'Baru Mulai Sadar',
       progress_percent:gw.progress_percent || existingGrowth?.progress_percent || 0,
       current_focus:   gw.current_focus   || existingGrowth?.current_focus,
       next_milestone:  gw.next_milestone  || existingGrowth?.next_milestone,
