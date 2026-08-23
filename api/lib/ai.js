@@ -39,41 +39,42 @@ function openRouterHeaders() {
 }
 
 // ── Model per plan × tier — semua overridable lewat env var ─────────────────
-// UPDATE (23 Agu 2026): model utama diganti ke stealth/ox-alpha — model baru
-// di OpenRouter yang lagi gratis selama masa preview (rilis 20 Agu 2026).
-// PENTING: ini model "stealth" dari provider anonim, preview gratisnya
-// dilaporkan cuma berlangsung ~1 minggu dari tanggal rilis — kemungkinan besar
-// akan berbayar atau hilang dari OpenRouter dalam beberapa hari ke depan.
-// Makanya model lama tetap dipasang sebagai fallback (bukan dihapus), supaya
-// begitu ox-alpha di-deprecate/limit, OpenRouter otomatis lanjut ke fallback
-// tanpa perlu deploy ulang. Pantau https://openrouter.ai/models kalau ox-alpha
-// mulai kena rate-limit atau berbayar, lalu evaluasi ulang apakah masih worth it.
-const OX_ALPHA = process.env.OPENROUTER_MODEL_OX_ALPHA || 'stealth/ox-alpha'
-
+// UPDATE (23 Agu 2026): sempat dicoba pakai stealth/ox-alpha sebagai default
+// di semua tier — TAPI DIBATALKAN hari yang sama karena reasoning-nya wajib
+// nyala (nggak bisa dimatiin) dan bikin chat live Diah Anna kena 500/timeout
+// di production. Sebagai gantinya, tier free sekarang pakai openai/gpt-oss-20b:free
+// di fast MAUPUN smart — ini model $0 yang paling banyak direkomendasikan
+// (kuat di coding/agentic, reasoning effort-nya configurable bukan dipaksa
+// nyala terus, jadi aman dipakai di jalur chat live). Tier premium TETAP di
+// model berbayar (Claude Haiku/Sonnet) — sengaja dibedain dari free supaya
+// user yang bayar Rp99rb/30hari tetap dapat kualitas lebih baik, bukan model
+// yang sama persis dengan user gratisan.
+// CATATAN PENTING: model ber-suffix `:free` di OpenRouter kena rate limit
+// ~20 request/menit & ~200 request/hari — itu batas GLOBAL buat SATU model,
+// dipakai bareng oleh SEMUA user Verneks yang lagi chat gratis di jam yang
+// sama, bukan per-user. Kalau trafik makin ramai, ini bisa kena limit lebih
+// cepat dari yang dikira. Makanya fallback ke model berbayar-murah (Gemini
+// Flash Lite, DeepSeek) tetap dipasang — begitu kuota gratis abis, otomatis
+// lanjut ke situ (bukan gagal total), cuma jadi keluar biaya kecil.
 const MODELS = {
   free: {
     fast: {
-      model:     process.env.OPENROUTER_MODEL_FREE_FAST  || OX_ALPHA,
-      // Max 2 fallback di sini (bukan 3) — OpenRouter menolak request kalau
-      // array `models` (primer + fallback) lebih dari 3 item total. Fallback
-      // pertama SENGAJA diisi model utama sebelum pivot ke ox-alpha, supaya
-      // begitu ox-alpha di-deprecate, kualitas balik ke yang sudah terbukti
-      // bagus dulu, bukan langsung ke opsi paling murah.
-      fallbacks: ['openai/gpt-oss-20b:free', 'google/gemini-3.5-flash-lite'],
+      model:     process.env.OPENROUTER_MODEL_FREE_FAST  || 'openai/gpt-oss-20b:free',
+      fallbacks: ['google/gemini-3.5-flash-lite', 'deepseek/deepseek-chat'],
     },
     smart: {
-      model:     process.env.OPENROUTER_MODEL_FREE_SMART || OX_ALPHA,
+      model:     process.env.OPENROUTER_MODEL_FREE_SMART || 'openai/gpt-oss-20b:free',
       fallbacks: ['deepseek/deepseek-chat', 'google/gemini-3.5-flash-lite'],
     },
   },
   premium: {
     fast: {
-      model:     process.env.OPENROUTER_MODEL_PREMIUM_FAST  || OX_ALPHA,
-      fallbacks: ['anthropic/claude-haiku-4.5', 'google/gemini-3.7-flash'],
+      model:     process.env.OPENROUTER_MODEL_PREMIUM_FAST  || 'anthropic/claude-haiku-4.5',
+      fallbacks: ['google/gemini-3.7-flash', 'deepseek/deepseek-chat'],
     },
     smart: {
-      model:     process.env.OPENROUTER_MODEL_PREMIUM_SMART || OX_ALPHA,
-      fallbacks: ['anthropic/claude-sonnet-5', 'google/gemini-3.7-flash'],
+      model:     process.env.OPENROUTER_MODEL_PREMIUM_SMART || 'anthropic/claude-sonnet-5',
+      fallbacks: ['google/gemini-3.7-flash', 'anthropic/claude-haiku-4.5'],
     },
   },
 }
