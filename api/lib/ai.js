@@ -39,41 +39,35 @@ function openRouterHeaders() {
 }
 
 // ── Model per plan × tier — semua overridable lewat env var ─────────────────
-// UPDATE (23 Agu 2026, sore): setelah insiden ox-alpha (reasoning wajib nyala
-// → timeout) dan insiden kredit OpenRouter habis (trial 30 hari bikin semua
-// user kena model berbayar Claude), diputuskan: SEMUA tier (termasuk Premium)
-// sementara pakai model gratis dulu, fokus ke growth/viral, monetisasi
-// menyusul belakangan.
+// UPDATE (23 Agu 2026, malam): `openrouter/free` sempat dipasang jadi PRIMARY
+// tapi DITURUNKAN jadi fallback-only setelah kejadian nyata: router itu acak
+// milih model gratis apa saja yang lagi tersedia, dan salah satu yang kepilih
+// ternyata nge-dump proses "mikir" (reasoning) mentah-mentah ke jawaban akhir
+// yang dilihat user — termasuk analisis pribadi soal user itu sendiri, dalam
+// bahasa Inggris. Random model selection = kualitas & bahasa jawaban jadi
+// nggak konsisten antar-request, nggak bisa diterima buat produk beneran.
 //
-// Primary-nya `openrouter/free` — bukan nama model spesifik, tapi ROUTER
-// bawaan OpenRouter sendiri yang otomatis milihin satu model gratis yang lagi
-// aktif & mendukung fitur yang dibutuhkan request (structured output, dll).
-// Ini sengaja dipilih ketimbang hardcode 1 model gratis: daftar model gratis
-// di OpenRouter berubah TERUS (dalam riset yang dilakukan hari ini saja,
-// beberapa model gratis yang direkomendasikan minggu lalu ternyata sudah
-// ditarik) — router ini yang paling tahan terhadap perubahan itu karena
-// OpenRouter sendiri yang urus rotasinya, bukan kita.
-// Fallback-nya openai/gpt-oss-20b:free — model gratis spesifik yang paling
-// konsisten direkomendasikan & sudah terbukti jalan di kode ini sebelumnya.
+// Sekarang PRIMARY-nya openai/gpt-oss-20b:free — satu model spesifik yang
+// sudah terbukti stabil sepanjang sesi ini (nggak pernah bikin request error/
+// bocor reasoning). `openrouter/free` dipasang di urutan fallback PALING
+// belakang saja — buat jaga-jaga kalau openai/gpt-oss-20b:free kena rate
+// limit, bukan jadi pilihan utama.
 //
-// CATATAN: openrouter/free & model :free lain kena rate limit ketat (kasar-
-// nya belasan request/menit, puluhan-ratusan/hari, tergantung ada saldo akun
-// atau tidak) — DIBAGI BARENG semua user yang chat bersamaan, bukan per
-// akun/user. Kalau Verneks mulai rame, ini yang paling mungkin kerasa duluan
-// (chat gagal pas jam sibuk), bukan tagihan mendadak. Kalau itu terjadi,
-// solusinya isi sedikit saldo OpenRouter (bukan ubah kode) supaya limit
-// hariannya naik signifikan.
-const FREE_ROUTER = process.env.OPENROUTER_MODEL_FREE_ROUTER || 'openrouter/free'
+// Selain itu, SEMUA request sekarang eksplisit minta reasoning DIKECUALIKAN
+// dari output (lihat `reasoning: { exclude: true }` di callOpenRouter/
+// callOpenRouterStructured) — supaya kalaupun model yang kepilih punya mode
+// reasoning, prosesnya nggak ikut nampil ke user.
 const FREE_NAMED  = process.env.OPENROUTER_MODEL_FREE_NAMED  || 'openai/gpt-oss-20b:free'
+const FREE_ROUTER = process.env.OPENROUTER_MODEL_FREE_ROUTER || 'openrouter/free'
 
 const MODELS = {
   free: {
-    fast:  { model: FREE_ROUTER, fallbacks: [FREE_NAMED] },
-    smart: { model: FREE_ROUTER, fallbacks: [FREE_NAMED] },
+    fast:  { model: FREE_NAMED, fallbacks: [FREE_ROUTER] },
+    smart: { model: FREE_NAMED, fallbacks: [FREE_ROUTER] },
   },
   premium: {
-    fast:  { model: FREE_ROUTER, fallbacks: [FREE_NAMED] },
-    smart: { model: FREE_ROUTER, fallbacks: [FREE_NAMED] },
+    fast:  { model: FREE_NAMED, fallbacks: [FREE_ROUTER] },
+    smart: { model: FREE_NAMED, fallbacks: [FREE_ROUTER] },
   },
 }
 
@@ -100,6 +94,10 @@ async function callOpenRouter({ system, messages, maxTokens, model, fallbacks = 
     model,
     max_tokens: maxTokens,
     messages: [{ role: 'system', content: system }, ...normalized],
+    // Penting: kalau model yang kepilih (termasuk lewat fallback/router)
+    // punya mode reasoning, JANGAN pernah ikut tampil di jawaban akhir —
+    // ini yang bikin bocoran "proses mikir" mentah nyampe ke chat user.
+    reasoning: { exclude: true },
   }
   // Fallback bawaan OpenRouter: satu request, dicoba berurutan di sisi mereka.
   if (fallbacks.length > 0) body.models = [model, ...fallbacks]
@@ -138,6 +136,9 @@ async function callOpenRouterStructured({ system, prompt, schema, maxTokens, mod
       { role: 'user', content: prompt },
     ],
     response_format: { type: 'json_object' },
+    // Sama seperti callOpenRouter — reasoning yang bocor ke content juga akan
+    // bikin JSON.parse di bawah gagal total, bukan cuma soal tampilan.
+    reasoning: { exclude: true },
   }
   if (fallbacks.length > 0) body.models = [model, ...fallbacks]
 
