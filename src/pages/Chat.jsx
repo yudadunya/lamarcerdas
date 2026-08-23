@@ -751,7 +751,17 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
             {[
               { label: '🎟️  Kode Redeem', onClick: () => setShowRedeemModal(true) },
               { label: '📤  Ajak Teman', onClick: () => setShowShareApp(true) },
-              { label: '🚪  Keluar', onClick: async () => { await supabase.auth.signOut(); navigate('/') }, danger: true },
+              { label: '🚪  Keluar', onClick: async () => {
+                  await supabase.auth.signOut()
+                  // Pakai full reload (bukan navigate client-side) — signOut()
+                  // itu async dan state `user` di App.jsx baru ke-update lewat
+                  // onAuthStateChange, yang belum tentu selesai duluan sebelum
+                  // navigate('/') jalan. Kalau masih pakai navigate biasa, Home
+                  // bisa sempat baca `user` yang masih lama (belum null) dan
+                  // langsung nge-redirect balik ke /chat. Full reload menjamin
+                  // state bersih total begitu Home.jsx pertama kali render.
+                  window.location.href = '/'
+                }, danger: true },
             ].map((item, i) => (
               <button
                 key={i}
