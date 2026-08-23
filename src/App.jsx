@@ -50,16 +50,14 @@ function loadMessages(userId) {
 async function syncDiscoveryData(u, setChatMessages) {
   setChatMessages(loadMessages(u.id))
 
-  // TRIAL 30 HARI: semua user baru otomatis dapat akses Premium penuh gratis
-  // 30 hari pertama, baru setelah itu Rp99rb/30 hari kalau mau lanjut. Endpoint
-  // ini aman dipanggil tiap sign-in — begitu user sudah punya row `subscriptions`
-  // apapun (dari trial ini/redeem/bayar), request berikutnya otomatis no-op.
-  // Fire-and-forget: jangan sampai gagal/lambatnya request ini nge-block redirect.
-  fetch('/api/utils?action=grant-trial', {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ userId: u.id }),
-  }).catch(err => console.warn('[grant-trial] gagal memanggil:', err.message))
+  // TRIAL 30 HARI DIMATIKAN (23 Agu 2026): sempat dicoba auto-grant Premium
+  // gratis 30 hari ke semua user baru, tapi dibatalkan karena bikin semua
+  // user kena model berbayar (Claude) dan ngabisin kredit OpenRouter dalam
+  // waktu singkat. Sekarang fokus dulu ke growth/viral pakai model gratis;
+  // Premium balik jadi upgrade berbayar biasa (Rp99rb/30 hari), nggak
+  // otomatis di-grant lagi. Endpoint `action=grant-trial` di api/utils.js
+  // dibiarkan ada (tidak dihapus) tapi jadi tidak terpakai — aman kalau nanti
+  // trial mau diaktifkan lagi, tinggal panggil ulang di sini.
 
   // PIVOT: Verneks udah nggak lagi gate user baru ke /discovery berdasarkan
   // kelengkapan career profile — semua user (baru maupun lama) langsung ke

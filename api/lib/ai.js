@@ -39,43 +39,41 @@ function openRouterHeaders() {
 }
 
 // ── Model per plan × tier — semua overridable lewat env var ─────────────────
-// UPDATE (23 Agu 2026): sempat dicoba pakai stealth/ox-alpha sebagai default
-// di semua tier — TAPI DIBATALKAN hari yang sama karena reasoning-nya wajib
-// nyala (nggak bisa dimatiin) dan bikin chat live Diah Anna kena 500/timeout
-// di production. Sebagai gantinya, tier free sekarang pakai openai/gpt-oss-20b:free
-// di fast MAUPUN smart — ini model $0 yang paling banyak direkomendasikan
-// (kuat di coding/agentic, reasoning effort-nya configurable bukan dipaksa
-// nyala terus, jadi aman dipakai di jalur chat live). Tier premium TETAP di
-// model berbayar (Claude Haiku/Sonnet) — sengaja dibedain dari free supaya
-// user yang bayar Rp99rb/30hari tetap dapat kualitas lebih baik, bukan model
-// yang sama persis dengan user gratisan.
-// CATATAN PENTING: model ber-suffix `:free` di OpenRouter kena rate limit
-// ~20 request/menit & ~200 request/hari — itu batas GLOBAL buat SATU model,
-// dipakai bareng oleh SEMUA user Verneks yang lagi chat gratis di jam yang
-// sama, bukan per-user. Kalau trafik makin ramai, ini bisa kena limit lebih
-// cepat dari yang dikira. Makanya fallback ke model berbayar-murah (Gemini
-// Flash Lite, DeepSeek) tetap dipasang — begitu kuota gratis abis, otomatis
-// lanjut ke situ (bukan gagal total), cuma jadi keluar biaya kecil.
+// UPDATE (23 Agu 2026, sore): setelah insiden ox-alpha (reasoning wajib nyala
+// → timeout) dan insiden kredit OpenRouter habis (trial 30 hari bikin semua
+// user kena model berbayar Claude), diputuskan: SEMUA tier (termasuk Premium)
+// sementara pakai model gratis dulu, fokus ke growth/viral, monetisasi
+// menyusul belakangan.
+//
+// Primary-nya `openrouter/free` — bukan nama model spesifik, tapi ROUTER
+// bawaan OpenRouter sendiri yang otomatis milihin satu model gratis yang lagi
+// aktif & mendukung fitur yang dibutuhkan request (structured output, dll).
+// Ini sengaja dipilih ketimbang hardcode 1 model gratis: daftar model gratis
+// di OpenRouter berubah TERUS (dalam riset yang dilakukan hari ini saja,
+// beberapa model gratis yang direkomendasikan minggu lalu ternyata sudah
+// ditarik) — router ini yang paling tahan terhadap perubahan itu karena
+// OpenRouter sendiri yang urus rotasinya, bukan kita.
+// Fallback-nya openai/gpt-oss-20b:free — model gratis spesifik yang paling
+// konsisten direkomendasikan & sudah terbukti jalan di kode ini sebelumnya.
+//
+// CATATAN: openrouter/free & model :free lain kena rate limit ketat (kasar-
+// nya belasan request/menit, puluhan-ratusan/hari, tergantung ada saldo akun
+// atau tidak) — DIBAGI BARENG semua user yang chat bersamaan, bukan per
+// akun/user. Kalau Verneks mulai rame, ini yang paling mungkin kerasa duluan
+// (chat gagal pas jam sibuk), bukan tagihan mendadak. Kalau itu terjadi,
+// solusinya isi sedikit saldo OpenRouter (bukan ubah kode) supaya limit
+// hariannya naik signifikan.
+const FREE_ROUTER = process.env.OPENROUTER_MODEL_FREE_ROUTER || 'openrouter/free'
+const FREE_NAMED  = process.env.OPENROUTER_MODEL_FREE_NAMED  || 'openai/gpt-oss-20b:free'
+
 const MODELS = {
   free: {
-    fast: {
-      model:     process.env.OPENROUTER_MODEL_FREE_FAST  || 'openai/gpt-oss-20b:free',
-      fallbacks: ['google/gemini-3.5-flash-lite', 'deepseek/deepseek-chat'],
-    },
-    smart: {
-      model:     process.env.OPENROUTER_MODEL_FREE_SMART || 'openai/gpt-oss-20b:free',
-      fallbacks: ['deepseek/deepseek-chat', 'google/gemini-3.5-flash-lite'],
-    },
+    fast:  { model: FREE_ROUTER, fallbacks: [FREE_NAMED] },
+    smart: { model: FREE_ROUTER, fallbacks: [FREE_NAMED] },
   },
   premium: {
-    fast: {
-      model:     process.env.OPENROUTER_MODEL_PREMIUM_FAST  || 'anthropic/claude-haiku-4.5',
-      fallbacks: ['google/gemini-3.7-flash', 'deepseek/deepseek-chat'],
-    },
-    smart: {
-      model:     process.env.OPENROUTER_MODEL_PREMIUM_SMART || 'anthropic/claude-sonnet-5',
-      fallbacks: ['google/gemini-3.7-flash', 'anthropic/claude-haiku-4.5'],
-    },
+    fast:  { model: FREE_ROUTER, fallbacks: [FREE_NAMED] },
+    smart: { model: FREE_ROUTER, fallbacks: [FREE_NAMED] },
   },
 }
 

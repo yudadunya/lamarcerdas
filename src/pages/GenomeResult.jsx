@@ -256,7 +256,7 @@ export default function GenomeResult() {
           </div>
         </div>
         <button onClick={() => navigate('/paywall')} style={{ width:'100%', padding:'15px', background:'linear-gradient(135deg,#25D366,#128C7E)', color:'#fff', fontWeight:800, fontSize:'1rem', borderRadius:14, border:'none', cursor:'pointer', boxShadow:'0 4px 24px rgba(37,211,102,0.45)' }}>
-          🎯 Lanjutkan Premium — Rp99rb/30 Hari
+          🎯 Upgrade Premium — Rp99rb/30 Hari
         </button>
         <div style={{ textAlign:'center', marginTop:7, color:'rgba(255,255,255,0.2)', fontSize:'0.68rem' }}>
           Langkah Self-Care Personal · Unlimited Chat dengan Diah Anna · Progress Tracking · Batal Kapan Saja
