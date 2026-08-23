@@ -1093,20 +1093,16 @@ async function handleCareerCoach(req, res) {
     }
   }
 
-  // ════════════════════════════════════════════
-  // FETCH BASE MEMORY DATA & SUBSCRIPTION CHECK
-  // ════════════════════════════════════════════
-  // PIVOT — LOCAL-FIRST MEMORY: Chat.jsx sekarang kirim `localMemory` di body
-  // (ringkasan + RSI patterns yang tersimpan di IndexedDB device user). Kalau
-  // itu ada, server pakai LANGSUNG dan TIDAK query tabel career-profile
-  // Supabase sama sekali untuk request ini — sesuai janji "data kamu cuma
-  // ada di HP/laptopmu" di landing page. Server tetap query Supabase untuk
-  // plan & usage counter lewat getRealPlan/checkAndLogUsage di bawah — itu
-  // data billing/rate-limit, bukan konten personal, jadi wajar tetap di server.
+  // PIVOT — LOCAL-FIRST MEMORY, TANPA FALLBACK: Chat.jsx SELALU mengirim
+  // `localMemory` (minimal objek default kosong) di setiap request, jadi
+  // fallback ke Supabase untuk konten personal sudah tidak diperlukan lagi.
+  // Dihapus total (bukan sekadar tidak dipanggil) — supaya tidak ada jalur
+  // mana pun, dalam kondisi apa pun, yang membaca konten personal dari
+  // Supabase untuk mengisi respons chat.
   const { userId, localMemory } = req.body
   const plan = await getRealPlan(userId)
 
-  let careerProfile   = null
+  const careerProfile = null // sengaja tidak pernah diisi lagi — lihat catatan di atas
   let learnedPatterns = []      // [RSI] Pola yang sudah dipelajari AI
   let rsiVersion      = 1       // [RSI] Versi model mental AI tentang user
   let diahAnnaMemory  = null    // ringkasan naratif ("apa yang Diah Anna inget")
@@ -1123,29 +1119,10 @@ async function handleCareerCoach(req, res) {
           occurrence_count:    p.occurrenceCount || 1,
         }))
       : []
-  } else if (userId) {
-    // FALLBACK LEGACY — cuma jalan untuk client lama yang belum kirim
-    // localMemory (misal versi app yang belum ke-refresh). Begitu semua
-    // traffic sudah pasti kirim localMemory, blok ini aman dihapus total.
-    try {
-      const profileRes = await supabase
-        .from('user_career_profiles')
-        .select('nama, diah_anna_memory, rsi_version, running_insight, depth_score, user_depth_profile')
-        .eq('user_id', userId).maybeSingle()
-      const patternsRes = await supabase
-        .from('ai_learned_patterns')
-        .select('pattern_category, pattern_description, confidence_score, occurrence_count')
-        .eq('user_id', userId).order('confidence_score', { ascending: false }).limit(8)
-
-      careerProfile       = profileRes.data
-      learnedPatterns     = patternsRes.data || []
-      rsiVersion          = careerProfile?.rsi_version || 1
-      diahAnnaMemory       = careerProfile?.diah_anna_memory || null
-      structuralMemoryName = careerProfile?.nama || 'Sobat'
-    } catch (e) {
-      console.error('[career-coach] load error (legacy fallback):', e.message)
-    }
   }
+  // Tidak ada lagi `else if (userId)` yang query Supabase — kalau localMemory
+  // tidak dikirim (harusnya tidak pernah terjadi dari client resmi), Diah
+  // Anna cukup mulai tanpa memori, bukan diam-diam ambil dari server.
 
   const structuralMemory = {
     name: structuralMemoryName,
@@ -1348,18 +1325,14 @@ ${learnedPatterns.length > 0 ? `\n\n[RSI ACTIVE] Kamu sudah belajar dari ${learn
     // Detect meaningful signals dalam pesan user
     const hasEmotionalSignal = /bingung|stuck|tidak tahu|ga yakin|ragu|susah|dilema|ambiguous|hambatan|masalah|keputusan|pilih|gimana|sebaiknya/i.test(currentUserMsg)
     
-    // [RSI] Background pattern analysis — DIBATASI ke fallback legacy saja.
-    // Kalau client kirim `localMemory` (jalur local-first), RSI pattern baru
-    // ditangani lewat action 'update-local-memory' yang HASIL-nya dikirim
-    // balik ke client buat disimpan di IndexedDB — bukan ditulis ke Supabase
-    // di sini. Ini penting: analyzeAndLearnPatterns() di bawah nulis langsung
-    // ke tabel ai_learned_patterns, yang akan melanggar janji "data cuma di
-    // HP/laptopmu" kalau tetap jalan untuk user local-first.
-    if (!localMemory && userId && messages.length >= 6 && (hasEmotionalSignal || userMsgCount % 8 === 0)) {
-      analyzeAndLearnPatterns(userId, messages, rawReply, careerProfile, learnedPatterns, rsiVersion, supabase).catch(e =>
-        console.error('[RSI] Background analysis error:', e.message)
-      )
-    }
+    // [RSI] Background pattern analysis — DINONAKTIFKAN TOTAL.
+    // Dulu jalan sebagai fallback legacy (kalau localMemory tidak dikirim),
+    // tapi karena Chat.jsx SELALU mengirim localMemory sekarang, cabang ini
+    // hanya bisa terpicu kalau ada yang hit /api/career-coach LANGSUNG tanpa
+    // lewat UI resmi (curl/Postman/dsb). analyzeAndLearnPatterns() menulis ke
+    // tabel ai_learned_patterns di Supabase — dihapus total dari sini supaya
+    // tidak ada jalur apa pun, termasuk permintaan langsung ke endpoint,
+    // yang bisa membuat server menyimpan analisis dari isi obrolan.
 
     // ═══════════════════════════════════════════════════════════════════════════
     // INCOME ENGINE — DINONAKTIFKAN (PIVOT).
@@ -1434,87 +1407,32 @@ async function classifyIncomeSituation(userId, messages, supabase) {
 // ══════════════════════ HANDLER: CHAT-HISTORY ═══════════════════════════════
 // ═══════════════════════════════════════════════════════════════════════════
 async function handleChatHistory(req, res) {
-  // Allow CORS untuk sendBeacon
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DINONAKTIFKAN TOTAL (PIVOT — LOCAL-FIRST).
+  // Endpoint ini dulu baca/tulis isi obrolan user ke tabel Supabase
+  // `user_chat_history`. Chat.jsx sekarang TIDAK PERNAH memanggil endpoint
+  // ini lagi (history disimpan di IndexedDB device lewat localMemory.js).
+  //
+  // Fungsi ini SENGAJA tidak dihapus filenya (biar URL /api/chat-history
+  // tidak 404 kalau ada client versi lama yang masih memanggilnya) tapi
+  // dikosongkan total — tidak ada satu baris pun yang menyentuh Supabase di
+  // sini. Ini penting: sebelumnya endpoint ini bisa diakses SIAPA SAJA
+  // langsung lewat URL publik (GET/POST /api/chat-history) terlepas dari
+  // apakah UI-nya memanggilnya atau tidak — jadi "tidak dipakai UI" saja
+  // tidak cukup untuk menjamin data user aman.
+  // ═══════════════════════════════════════════════════════════════════════════
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
   if (req.method === 'OPTIONS') return res.status(200).end()
 
-  try {
-    // Parse body — sendBeacon kirim sebagai text/plain kadang
-    let body = req.body
-    if (typeof body === 'string') {
-      try { body = JSON.parse(body) } catch { body = {} }
-    }
-
-    // Parse query params — req.query kadang kosong di Vercel, fallback ke URL manual
-    let query = req.query || {}
-    if (!query.userId && req.url) {
-      const urlObj = new URL(req.url, 'https://verneks.my.id')
-      query = Object.fromEntries(urlObj.searchParams.entries())
-    }
-
-    const isGet   = req.method === 'GET'
-    const userId  = isGet ? query.userId   : body?.userId
-    const date    = isGet ? query.date     : body?.date
-    const messages = isGet ? null          : body?.messages
-
-    const daysBack = isGet ? (query.daysBack || 1) : null
-
-    if (!userId) return res.status(400).json({ error: 'userId required' })
-
-    // ── GET: load history hari ini ──────────────────────────
-    if (isGet) {
-      const today = new Date().toISOString().slice(0, 10)
-
-      const { data, error } = await supabase
-        .from('user_chat_history')
-        .select('session_date, messages')
-        .eq('user_id', userId)
-        .eq('session_date', today)
-        .maybeSingle()
-
-      if (error) {
-        console.error('[chat-history GET] error:', error.message, error.code)
-        return res.status(500).json({ error: error.message, code: error.code })
-      }
-
-      return res.status(200).json({
-        today: data?.messages || [],
-      })
-    }
-
-    // ── POST: upsert history hari ini ──────────────────────
-    if (req.method === 'POST') {
-      if (!messages || !Array.isArray(messages)) {
-        return res.status(400).json({ error: 'messages array required' })
-      }
-
-      const sessionDate = date || new Date().toISOString().slice(0, 10)
-
-      const { error } = await supabase
-        .from('user_chat_history')
-        .upsert({
-          user_id:      userId,
-          session_date: sessionDate,
-          messages:     messages.slice(-50),
-          updated_at:   new Date().toISOString(),
-        }, { onConflict: 'user_id,session_date' })
-
-      if (error) {
-        console.error('[chat-history POST] error:', error.message, error.code, error.details)
-        return res.status(500).json({ error: error.message, code: error.code })
-      }
-
-      return res.status(200).json({ success: true })
-    }
-
-    return res.status(405).json({ error: 'Method not allowed' })
-
-  } catch (err) {
-    console.error('[chat-history] unexpected error:', err.message)
-    return res.status(500).json({ error: err.message })
+  if (req.method === 'GET') {
+    return res.status(200).json({ today: [], deprecated: true, reason: 'Chat history sekarang disimpan lokal di device (IndexedDB), bukan di server.' })
   }
+  if (req.method === 'POST') {
+    return res.status(200).json({ success: true, deprecated: true, reason: 'Endpoint ini tidak lagi menyimpan apa pun — history disimpan lokal di device.' })
+  }
+  return res.status(405).json({ error: 'Method not allowed' })
 }
 
 
@@ -1594,138 +1512,25 @@ async function handleDiscoveryCoach(req, res) {
 // ══════════════════════ HANDLER: END-SESSION ════════════════════════════════
 // ═══════════════════════════════════════════════════════════════════════════
 async function handleEndSession(req, res) {
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DINONAKTIFKAN TOTAL (PIVOT — LOCAL-FIRST).
+  // Dulu endpoint ini: (1) nulis history chat ke `user_chat_history`, (2)
+  // nganalisis percakapan pakai AI, (3) nulis hasilnya ke `memory_capsule_log`
+  // dan `user_career_profiles.diah_anna_memory`/`user_depth_profile` — semua
+  // di Supabase. Diganti oleh action `update-local-memory`, yang melakukan
+  // analisis serupa tapi HASILNYA DIKEMBALIKAN KE CLIENT untuk disimpan ke
+  // IndexedDB — server tidak menyimpan apa pun.
+  //
+  // Fungsi ini dikosongkan total (bukan dihapus filenya) supaya URL publik
+  // /api/end-session tidak lagi bisa dipakai — oleh client lama, atau siapa
+  // pun yang langsung hit endpoint-nya — untuk menulis isi obrolan ke server.
+  // ═══════════════════════════════════════════════════════════════════════════
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
-
-  try {
-    // Parse body — sendBeacon kirim sebagai text/plain
-    let body = req.body
-    if (typeof body === 'string') {
-      try { body = JSON.parse(body) } catch { body = {} }
-    }
-    if (!body || typeof body !== 'object') body = {}
-
-    const { userId, messages: sessionMsgs, trigger } = body
-    if (!userId) return res.status(400).json({ error: 'userId required' })
-
-    const today = new Date().toISOString().slice(0, 10)
-
-    // ── Step 0: Simpan chat history (selalu) ────────────────────────────────
-    if (Array.isArray(sessionMsgs) && sessionMsgs.length > 0) {
-      try {
-        await supabase.from('user_chat_history').upsert({
-          user_id:      userId,
-          session_date: today,
-          messages:     sessionMsgs.slice(-50),
-          updated_at:   new Date().toISOString(),
-        }, { onConflict: 'user_id,session_date' })
-      } catch(e) { console.error('[end-session] history save error:', e.message) }
-    }
-
-    // Guard: minimal 3 pesan user
-    const userMsgCount = (sessionMsgs || []).filter(m => m.role === 'user').length
-    if (userMsgCount < 3) return res.status(200).json({ skipped: true, reason: 'session_too_short' })
-
-    // Cek capsule hari ini sudah ada
-    const { data: todayCapsule } = await supabase
-      .from('memory_capsule_log').select('id')
-      .eq('user_id', userId).eq('capsule_date', today).maybeSingle()
-    if (todayCapsule) return res.status(200).json({ skipped: true, reason: 'capsule_exists_today' })
-
-    // Load existing memory
-    const { data: existing } = await supabase
-      .from('user_career_profiles')
-      .select('nama, target_posisi, diah_anna_memory, user_depth_profile, depth_score')
-      .eq('user_id', userId).maybeSingle()
-
-    const currentMemory       = existing?.diah_anna_memory    || null
-    const currentDepthProfile = existing?.user_depth_profile  || {}
-    const currentDepthScore   = existing?.depth_score         || 0
-
-    const convoText = (sessionMsgs || []).slice(-20)
-      .map(m => `${m.role === 'user' ? 'User' : 'Diah Anna'}: ${(m.text || m.content || '').slice(0, 300)}`)
-      .filter(l => l.length > 15).join('\n')
-
-    // ── Step 1: Eval — ada hal baru? ────────────────────────────────────────
-    const evalResult = await generateText({
-      system: 'Jawab hanya YA atau TIDAK.',
-      prompt: `Memori lama:\n${currentMemory || '(belum ada)'}\n\nPercakapan:\n${convoText}\n\nAda hal baru yang belum ada di memori lama?`,
-      maxTokens: 5, tier: 'fast', plan: 'free',
-    })
-
-    const hasNewInsight = evalResult.trim().toUpperCase().startsWith('Y')
-
-    if (!hasNewInsight) {
-      try {
-        await supabase.from('memory_capsule_log').upsert({
-          user_id: userId, capsule_date: today,
-          capsule_text: '[no new insight]', granularity: 'daily',
-        }, { onConflict: 'user_id,capsule_date' })
-      } catch(e) { console.error('[end-session] capsule upsert error:', e.message) }
-      return res.status(200).json({ skipped: true, reason: 'no_new_insight' })
-    }
-
-    // ── Step 2: Generate capsule + memory baru (1 call) ─────────────────────
-    const combinedRaw = await generateText({
-      system: 'Output HANYA JSON valid. Tanpa backtick, tanpa preamble.',
-      prompt: `Kamu adalah memori Diah Anna di Verneks.
-User: ${existing?.nama || 'User'} | Target: ${existing?.target_posisi || '-'}
-Memori lama:\n${currentMemory || '(belum ada)'}
-Percakapan:\n${convoText}
-
-JSON:
-{
-  "capsule": "ringkasan hari ini 80-100 kata — apa yang dibahas, apa yang baru terungkap",
-  "new_memory": "tulis ulang memori Diah Anna 150-200 kata, gabungkan lama+baru, narasi personal",
-  "coach_style_fit": "direct-challenger/nurturing-supporter/analytical-guide/creative-explorer",
-  "last_emotional_state": "kondisi emosi user 3 kata",
-  "motivators": ["hal1","hal2"],
-  "blockers": ["hal1","hal2"]
-}`,
-      maxTokens: 500, tier: 'smart', plan: 'premium',
-    })
-
-    let parsed = {}
-    try {
-      const clean = combinedRaw.trim()
-        .replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/,'').trim()
-      parsed = JSON.parse(clean)
-    } catch {
-      console.warn('[end-session] JSON parse failed')
-      return res.status(200).json({ skipped: true, reason: 'parse_failed' })
-    }
-
-    // ── Step 3: Update depth profile ────────────────────────────────────────
-    const newDepthProfile = {
-      ...currentDepthProfile,
-      coach_style_fit:      parsed.coach_style_fit      || currentDepthProfile.coach_style_fit,
-      last_emotional_state: parsed.last_emotional_state || currentDepthProfile.last_emotional_state,
-      emotional_triggers: {
-        motivators: parsed.motivators?.length ? parsed.motivators : (currentDepthProfile.emotional_triggers?.motivators || []),
-        blockers:   parsed.blockers?.length   ? parsed.blockers   : (currentDepthProfile.emotional_triggers?.blockers   || []),
-      },
-    }
-    const newDepthScore = Math.min(100, currentDepthScore + 5)
-
-    // ── Step 4: Simpan semua parallel ───────────────────────────────────────
-    await Promise.all([
-      supabase.from('memory_capsule_log').upsert({
-        user_id: userId, capsule_date: today,
-        capsule_text: parsed.capsule || '', granularity: 'daily',
-      }, { onConflict: 'user_id,capsule_date' }),
-      supabase.from('user_career_profiles').update({
-        diah_anna_memory:   parsed.new_memory?.trim() || currentMemory,
-        user_depth_profile: newDepthProfile,
-        depth_score:        newDepthScore,
-        memory_updated_at:  new Date().toISOString(),
-      }).eq('user_id', userId),
-    ])
-
-    return res.status(200).json({ success: true, depthScore: newDepthScore, trigger: trigger || 'unknown' })
-
-  } catch (error) {
-    console.error('[end-session] error:', error.message, error.stack)
-    return res.status(200).json({ error: error.message })
-  }
+  return res.status(200).json({
+    success: true,
+    deprecated: true,
+    reason: 'Endpoint ini tidak lagi menyimpan apa pun ke server. Gunakan action "update-local-memory" — hasilnya disimpan di device lewat IndexedDB.',
+  })
 }
 
 
