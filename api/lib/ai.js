@@ -54,21 +54,26 @@ const MODELS = {
   free: {
     fast: {
       model:     process.env.OPENROUTER_MODEL_FREE_FAST  || OX_ALPHA,
-      fallbacks: ['openai/gpt-oss-20b:free', 'google/gemini-3.5-flash-lite', 'deepseek/deepseek-chat'],
+      // Max 2 fallback di sini (bukan 3) — OpenRouter menolak request kalau
+      // array `models` (primer + fallback) lebih dari 3 item total. Fallback
+      // pertama SENGAJA diisi model utama sebelum pivot ke ox-alpha, supaya
+      // begitu ox-alpha di-deprecate, kualitas balik ke yang sudah terbukti
+      // bagus dulu, bukan langsung ke opsi paling murah.
+      fallbacks: ['openai/gpt-oss-20b:free', 'google/gemini-3.5-flash-lite'],
     },
     smart: {
       model:     process.env.OPENROUTER_MODEL_FREE_SMART || OX_ALPHA,
-      fallbacks: ['deepseek/deepseek-chat', 'google/gemini-3.5-flash-lite', 'openai/gpt-oss-20b:free'],
+      fallbacks: ['deepseek/deepseek-chat', 'google/gemini-3.5-flash-lite'],
     },
   },
   premium: {
     fast: {
       model:     process.env.OPENROUTER_MODEL_PREMIUM_FAST  || OX_ALPHA,
-      fallbacks: ['anthropic/claude-haiku-4.5', 'google/gemini-3.7-flash', 'deepseek/deepseek-chat'],
+      fallbacks: ['anthropic/claude-haiku-4.5', 'google/gemini-3.7-flash'],
     },
     smart: {
       model:     process.env.OPENROUTER_MODEL_PREMIUM_SMART || OX_ALPHA,
-      fallbacks: ['anthropic/claude-sonnet-5', 'google/gemini-3.7-flash', 'anthropic/claude-haiku-4.5'],
+      fallbacks: ['anthropic/claude-sonnet-5', 'google/gemini-3.7-flash'],
     },
   },
 }
