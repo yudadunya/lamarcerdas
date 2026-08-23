@@ -1,22 +1,13 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
-// Free = 15 chat/hari + fitur masing-masing 1x/bulan, Premium = unlimited semua
+// Free = 15 chat/hari, Premium = unlimited
 export const LIMITS = {
-  free:    { chat: 15, 'cv-review': 1, ats: 1, coach: 999, interview: 1, 'cv-maker': 1 },
-  premium: { chat: 999, 'cv-review': 999, ats: 999, coach: 999, interview: 999, 'cv-maker': 999 },
+  free:    { chat: 15 },
+  premium: { chat: 999 },
 }
 
 export const PLAN_LABEL  = { free: 'Free', premium: 'Premium ⭐' }
-
-export const FEATURE_LABEL = {
-  'cv-review': 'CV Review',
-  ats:         'ATS Checker',
-  coach:       'Career Coach',
-  interview:   'Mock Interview',
-  'cv-maker':  'CV Maker',
-  chat:        'Chat',
-}
 
 export function useSubscription(userId) {
   const [plan, setPlan]           = useState('free')
@@ -80,7 +71,7 @@ export function useSubscription(userId) {
     return Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)))
   }
 
-  // Cek usage — chat: limit harian, fitur (cv-review/ats/interview/cv-maker): limit bulanan
+  // Cek usage — chat: limit harian (15 free / unlimited premium)
   const checkUsage = async (feature) => {
     const limit = LIMITS[plan]?.[feature] ?? 0
     if (limit === 0) return false
