@@ -24,6 +24,7 @@ const C = {
 // ─── SEO DATA ─────────────────────────────────────────────────────────────────
 const FAQS = [
   { q: 'Apakah Verneks gratis?', a: 'Ya. Kamu bisa curhat ke Diah Anna kapan saja secara gratis.' },
+  { q: 'Apakah Diah Anna cuma bakal ngiyain semua ceritaku?', a: 'Nggak. Diah Anna validasi perasaanmu dulu, tapi kalau ada sisi lain dari situasimu yang perlu dilihat, dia akan jujur menyampaikannya — bukan sekadar bilang "kamu benar" ke semua hal.' },
   { q: 'Apakah data curhatanku aman?', a: 'Ya. Chat, ceritamu, dan semua yang Diah Anna pelajari tentang kamu disimpan hanya di HP/laptopmu sendiri — bukan di server kami. Kamu bisa hapus semuanya kapan saja.' },
   { q: 'Apakah Diah Anna pengganti psikolog atau terapis?', a: 'Bukan. Diah Anna teman ngobrol yang bisa diajak cerita kapan saja, tapi bukan pengganti bantuan profesional. Kalau kamu sedang menghadapi masalah berat, Diah Anna akan mengarahkanmu ke bantuan yang tepat.' },
   { q: 'Siapa yang cocok pakai Verneks?', a: 'Siapa saja yang kadang butuh tempat cerita — soal kerjaan, kuliah, hubungan, atau sekadar hari yang berat — tanpa takut dihakimi.' },
@@ -107,8 +108,8 @@ export default function Home({ user }) {
   const diahRef = useRef(null)
 
   useSEO({
-    title: 'Verneks — Cerita Yuk. Nggak Akan Dihakimi.',
-    description: 'Diah Anna, teman curhat AI yang selalu ada — dengerin ceritamu kapan pun, tanpa menghakimi. Data curhatanmu 100% tersimpan di HP-mu sendiri, bukan di server.',
+    title: 'Verneks — Didengerin Beneran, Bukan Cuma Diiyain.',
+    description: 'Diah Anna, teman curhat AI yang jujur — dengerin ceritamu tanpa menghakimi, tapi juga nggak asal bilang "kamu benar" ke semua hal. Inget obrolan lamamu, dan datanya 100% tersimpan di HP-mu sendiri, bukan di server.',
     path: '/',
     breadcrumb: generateBreadcrumb([]),
     faq: FAQS.map(item => ({ question: item.q, answer: item.a })),
@@ -146,11 +147,10 @@ export default function Home({ user }) {
     setAuthLoading(true)
     const { data: { session } } = await supabase.auth.getSession()
     if (session?.user) {
-      const { data: cp } = await supabase.from('user_career_profiles').select('career_readiness').eq('user_id', session.user.id).maybeSingle()
-      window.location.href = cp?.career_readiness != null ? '/chat' : '/discovery'
+      window.location.href = '/chat'
       return
     }
-    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/discovery` } })
+    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/chat` } })
     setAuthLoading(false)
   }
   const CTAButton = ({ label = 'Mulai Cerita ke Diah Anna — Gratis', full = true, style: s = {} }) => (
@@ -208,24 +208,25 @@ export default function Home({ user }) {
             borderRadius: 20, padding: '5px 14px', fontSize: '0.75rem', fontWeight: 700,
             color: C.secondary, letterSpacing: '0.3px', marginBottom: 28,
           }}>
-            Selalu ada, kapan pun kamu butuh cerita.
+            Jujur, bukan cuma manis.
           </span>
         </div>
 
         <div style={{ ...r(0.15), marginBottom: 28 }}>
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 900, lineHeight: 1.15, letterSpacing: '-0.04em', margin: 0 }}>
-            <span style={{ display: 'block' }}>Cerita Yuk.</span>
-            <span style={{ display: 'block', background: C.grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Nggak Akan Dihakimi.</span>
+          <h1 style={{ fontSize: '2.4rem', fontWeight: 900, lineHeight: 1.15, letterSpacing: '-0.04em', margin: 0 }}>
+            <span style={{ display: 'block' }}>Didengerin Beneran.</span>
+            <span style={{ display: 'block', background: C.grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Bukan Cuma Diiyain.</span>
           </h1>
         </div>
 
         <div style={{ ...r(0.3), marginBottom: 36 }}>
           <p style={{ color: C.muted, fontSize: '0.92rem', lineHeight: 1.75, margin: 0 }}>
-            Kadang kamu cuma butuh cerita ke seseorang —<br />
-            tanpa harus jelasin dari awal, tanpa takut ngerepotin, tanpa takut dinilai.
+            Banyak AI curhat cuma bilang "kamu benar kok" ke apa pun yang kamu ceritain.
+            Diah Anna beda — dia dengerin dulu, validasi perasaanmu,
+            tapi juga jujur kalau ada sisi lain yang perlu kamu lihat.
           </p>
           <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.92rem', lineHeight: 1.75, margin: '12px 0 0' }}>
-            <strong>Diah Anna</strong> ada buat itu. Jam berapa pun, soal apa pun.
+            Nggak dihakimi. <strong>Beneran didengerin.</strong> Jam berapa pun, soal apa pun.
           </p>
         </div>
 
@@ -243,7 +244,7 @@ export default function Home({ user }) {
         </div>
 
         <div style={{ ...r(0.65), display: 'flex', flexWrap: 'wrap', gap: '8px 20px', marginTop: 28 }}>
-          {['Gratis', 'Data kamu cuma ada di HP-mu', 'Dibuat untuk Indonesia 🇮🇩'].map((t, i) => (
+          {['Gratis', 'Inget obrolan lamamu', 'Data cuma ada di HP-mu'].map((t, i) => (
             <span key={i} style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.75rem', fontWeight: 500 }}>✓ {t}</span>
           ))}
         </div>
@@ -294,17 +295,18 @@ export default function Home({ user }) {
           <FadeIn delay={0.2}>
             <p style={{ fontSize: '1rem', lineHeight: 1.85, color: C.lightMuted, marginBottom: 28 }}>
               Kami percaya...<br />
-              Setiap orang berhak punya ruang aman untuk cerita.
+              Setiap orang berhak punya ruang aman untuk cerita —
+              tapi juga berhak dapat teman yang jujur, bukan yang cuma nurut.
             </p>
             <p style={{ fontSize: '1rem', lineHeight: 1.85, color: C.lightText, fontWeight: 600 }}>
-              Kapan pun. Tanpa dihakimi. Tanpa harus nunggu balasan.
+              Kapan pun. Tanpa dihakimi. Tanpa cuma diiyain.
             </p>
           </FadeIn>
 
           <FadeIn delay={0.25}>
             <div style={{ borderTop: `1px solid ${C.lightBdr}`, marginTop: 48, paddingTop: 40 }}>
               <p style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.03em', color: C.lightText, lineHeight: 1.1, margin: 0 }}>
-                Cerita Yuk.<br />Nggak Akan Dihakimi.
+                Didengerin Beneran.<br />Bukan Cuma Diiyain.
               </p>
             </div>
           </FadeIn>
@@ -476,6 +478,7 @@ export default function Home({ user }) {
 
           {[
             { emoji: '👂', head: 'Mereka ngerasa didengar.', sub: 'Bukan diceramahin atau disuruh "positive thinking aja".' },
+            { emoji: '🎯', head: 'Jujur, bukan sekadar manis.', sub: 'Diah Anna nggak asal ngiyain — kalau perlu, dia kasih sudut pandang lain.' },
             { emoji: '🌙', head: 'Selalu ada, jam berapa pun.', sub: 'Jam 2 pagi overthinking? Diah Anna nggak pernah tidur.' },
             { emoji: '🔒', head: 'Ceritanya aman.', sub: 'Data curhat cuma ada di HP mereka sendiri, nggak ke server siapa pun.' },
             { emoji: '💭', head: 'Diah Anna beneran inget.', sub: 'Cerita minggu lalu, dia masih ingat — nggak mulai dari nol tiap kali.' },
@@ -490,7 +493,7 @@ export default function Home({ user }) {
                   </div>
                 </div>
               </div>
-              {i < 3 && <div style={{ height: 1, background: C.lightBdr, marginBottom: 32 }} />}
+              {i < 4 && <div style={{ height: 1, background: C.lightBdr, marginBottom: 32 }} />}
             </FadeIn>
           ))}
 
@@ -581,13 +584,13 @@ export default function Home({ user }) {
 
           <FadeIn>
             <p style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: C.muted, marginBottom: 24 }}>
-              Cerita Yuk.
+              Bukan Cuma Diiyain.
             </p>
             <h2 style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.04em', color: '#fff', lineHeight: 1.15, marginBottom: 12 }}>
-              Nggak Akan Dihakimi.
+              Diah Anna Dengerin Beneran.
             </h2>
             <h2 style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.04em', background: C.grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: 1.15, marginBottom: 36 }}>
-              Diah Anna Dengerin.
+              Cerita Yuk.
             </h2>
           </FadeIn>
 
