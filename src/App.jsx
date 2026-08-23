@@ -50,6 +50,17 @@ function loadMessages(userId) {
 async function syncDiscoveryData(u, setChatMessages) {
   setChatMessages(loadMessages(u.id))
 
+  // TRIAL 30 HARI: semua user baru otomatis dapat akses Premium penuh gratis
+  // 30 hari pertama, baru setelah itu Rp99rb/30 hari kalau mau lanjut. Endpoint
+  // ini aman dipanggil tiap sign-in — begitu user sudah punya row `subscriptions`
+  // apapun (dari trial ini/redeem/bayar), request berikutnya otomatis no-op.
+  // Fire-and-forget: jangan sampai gagal/lambatnya request ini nge-block redirect.
+  fetch('/api/utils?action=grant-trial', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ userId: u.id }),
+  }).catch(err => console.warn('[grant-trial] gagal memanggil:', err.message))
+
   // PIVOT: Verneks udah nggak lagi gate user baru ke /discovery berdasarkan
   // kelengkapan career profile — semua user (baru maupun lama) langsung ke
   // /chat setelah sign-in, nggak ada onboarding wajib. Bagian di bawah ini

@@ -39,28 +39,36 @@ function openRouterHeaders() {
 }
 
 // ── Model per plan × tier — semua overridable lewat env var ─────────────────
-// free.fast dipakai buat mayoritas chat gratis (model :free = tanpa biaya di
-// OpenRouter, tapi ada rate limit ~20 req/menit & ~200 req/hari per OpenRouter
-// — makanya tetap ada fallback ke model murah berbayar kalau limit itu kena).
+// UPDATE (23 Agu 2026): model utama diganti ke stealth/ox-alpha — model baru
+// di OpenRouter yang lagi gratis selama masa preview (rilis 20 Agu 2026).
+// PENTING: ini model "stealth" dari provider anonim, preview gratisnya
+// dilaporkan cuma berlangsung ~1 minggu dari tanggal rilis — kemungkinan besar
+// akan berbayar atau hilang dari OpenRouter dalam beberapa hari ke depan.
+// Makanya model lama tetap dipasang sebagai fallback (bukan dihapus), supaya
+// begitu ox-alpha di-deprecate/limit, OpenRouter otomatis lanjut ke fallback
+// tanpa perlu deploy ulang. Pantau https://openrouter.ai/models kalau ox-alpha
+// mulai kena rate-limit atau berbayar, lalu evaluasi ulang apakah masih worth it.
+const OX_ALPHA = process.env.OPENROUTER_MODEL_OX_ALPHA || 'stealth/ox-alpha'
+
 const MODELS = {
   free: {
     fast: {
-      model:     process.env.OPENROUTER_MODEL_FREE_FAST  || 'openai/gpt-oss-20b:free',
-      fallbacks: ['google/gemini-3.5-flash-lite', 'deepseek/deepseek-chat'],
+      model:     process.env.OPENROUTER_MODEL_FREE_FAST  || OX_ALPHA,
+      fallbacks: ['openai/gpt-oss-20b:free', 'google/gemini-3.5-flash-lite', 'deepseek/deepseek-chat'],
     },
     smart: {
-      model:     process.env.OPENROUTER_MODEL_FREE_SMART || 'deepseek/deepseek-chat',
-      fallbacks: ['google/gemini-3.5-flash-lite', 'openai/gpt-oss-20b:free'],
+      model:     process.env.OPENROUTER_MODEL_FREE_SMART || OX_ALPHA,
+      fallbacks: ['deepseek/deepseek-chat', 'google/gemini-3.5-flash-lite', 'openai/gpt-oss-20b:free'],
     },
   },
   premium: {
     fast: {
-      model:     process.env.OPENROUTER_MODEL_PREMIUM_FAST  || 'anthropic/claude-haiku-4.5',
-      fallbacks: ['google/gemini-3.7-flash', 'deepseek/deepseek-chat'],
+      model:     process.env.OPENROUTER_MODEL_PREMIUM_FAST  || OX_ALPHA,
+      fallbacks: ['anthropic/claude-haiku-4.5', 'google/gemini-3.7-flash', 'deepseek/deepseek-chat'],
     },
     smart: {
-      model:     process.env.OPENROUTER_MODEL_PREMIUM_SMART || 'anthropic/claude-sonnet-5',
-      fallbacks: ['google/gemini-3.7-flash', 'anthropic/claude-haiku-4.5'],
+      model:     process.env.OPENROUTER_MODEL_PREMIUM_SMART || OX_ALPHA,
+      fallbacks: ['anthropic/claude-sonnet-5', 'google/gemini-3.7-flash', 'anthropic/claude-haiku-4.5'],
     },
   },
 }

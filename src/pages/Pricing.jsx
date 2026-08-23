@@ -6,51 +6,49 @@ const LYNK_URL = 'http://lynk.id/yudadunya/r3o5ldq5qkex/checkout'
 
 const PLANS = [
   {
-    id: 'free',
-    name: 'Free',
+    id: 'trial',
+    name: '30 Hari Pertama',
     priceDisplay: 'Gratis',
-    period: 'selamanya',
-    color: 'rgba(255,255,255,0.04)',
-    border: 'rgba(255,255,255,0.10)',
-    cta: 'Lanjutkan Gratis',
-    ctaStyle: 'ghost',
+    period: 'otomatis aktif saat daftar',
+    color: 'rgba(37,211,102,0.07)',
+    border: 'rgba(37,211,102,0.4)',
+    cta: 'Daftar & Mulai Gratis',
+    ctaStyle: 'green',
+    badge: '⭐ OTOMATIS AKTIF',
     features: [
-      '15 chat per hari dengan Diah Anna',
-      'Curhat soal overthinking, kesehatan mental, hubungan, & self-care',
-      'Akses penuh artikel Blog & Panduan self-care',
-      'Diah Anna tetap inget cerita kamu sebelumnya',
+      'Semua fitur Premium, full akses — bukan versi terbatas',
+      'Chat unlimited dengan Diah Anna, kapan saja',
+      'Personalisasi lebih dalam — Diah Anna makin "kenal" pola & kebiasaanmu',
+      'Ringkasan & insight mingguan dari obrolanmu',
+      'Akses penuh semua panduan self-care premium',
     ],
     locked: [
-      'Chat reset tiap tengah malam',
+      'Nggak perlu kartu kredit buat mulai',
     ],
   },
   {
     id: 'premium',
-    name: 'Premium',
+    name: 'Setelah 30 Hari',
     priceDisplay: 'Rp 99rb',
-    priceOri: 'Rp 599rb',
-    period: 'akses 1 bulan',
-    color: 'rgba(37,211,102,0.07)',
-    border: 'rgba(37,211,102,0.4)',
-    cta: '🚀 Mulai Premium — Hemat 67%',
-    ctaStyle: 'green',
-    badge: '⭐ PALING WORTH IT',
+    period: 'per 30 hari, kalau mau lanjut',
+    color: 'rgba(255,255,255,0.04)',
+    border: 'rgba(255,255,255,0.10)',
+    cta: '🚀 Lanjutkan Premium',
+    ctaStyle: 'ghost',
     features: [
-      'Chat unlimited dengan Diah Anna, kapan saja',
-      'Personalisasi lebih dalam — Diah Anna makin "kenal" pola & kebiasaanmu',
-      'Ringkasan & insight mingguan dari obrolanmu',
-      'Prioritas respons lebih cepat',
-      'Akses penuh semua panduan self-care premium',
+      'Semua fitur Premium tetap lanjut tanpa putus',
+      'Kalau nggak lanjut bayar, otomatis turun ke Free — 15 chat/hari, tetap bisa curhat',
+      'Bisa batal kapan saja, nggak ada komitmen jangka panjang',
     ],
   },
 ]
 
 const FAQ = [
+  { q: 'Trial 30 hari-nya beneran gratis?', a: 'Ya. Begitu kamu daftar, akun kamu otomatis dapat semua fitur Premium selama 30 hari — nggak perlu kartu kredit atau bayar di muka.' },
+  { q: 'Setelah 30 hari, apa yang terjadi?', a: 'Kalau kamu nggak lanjut bayar Rp99rb/30 hari, akun kamu otomatis turun ke Free (15 chat/hari) — bukan diblokir. Curhat tetap bisa jalan.' },
   { q: 'Bisa cancel kapan saja?', a: 'Bisa. Tidak ada komitmen jangka panjang. Batalkan sebelum tanggal perpanjangan dan kamu tidak ditagih lagi.' },
   { q: 'Cara bayar gimana?', a: 'Pembayaran lewat Lynk.id — bisa GoPay, OVO, Dana, QRIS, transfer bank, atau kartu kredit/debit.' },
   { q: 'Apakah data curhatanku aman?', a: 'Ya. Chat dan cerita kamu tersimpan di device kamu sendiri, bukan di server kami, dan tidak dipakai untuk keperluan lain selain menjawab kamu.' },
-  { q: 'Bedanya Free dan Premium apa?', a: 'Free cukup buat curhat harian dengan batasan 15 chat/hari. Premium buat yang mau ngobrol tanpa batas plus insight mingguan soal mood & pola dirimu.' },
-  { q: 'Kuota Free reset kapan?', a: 'Chat 15x/hari reset setiap tengah malam (00:00 WIB).' },
 ]
 
 export default function Pricing({ user }) {
@@ -62,14 +60,14 @@ export default function Pricing({ user }) {
 
   useSEO({
     title: 'Harga & Paket Verneks Premium',
-    description: 'Verneks Premium Rp99.000 — akses 30 hari chat unlimited dengan Diah Anna, teman curhat AI buat overthinking, kesehatan mental, hubungan, dan self-care, plus insight mingguan soal mood & pola dirimu.',
+    description: 'Verneks — daftar gratis, langsung dapat 30 hari akses Premium penuh: chat unlimited dengan Diah Anna buat overthinking, kesehatan mental, hubungan, dan self-care. Setelah itu Rp99.000/30 hari kalau mau lanjut.',
     path: '/pricing',
     breadcrumb: generateBreadcrumb([{ name: 'Harga', path: '/pricing' }]),
     faq: FAQ.map(item => ({ question: item.q, answer: item.a })),
   })
 
   const handleCta = (plan) => {
-    if (plan.id === 'free') return navigate('/chat')
+    if (plan.id === 'trial') return navigate(user ? '/chat' : '/login')
     // Premium → langsung ke Lynk
     window.open(LYNK_URL, '_blank', 'noopener,noreferrer')
   }
@@ -99,14 +97,14 @@ export default function Pricing({ user }) {
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(37,211,102,0.12)', border: '1px solid rgba(37,211,102,0.25)', borderRadius: 20, padding: '4px 12px', marginBottom: 14 }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#25D366', display: 'inline-block' }} />
-            <span style={{ color: '#25D366', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.3px' }}>Harga spesial launch</span>
+            <span style={{ color: '#25D366', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.3px' }}>30 hari pertama gratis penuh</span>
           </div>
           <h1 style={{ color: '#fff', fontWeight: 800, fontSize: '1.6rem', letterSpacing: '-0.5px', lineHeight: 1.2, marginBottom: 8 }}>
             Pilih paket yang<br/>
             <span style={{ background: 'linear-gradient(90deg, #25D366, #34B7F1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>tepat buatmu</span>
           </h1>
           <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem', lineHeight: 1.6 }}>
-            Coba dulu gratis. Upgrade kalau kamu mau<br/>ngobrol sama Diah Anna tanpa batas.
+            Daftar sekarang, langsung dapat Premium penuh<br/>30 hari — nggak perlu bayar di muka.
           </p>
         </div>
 

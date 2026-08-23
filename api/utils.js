@@ -464,6 +464,61 @@ Urutkan dari match tertinggi. Aktivitas harus realistis dan bisa langsung dicoba
   // Dipindahkan dari api/redeem-code.js (file terpisah, standalone) supaya
   // konsisten dengan arsitektur "2 serverless functions". Logic TIDAK diubah
   // sama sekali dari versi aslinya.
+  // ── GRANT TRIAL — 30 hari Premium gratis otomatis untuk user baru ────────
+  // Dipanggil sekali dari App.jsx tiap kali ada event SIGNED_IN. Aman dipanggil
+  // berkali-kali: begitu user PERNAH punya row di `subscriptions` (baik dari
+  // trial ini, redeem code, atau bayar Lynk), request berikutnya jadi no-op —
+  // jadi trial cuma bisa didapat SEKALI per akun, nggak bisa di-reset dengan
+  // logout/login ulang.
+  if (action === 'grant-trial') {
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+    const { userId } = req.body
+    if (!userId) return res.status(400).json({ error: 'Missing userId' })
+
+    try {
+      const { data: existing, error: checkErr } = await supabase
+        .from('subscriptions')
+        .select('user_id')
+        .eq('user_id', userId)
+        .maybeSingle()
+
+      if (checkErr) {
+        console.error('[grant-trial] checkErr:', checkErr.message)
+        return res.status(200).json({ granted: false, reason: checkErr.message })
+      }
+      if (existing) {
+        return res.status(200).json({ granted: false, reason: 'already_has_subscription' })
+      }
+
+      const now    = new Date()
+      const expiry = new Date(now)
+      expiry.setDate(expiry.getDate() + 30)
+
+      // insert (bukan upsert) sengaja — kalau ada race condition (dua request
+      // barengan), yang kedua akan gagal karena primary key user_id sudah ada,
+      // itu OK, dianggap trial sudah granted oleh request pertama.
+      const { error: insertErr } = await supabase
+        .from('subscriptions')
+        .insert({
+          user_id:    userId,
+          plan:       'premium',
+          status:     'active',
+          created_at: now.toISOString(),
+          expires_at: expiry.toISOString(),
+        })
+
+      if (insertErr) {
+        console.warn('[grant-trial] insertErr (mungkin race condition, aman diabaikan):', insertErr.message)
+        return res.status(200).json({ granted: false, reason: insertErr.message })
+      }
+
+      return res.status(200).json({ granted: true, expires_at: expiry.toISOString() })
+    } catch (e) {
+      console.error('[grant-trial] exception:', e.message)
+      return res.status(500).json({ error: 'Gagal mengaktifkan trial' })
+    }
+  }
+
   if (action === 'redeem') {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
