@@ -9,16 +9,16 @@ const OPENING = {
 }
 
 const GENOME_MAP = [
-  { key: 'analytical',    label: 'Self-Awareness',   emoji: '🧠', color: '#34B7F1', insight: 'Kamu cenderung bisa ngenalin pola pikir & emosimu sendiri kalau dikasih ruang buat mikir. Journaling atau meditasi reflektif bakal makin najemin ini.' },
+  { key: 'analytical',    label: 'Self-Awareness',   emoji: '🧠', color: '#FB7185', insight: 'Kamu cenderung bisa ngenalin pola pikir & emosimu sendiri kalau dikasih ruang buat mikir. Journaling atau meditasi reflektif bakal makin najemin ini.' },
   { key: 'leadership',    label: 'Resilience',       emoji: '🌱', color: '#F48FB1', insight: 'Kamu punya dorongan alami buat bangkit lagi meski lagi berat. Orang di sekitarmu mungkin sering nyari kekuatan itu darimu juga.' },
-  { key: 'builder',       label: 'Coping Kreatif',   emoji: '⚙️', color: '#25D366', insight: 'Kamu lega kalau perasaan disalurkan lewat aktivitas nyata — olahraga, beberes, bikin sesuatu. Kamu paling ringan kalau bisa "ngelakuin sesuatu" soal apa yang dirasain.' },
+  { key: 'builder',       label: 'Coping Kreatif',   emoji: '⚙️', color: '#8B5CF6', insight: 'Kamu lega kalau perasaan disalurkan lewat aktivitas nyata — olahraga, beberes, bikin sesuatu. Kamu paling ringan kalau bisa "ngelakuin sesuatu" soal apa yang dirasain.' },
   { key: 'creator',       label: 'Keterbukaan',      emoji: '🌤️', color: '#FFB74D', insight: 'Kamu punya kemampuan lihat masalah dari sudut pandang baru. Kamu berkembang lewat eksplorasi cara ekspresi — nulis, gambar, atau apapun yang bikin perasaan punya bentuk.' },
   { key: 'communication', label: 'Komunikasi Emosi', emoji: '💬', color: '#CE93D8', insight: 'Kamu pandai menyampaikan perasaan dengan kata-kata dan membangun hubungan yang jujur. Cerita ke orang yang kamu percaya adalah kekuatanmu.' },
   { key: 'risk_taking',   label: 'Empati',           emoji: '💗', color: '#EF9A9A', insight: 'Kamu peka sama perasaan diri sendiri maupun orang lain. Kepekaan ini besar — asal jangan lupa arahkan ke diri sendiri juga.' },
 ]
 
 // Mapping fokus utama → aktivitas self-care yang cocok
-const CAREER_RELATIVES = {
+const SELF_CARE_SUGGESTIONS = {
   'overthinking':      [['Journaling Malam', 88], ['Teknik Grounding', 82], ['Meditasi 10 Menit', 76]],
   'kesehatan mental':  [['Konseling/Terapi', 90], ['Rutinitas Tidur', 84], ['Olahraga Ringan', 78]],
   'hubungan':          [['Komunikasi Asertif', 89], ['Support Group', 83], ['Quality Time', 75]],
@@ -27,13 +27,13 @@ const CAREER_RELATIVES = {
 }
 
 function getOpportunities(targetPosisi) {
-  if (!targetPosisi) return CAREER_RELATIVES.default
+  if (!targetPosisi) return SELF_CARE_SUGGESTIONS.default
   const key = targetPosisi.toLowerCase()
-  for (const [k, v] of Object.entries(CAREER_RELATIVES)) {
+  for (const [k, v] of Object.entries(SELF_CARE_SUGGESTIONS)) {
     if (k === 'default') continue
     if (key.includes(k) || k.split(' ').some(w => key.includes(w))) return v
   }
-  return CAREER_RELATIVES.default
+  return SELF_CARE_SUGGESTIONS.default
 }
 
 // ── Komponen Hasil Analisis (ditampilkan inline) ──────────────────────────────
@@ -86,14 +86,14 @@ function AnalysisResult({ result, onSave, saving }) {
     transition: `opacity 0.55s ease ${delay}s, transform 0.55s ease ${delay}s`,
   })
   return (
-    <div style={{ background: '#0a0f0d', minHeight: '100vh', fontFamily: "'Plus Jakarta Sans', -apple-system, sans-serif", paddingBottom: 200 }}>
+    <div style={{ background: '#14101B', minHeight: '100vh', fontFamily: "'Plus Jakarta Sans', -apple-system, sans-serif", paddingBottom: 200 }}>
 
       {/* ── Header ── */}
-      <div style={{ background: 'rgba(37,211,102,0.07)', borderBottom: '1px solid rgba(37,211,102,0.15)', padding: '14px 18px', position: 'sticky', top: 0, zIndex: 10, backdropFilter: 'blur(10px)' }}>
+      <div style={{ background: 'rgba(139,92,246,0.07)', borderBottom: '1px solid rgba(139,92,246,0.15)', padding: '14px 18px', position: 'sticky', top: 0, zIndex: 10, backdropFilter: 'blur(10px)' }}>
         <div style={{ maxWidth: 480, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 10 }}>
           <img src="/diah-anna.png" alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
           <div>
-            <div style={{ color: '#25D366', fontWeight: 700, fontSize: '0.82rem' }}>Diah Anna selesai menganalisis kamu</div>
+            <div style={{ color: '#8B5CF6', fontWeight: 700, fontSize: '0.82rem' }}>Diah Anna selesai menganalisis kamu</div>
             <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.68rem' }}>Hasil Discovery · Verneks</div>
           </div>
         </div>
@@ -104,7 +104,7 @@ function AnalysisResult({ result, onSave, saving }) {
         {/* ── WOW INSIGHT — muncul pertama, sebelum angka ── */}
         {wowInsight && (
           <div style={{
-            background: 'linear-gradient(135deg, rgba(103,58,183,0.15), rgba(37,211,102,0.08))',
+            background: 'linear-gradient(135deg, rgba(103,58,183,0.15), rgba(139,92,246,0.08))',
             border: '1px solid rgba(103,58,183,0.3)',
             borderRadius: 18, padding: '18px 16px', marginBottom: 16,
             opacity: wowRevealed ? 1 : 0,
@@ -123,20 +123,20 @@ function AnalysisResult({ result, onSave, saving }) {
 
         {/* ── Hero: Target + Readiness dengan counter animation ── */}
         <div style={{
-          background: 'linear-gradient(135deg, rgba(37,211,102,0.1), rgba(52,183,241,0.06))',
-          border: '1px solid rgba(37,211,102,0.2)',
+          background: 'linear-gradient(135deg, rgba(139,92,246,0.1), rgba(52,183,241,0.06))',
+          border: '1px solid rgba(139,92,246,0.2)',
           borderRadius: 18, padding: '20px', marginBottom: 14,
           ...fade(0.1)
         }}>
           <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.62rem', letterSpacing: '1.5px', marginBottom: 6 }}>
-            🎯 CAREER TARGET
+            🎯 FOKUS UTAMA KAMU
           </div>
           <div style={{ color: '#fff', fontWeight: 800, fontSize: '1.2rem', lineHeight: 1.2, marginBottom: 4 }}>
-            {p.target_posisi || 'Karier Impianmu'}
+            {p.target_posisi || 'Lagi Dipetakan Diah Anna'}
           </div>
           {p.posisi_saat_ini && (
             <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.72rem', marginBottom: 14 }}>
-              dari posisi {p.posisi_saat_ini}
+              kondisi belakangan ini: {p.posisi_saat_ini}
             </div>
           )}
 
@@ -144,13 +144,13 @@ function AnalysisResult({ result, onSave, saving }) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
             <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem' }}>Kesiapan Diri</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
-              <span style={{ color: '#25D366', fontWeight: 900, fontSize: '2rem', lineHeight: 1 }}>{readinessAnim}</span>
-              <span style={{ color: '#25D366', fontWeight: 700, fontSize: '1rem' }}>%</span>
+              <span style={{ color: '#8B5CF6', fontWeight: 900, fontSize: '2rem', lineHeight: 1 }}>{readinessAnim}</span>
+              <span style={{ color: '#8B5CF6', fontWeight: 700, fontSize: '1rem' }}>%</span>
             </div>
           </div>
           <div style={{ background: 'rgba(255,255,255,0.07)', borderRadius: 99, height: 8, overflow: 'hidden' }}>
             <div style={{
-              background: 'linear-gradient(90deg,#25D366,#34B7F1)',
+              background: 'linear-gradient(90deg,#8B5CF6,#FB7185)',
               height: '100%', borderRadius: 99,
               width: revealed ? `${readiness}%` : '0%',
               transition: 'width 1.6s cubic-bezier(0.4,0,0.2,1) 0.2s',
@@ -171,11 +171,11 @@ function AnalysisResult({ result, onSave, saving }) {
         {/* ── Kekuatan Tersembunyi (kalau ada) ── */}
         {p.kekuatan_tersembunyi && (
           <div style={{
-            background: 'rgba(37,211,102,0.06)', border: '1px solid rgba(37,211,102,0.15)',
+            background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.15)',
             borderRadius: 14, padding: '14px 16px', marginBottom: 14,
             ...fade(0.18)
           }}>
-            <div style={{ color: '#25D366', fontWeight: 700, fontSize: '0.78rem', letterSpacing: '0.5px', marginBottom: 6 }}>
+            <div style={{ color: '#8B5CF6', fontWeight: 700, fontSize: '0.78rem', letterSpacing: '0.5px', marginBottom: 6 }}>
               💎 KEKUATAN TERSEMBUNYI
             </div>
             <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem', lineHeight: 1.6 }}>
@@ -192,7 +192,7 @@ function AnalysisResult({ result, onSave, saving }) {
             ...fade(0.24)
           }}>
             <div style={{ color: '#FFB74D', fontWeight: 700, fontSize: '0.85rem', marginBottom: 10 }}>
-              🎯 Yang Memisahkan Kamu dari Target
+              🎯 Yang Bikin Kamu Susah Ngerasa Lega
             </div>
 
             {/* Root cause kalau ada */}
@@ -238,7 +238,7 @@ function AnalysisResult({ result, onSave, saving }) {
           </div>
         )}
 
-        {/* ── Career Genome ── */}
+        {/* ── Trait & Pola Diri (dulu disebut "Career Genome" sebelum pivot) ── */}
         <div style={{
           background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
           borderRadius: 16, padding: '16px', marginBottom: 14,
@@ -287,13 +287,13 @@ function AnalysisResult({ result, onSave, saving }) {
         {/* ── GPS Preview ── */}
         {gpsSteps.length > 0 && (
           <div style={{
-            background: 'rgba(37,211,102,0.04)', border: '1px solid rgba(37,211,102,0.15)',
+            background: 'rgba(139,92,246,0.04)', border: '1px solid rgba(139,92,246,0.15)',
             borderRadius: 16, padding: '16px', marginBottom: 14,
             ...fade(0.38)
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-              <div style={{ color: '#25D366', fontWeight: 700, fontSize: '0.85rem' }}>🗺️ Langkah Self-Care Preview</div>
-              <div style={{ background: 'rgba(37,211,102,0.15)', color: '#25D366', fontSize: '0.62rem', fontWeight: 700, padding: '2px 8px', borderRadius: 99 }}>
+              <div style={{ color: '#8B5CF6', fontWeight: 700, fontSize: '0.85rem' }}>🗺️ Langkah Self-Care Preview</div>
+              <div style={{ background: 'rgba(139,92,246,0.15)', color: '#8B5CF6', fontSize: '0.62rem', fontWeight: 700, padding: '2px 8px', borderRadius: 99 }}>
                 {gpsSteps.length} LANGKAH
               </div>
             </div>
@@ -308,13 +308,13 @@ function AnalysisResult({ result, onSave, saving }) {
                   <div key={i} style={{
                     display: 'flex', alignItems: 'flex-start', gap: 10,
                     padding: '10px 12px', borderRadius: 10,
-                    background: isDone ? 'rgba(37,211,102,0.1)' : isVisible ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)',
-                    border: isDone ? '1px solid rgba(37,211,102,0.25)' : isVisible ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(255,255,255,0.03)',
+                    background: isDone ? 'rgba(139,92,246,0.1)' : isVisible ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)',
+                    border: isDone ? '1px solid rgba(139,92,246,0.25)' : isVisible ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(255,255,255,0.03)',
                     position: 'relative', overflow: 'hidden',
                   }}>
                     <div style={{
                       width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
-                      background: isDone ? '#25D366' : isVisible ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.04)',
+                      background: isDone ? '#8B5CF6' : isVisible ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.04)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: '0.65rem', fontWeight: 700,
                       color: isDone ? '#fff' : isVisible ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.15)',
@@ -325,7 +325,7 @@ function AnalysisResult({ result, onSave, saving }) {
                     <div style={{ flex: 1, filter: !isVisible ? 'blur(4px)' : 'none', userSelect: !isVisible ? 'none' : 'auto' }}>
                       <div style={{
                         fontSize: '0.83rem', fontWeight: isDone ? 600 : 500,
-                        color: isDone ? '#25D366' : isVisible ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.12)',
+                        color: isDone ? '#8B5CF6' : isVisible ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.12)',
                         marginBottom: step.description && isVisible ? 3 : 0,
                       }}>
                         {step.title}
@@ -351,14 +351,14 @@ function AnalysisResult({ result, onSave, saving }) {
         {/* ── Pesan Diah Anna — diperbesar dan lebih personal ── */}
         {result.mentor_message && (
           <div style={{
-            background: 'rgba(37,211,102,0.06)', border: '1px solid rgba(37,211,102,0.2)',
+            background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.2)',
             borderRadius: 18, padding: '18px', marginBottom: 14,
             ...fade(0.46)
           }}>
             <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
               <img src="/diah-anna.png" alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
               <div>
-                <div style={{ color: '#25D366', fontWeight: 700, fontSize: '0.85rem' }}>Diah Anna</div>
+                <div style={{ color: '#8B5CF6', fontWeight: 700, fontSize: '0.85rem' }}>Diah Anna</div>
                 <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem' }}>Teman Curhat AI · Verneks</div>
               </div>
             </div>
@@ -378,13 +378,13 @@ function AnalysisResult({ result, onSave, saving }) {
         position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
         width: '100%', maxWidth: 480,
         padding: '16px 18px 32px',
-        background: 'linear-gradient(to top, #0a0f0d 70%, transparent)',
+        background: 'linear-gradient(to top, #14101B 70%, transparent)',
       }}>
         <div style={{ marginBottom: 10, padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10 }}>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {['🗺️ Langkah Self-Care Lengkap', '🎯 Panduan Personal', '📊 Progress Tracking', '💬 Chat Unlimited'].map(f => (
               <span key={f} style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', gap: 3 }}>
-                <span style={{ color: '#25D366', fontSize: '0.6rem' }}>🔒</span> {f}
+                <span style={{ color: '#8B5CF6', fontSize: '0.6rem' }}>🔒</span> {f}
               </span>
             ))}
           </div>
@@ -394,10 +394,10 @@ function AnalysisResult({ result, onSave, saving }) {
           disabled={saving}
           style={{
             width: '100%', padding: '15px', borderRadius: 14, border: 'none',
-            background: saving ? '#aaa' : 'linear-gradient(135deg, #25D366, #128C7E)',
+            background: saving ? '#aaa' : 'linear-gradient(135deg, #8B5CF6, #FB7185)',
             color: '#fff', fontWeight: 800, fontSize: '1rem',
             cursor: saving ? 'not-allowed' : 'pointer',
-            boxShadow: '0 4px 20px rgba(37,211,102,0.4)',
+            boxShadow: '0 4px 20px rgba(139,92,246,0.4)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
           }}
         >
@@ -550,7 +550,7 @@ export default function Discovery() {
     setLoading(false)
   }
 
-  // Klik "Lihat Career DNA" → compute genome → tampilkan hasil inline
+  // Klik "Lihat Hasil Analisis" → compute genome (trait & pola diri) → tampilkan hasil inline
   const handleComputeResult = async () => {
     setComputing(true)
     const msgs = JSON.parse(localStorage.getItem('lc_discovery_messages') || '[]')
@@ -649,7 +649,7 @@ export default function Discovery() {
             <img src="/diah-anna.png" alt="" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
             <div style={{ background: '#fff', borderRadius: '3px 12px 12px 12px', padding: '10px 14px', display: 'flex', gap: 4 }}>
               {[0, 1, 2].map(d => (
-                <div key={d} style={{ width: 7, height: 7, borderRadius: '50%', background: '#25D366', animation: `dot-bounce 1s ease ${d * 0.18}s infinite` }} />
+                <div key={d} style={{ width: 7, height: 7, borderRadius: '50%', background: '#8B5CF6', animation: `dot-bounce 1s ease ${d * 0.18}s infinite` }} />
               ))}
             </div>
           </div>
@@ -666,11 +666,11 @@ export default function Discovery() {
               onClick={handleComputeResult}
               disabled={computing}
               style={{
-                background: computing ? '#aaa' : 'linear-gradient(135deg, #25D366, #128C7E)',
+                background: computing ? '#aaa' : 'linear-gradient(135deg, #8B5CF6, #FB7185)',
                 color: '#fff', fontWeight: 700, fontSize: '0.9rem',
                 padding: '13px 28px', borderRadius: 12, border: 'none',
                 cursor: computing ? 'not-allowed' : 'pointer',
-                boxShadow: '0 4px 16px rgba(37,211,102,0.35)',
+                boxShadow: '0 4px 16px rgba(139,92,246,0.35)',
                 display: 'flex', alignItems: 'center', gap: 8,
               }}
             >

@@ -376,50 +376,46 @@ Output JSON:
   if (action === 'job-match') {
     if (req.method !== 'POST') return res.status(405).end()
 
-    const { userId } = req.body
+    // PIVOT — LOCAL-FIRST: sebelumnya endpoint ini WAJIB baca
+    // user_career_profiles.target_posisi + user_genome_scores dari Supabase,
+    // yang cuma keisi kalau user pernah nyelesain /discovery. Karena
+    // /discovery sekarang opsional (bukan gerbang wajib lagi) dan
+    // extract-profile.js (yang dulu ngisi data ini dari chat biasa) sudah
+    // dimatikan total, hampir semua user baru selalu kena "Profil belum
+    // lengkap" — fitur ini jadi nyaris nggak pernah bisa dipakai.
+    //
+    // Sekarang: profil diambil dari `localMemory` yang dikirim client
+    // (ringkasan + RSI patterns dari IndexedDB device — sama seperti yang
+    // dipakai /api/career-coach), BUKAN dari Supabase. Server tidak query
+    // tabel career/genome sama sekali di sini lagi.
+    const { userId, localMemory } = req.body
     if (!userId) return res.status(400).json({ error: 'Missing userId' })
 
+    const summary     = (localMemory?.summary || '').trim()
+    const rsiPatterns = Array.isArray(localMemory?.rsiPatterns) ? localMemory.rsiPatterns : []
+
+    // Belum cukup "kenal" user ini dari obrolan lokalnya — minta ngobrol
+    // dulu ke Diah Anna, bukan lagi disuruh ke /discovery (yang bukan alur
+    // utama lagi).
+    if (!summary && rsiPatterns.length === 0) {
+      return res.status(400).json({ error: 'Belum cukup ngobrol' })
+    }
+
     try {
-      const [{ data: careerProfile }, { data: genomeData }] = await Promise.all([
-        supabase.from('user_career_profiles')
-          .select('target_posisi, posisi_saat_ini, industri, hambatan, skill_gaps, career_readiness')
-          .eq('user_id', userId).maybeSingle(),
-        supabase.from('user_genome_scores')
-          .select('analytical, leadership, builder, creator, communication, risk_taking, top_strength')
-          .eq('user_id', userId).maybeSingle(),
-      ])
-
-      // Profil belum cukup lengkap untuk rekomendasi yang akurat — pesan ini
-      // dicek secara eksak oleh Opportunities.jsx untuk redirect ke Discovery.
-      if (!careerProfile?.target_posisi || !genomeData) {
-        return res.status(400).json({ error: 'Profil belum lengkap' })
-      }
-
-      const genomeSummary = Object.entries({
-        analytical: genomeData.analytical, leadership: genomeData.leadership,
-        builder: genomeData.builder, creator: genomeData.creator,
-        communication: genomeData.communication, risk_taking: genomeData.risk_taking,
-      })
-        .sort((a, b) => (b[1] || 0) - (a[1] || 0))
-        .map(([k, v]) => `${k}: ${v || 0}`)
-        .join(', ')
+      const rsiBlock = rsiPatterns.length > 0
+        ? rsiPatterns.map(p => `- ${p.type}: ${p.description} (yakin ${p.confidence || 0}%)`).join('\n')
+        : '(belum ada pola spesifik yang tercatat)'
 
       // PIVOT: dulu job-matching karier, sekarang rekomendasi aktivitas
-      // self-care. Nama kolom Supabase (target_posisi, career_readiness, dst)
-      // sengaja dibiarkan sama, cuma artinya yang beda — lihat komentar di
-      // api/compute-genome.js. Key genome (analytical/leadership/dst) juga
-      // sekarang berarti Self-Awareness/Resilience/dst.
-      const jobMatchPrompt = `Profil diri user:
-- Fokus utama: ${careerProfile.target_posisi}
-- Kondisi saat ini: ${careerProfile.posisi_saat_ini || 'belum diketahui'}
-- Sumber tekanan: ${careerProfile.industri || 'belum ditentukan'}
-- Pola yang bikin susah: ${careerProfile.hambatan || 'tidak ada catatan'}
-- Hal yang masih perlu dilatih: ${(careerProfile.skill_gaps || []).join(', ') || 'belum teridentifikasi'}
-- Skor kesiapan diri: ${careerProfile.career_readiness || 0}%
-- Trait diri (Self-Awareness/Resilience/Coping Kreatif/Keterbukaan/Komunikasi Emosi/Empati): ${genomeSummary}
-- Kekuatan utama: ${genomeData.top_strength || 'belum terdeteksi'}
+      // self-care — dibangun dari memori lokal (ringkasan + pola RSI),
+      // bukan lagi dari data career_profile/genome di Supabase.
+      const jobMatchPrompt = `Ringkasan tentang user (dari memori Diah Anna):
+${summary || '(belum ada ringkasan, andalkan pola di bawah)'}
 
-Berdasarkan profil di atas, buat 5 rekomendasi aktivitas self-care yang PALING relevan buat kondisi user sekarang. Ini rekomendasi aktivitas nyata yang bisa dicoba sehari-hari (bukan produk berbayar atau jasa profesional spesifik), jadi field "company" HARUS berupa kategori aktivitasnya (contoh: "Rutinitas Malam", "Coping Lewat Aksi", "Ekspresi Kreatif", "Terhubung ke Orang Lain"), BUKAN nama bisnis/brand riil.
+Pola yang sudah teramati:
+${rsiBlock}
+
+Berdasarkan info di atas, buat 5 rekomendasi aktivitas self-care yang PALING relevan buat kondisi user sekarang. Ini rekomendasi aktivitas nyata yang bisa dicoba sehari-hari (bukan produk berbayar atau jasa profesional spesifik), jadi field "company" HARUS berupa kategori aktivitasnya (contoh: "Rutinitas Malam", "Coping Lewat Aksi", "Ekspresi Kreatif", "Terhubung ke Orang Lain"), BUKAN nama bisnis/brand riil.
 
 Output HANYA JSON array valid (tanpa markdown, tanpa teks lain), format:
 [
@@ -428,7 +424,7 @@ Output HANYA JSON array valid (tanpa markdown, tanpa teks lain), format:
     "company": "kategori aktivitas",
     "salary": "estimasi durasi/frekuensi realistis, contoh: 10-15 menit/hari atau 1x seminggu",
     "match": angka_0_sampai_100,
-    "reason": "1-2 kalimat kenapa ini cocok, kaitkan dengan trait/pola user"
+    "reason": "1-2 kalimat kenapa ini cocok, kaitkan dengan yang diceritakan user"
   }
 ]
 Urutkan dari match tertinggi. Aktivitas harus realistis dan bisa langsung dicoba, bukan saran generik seperti "kelola stres dengan baik".`
@@ -438,6 +434,7 @@ Urutkan dari match tertinggi. Aktivitas harus realistis dan bisa langsung dicoba
         prompt: jobMatchPrompt,
         maxTokens: 900,
         tier: 'fast',
+        plan: 'premium',
       })
 
       const clean = raw.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/, '').trim()
