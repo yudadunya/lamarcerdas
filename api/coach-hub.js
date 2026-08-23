@@ -518,48 +518,17 @@ async function handleCareerCoach(req, res) {
   const { action = 'chat' } = req.body
 
   if (action === 'save-session-note') {
-    const { userId, messages: sessionMsgs } = req.body
-    if (!userId || !sessionMsgs?.length) return res.status(200).json({ skipped: true })
-    if (sessionMsgs.filter(m => m.role === 'user').length < 2) return res.status(200).json({ skipped: true })
-    try {
-      const conversationText = sessionMsgs.map(m => `${m.role === 'user' ? 'User' : 'Diah Anna'}: ${m.content || m.text || ''}`).join('\n').slice(0, 3000)
-
-      const summary = await generateText({
-        system: `Meringkas esensi obrolan coaching Diah Anna ke dalam 1-2 kalimat deskriptif aksi. Tanpa preamble.`,
-        prompt: conversationText,
-        maxTokens: 120,
-        tier: 'fast',
-      })
-      await supabase.from('user_session_notes').insert({ user_id: userId, summary: summary.trim() })
-
-      // Ini yang bikin "misi harian" Diah Anna beneran hidup — sebelumnya
-      // tabel dashboard_missions cuma DIBACA (dipakai bikin sapaan "gimana
-      // progres X yang kita sepakati kemarin") tapi TIDAK PERNAH DITULIS,
-      // jadi selalu kosong. Sekarang tiap sesi selesai, AI coba cari 1 aksi
-      // kecil konkret dari obrolan — kalau ada, itu jadi misi aktif
-      // berikutnya; kalau obrolannya reflektif/emosional tanpa aksi natural,
-      // AI balas "NONE" dan tidak ada misi baru dipaksakan.
-      try {
-        const missionText = await generateText({
-          system: `Kamu Diah Anna, teman curhat AI. Dari obrolan ini, cek apakah ada SATU aksi kecil konkret yang bisa user coba sebelum ngobrol lagi (contoh: journaling sebelum tidur, ngobrol ke satu orang yang dipercaya soal ini, coba teknik pernapasan/grounding, istirahat sejenak dari sosmed). Kalau ada, balas HANYA dengan kalimat aksinya (maks 15 kata, tanpa embel-embel/tanda kutip). Kalau obrolannya reflektif/emosional dan tidak ada aksi konkret yang natural, balas PERSIS: NONE`,
-          prompt: conversationText,
-          maxTokens: 40,
-          tier: 'fast',
-        })
-        const cleaned = missionText?.trim().replace(/^"|"$/g, '')
-        if (cleaned && cleaned.toUpperCase() !== 'NONE') {
-          // Selesaikan misi aktif sebelumnya (kalau ada) sebelum pasang yang baru
-          await supabase.from('dashboard_missions').update({ status: 'completed' }).eq('user_id', userId).eq('status', 'active')
-          await supabase.from('dashboard_missions').insert({ user_id: userId, daily_mission: cleaned, status: 'active' })
-        }
-      } catch (missionErr) {
-        console.error('[save-session-note mission generation failed]', missionErr)
-      }
-
-      return res.status(200).json({ success: true })
-    } catch (error) {
-      return res.status(200).json({ skipped: true })
-    }
+    // ═══════════════════════════════════════════════════════════════════════════
+    // DINONAKTIFKAN TOTAL (PIVOT — LOCAL-FIRST).
+    // Dulu action ini: (1) ringkas isi chat pakai AI lalu INSERT ke tabel
+    // `user_session_notes`, (2) turunkan "misi harian" dari isi chat lalu
+    // INSERT ke `dashboard_missions` — dua-duanya nulis konten personal ke
+    // Supabase. Tidak ada client resmi yang memanggil action ini lagi, tapi
+    // karena tetap reachable lewat POST /api/career-coach {action:
+    // 'save-session-note'}, dikosongkan total di sini — bukan cuma "tidak
+    // dipakai UI" (pelajaran yang sama seperti chat-history/end-session).
+    // ═══════════════════════════════════════════════════════════════════════════
+    return res.status(200).json({ success: true, deprecated: true, reason: 'Endpoint ini tidak lagi menyimpan apa pun ke server.' })
   }
 
   if (action === 'toggle-milestone') {
