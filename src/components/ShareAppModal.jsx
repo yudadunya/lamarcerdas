@@ -1,6 +1,6 @@
 import { useState } from "react"
 const APP_URL = 'https://verneks.my.id'
-const SHARE_TEXT = `Hei! Aku lagi pakai Verneks — AI Career Coach gratis yang bisa bantu karir sama Diah Anna kapan aja 💙
+const SHARE_TEXT = `Hei! Aku lagi pakai Verneks — teman curhat AI yang selalu ada buat dengerin, kapan aja 💙
 
 Coba gratis → ${APP_URL}`
 
@@ -9,7 +9,7 @@ export default function ShareAppModal({ onClose }) {
 
   const handleNative = () => {
     if (navigator?.share) {
-      navigator.share({ title: 'Verneks — AI Career Coach', text: SHARE_TEXT, url: APP_URL }).catch(() => {})
+      navigator.share({ title: 'Verneks — Teman Curhat AI', text: SHARE_TEXT, url: APP_URL }).catch(() => {})
     }
   }
 
@@ -28,17 +28,17 @@ export default function ShareAppModal({ onClose }) {
       style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'flex-end', fontFamily: "'Plus Jakarta Sans', -apple-system, sans-serif" }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div style={{ width: '100%', maxWidth: 480, margin: '0 auto', background: '#111b13', borderRadius: '20px 20px 0 0', padding: '20px 20px 36px', border: '1px solid rgba(37,211,102,0.15)' }}>
+      <div style={{ width: '100%', maxWidth: 480, margin: '0 auto', background: '#111b13', borderRadius: '20px 20px 0 0', padding: '20px 20px 36px', border: '1px solid rgba(139,92,246,0.2)' }}>
 
         {/* Handle */}
         <div style={{ width: 36, height: 4, background: 'rgba(255,255,255,0.15)', borderRadius: 2, margin: '0 auto 20px' }} />
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-          <img src="/diah-anna.png" alt="Diah Anna" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(37,211,102,0.4)' }}/>
+          <img src="/diah-anna.png" alt="Diah Anna" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(139,92,246,0.45)' }}/>
           <div>
             <div style={{ color: '#fff', fontWeight: 800, fontSize: '0.95rem' }}>Ajak teman pakai Verneks</div>
-            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem' }}>Gratis — bantu teman kamu juga sukses karir</div>
+            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem' }}>Gratis — biar mereka juga punya tempat cerita</div>
           </div>
         </div>
 
@@ -53,9 +53,9 @@ export default function ShareAppModal({ onClose }) {
           {typeof navigator !== 'undefined' && navigator.share && (
             <button onClick={handleNative} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-              background: 'linear-gradient(135deg, #25D366, #128C7E)', color: '#fff',
+              background: 'linear-gradient(135deg, #8B5CF6, #FB7185)', color: '#fff',
               fontWeight: 700, fontSize: '0.9rem', padding: '13px', borderRadius: 12, border: 'none', cursor: 'pointer',
-              boxShadow: '0 4px 16px rgba(37,211,102,0.3)',
+              boxShadow: '0 4px 16px rgba(139,92,246,0.35)',
             }}>
               ↗️ Bagikan via...
             </button>
@@ -63,9 +63,9 @@ export default function ShareAppModal({ onClose }) {
 
           <button onClick={handleWA} style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-            background: navigator?.share ? 'rgba(37,211,102,0.1)' : '#25D366',
-            border: navigator?.share ? '1px solid rgba(37,211,102,0.3)' : 'none',
-            color: navigator?.share ? '#25D366' : '#fff',
+            background: navigator?.share ? 'rgba(139,92,246,0.12)' : '#8B5CF6',
+            border: navigator?.share ? '1px solid rgba(139,92,246,0.35)' : 'none',
+            color: navigator?.share ? '#C4B5FD' : '#fff',
             fontWeight: 700, fontSize: '0.9rem', padding: '13px', borderRadius: 12, cursor: 'pointer',
           }}>
             💬 Kirim ke WhatsApp
@@ -73,7 +73,7 @@ export default function ShareAppModal({ onClose }) {
 
           <button onClick={handleCopy} style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            background: 'rgba(255,255,255,0.07)', color: copied ? '#25D366' : 'rgba(255,255,255,0.7)',
+            background: 'rgba(255,255,255,0.07)', color: copied ? '#34D399' : 'rgba(255,255,255,0.7)',
             fontWeight: 600, fontSize: '0.85rem', padding: '12px', borderRadius: 12,
             border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', transition: 'color 0.2s',
           }}>

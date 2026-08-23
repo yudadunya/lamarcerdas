@@ -640,30 +640,42 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
       overflow: 'hidden',
     }}>
       {showRedeemModal && <RedeemCodeModal userId={user?.id} onClose={() => setShowRedeemModal(false)} />}
+      {showShareApp && <ShareAppModal onClose={() => setShowShareApp(false)} />}
 
       {/* ── HEADER ─────────────────────────────────────────────────────── */}
       <div style={{
         background: DA.headerBg, backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
         borderBottom: `1px solid ${DA.headerBorder}`,
         padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12,
-        flexShrink: 0, zIndex: 10,
+        flexShrink: 0, zIndex: 10, position: 'relative',
       }}>
-        <div style={{ position: 'relative', flexShrink: 0 }}>
-          <img src="/diah-anna.png" alt="Diah Anna" style={{
-            width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', objectPosition: 'top',
-            border: `2px solid ${DA.avatarRing}`, boxShadow: `0 0 14px ${DA.avatarGlow}`,
-          }}/>
-          <span style={{
-            position: 'absolute', bottom: 0, right: 0, width: 11, height: 11, borderRadius: '50%',
-            background: '#34D399', border: '2px solid #14101B',
-          }} />
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ color: '#fff', fontWeight: 800, fontSize: '0.98rem', lineHeight: 1.2, letterSpacing: '-0.2px' }}>
-            Diah Anna
+        <button
+          onClick={() => setShowMenu(v => !v)}
+          aria-label="Buka menu"
+          style={{
+            flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 12,
+            background: 'none', border: 'none', padding: 0, margin: 0, cursor: 'pointer',
+            textAlign: 'left', fontFamily: 'inherit',
+          }}
+        >
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <img src="/diah-anna.png" alt="Diah Anna" style={{
+              width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', objectPosition: 'top',
+              border: `2px solid ${DA.avatarRing}`, boxShadow: `0 0 14px ${DA.avatarGlow}`,
+            }}/>
+            <span style={{
+              position: 'absolute', bottom: 0, right: 0, width: 11, height: 11, borderRadius: '50%',
+              background: '#34D399', border: '2px solid #14101B',
+            }} />
           </div>
-          <div style={{ color: DA.headerSub, fontSize: '0.72rem', fontWeight: 500 }}>Selalu ada buat dengerin</div>
-        </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ color: '#fff', fontWeight: 800, fontSize: '0.98rem', lineHeight: 1.2, letterSpacing: '-0.2px', display: 'flex', alignItems: 'center', gap: 5 }}>
+              Diah Anna
+              <span style={{ fontSize: '0.65rem', color: DA.headerSub, transform: showMenu ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s ease' }}>▾</span>
+            </div>
+            <div style={{ color: DA.headerSub, fontSize: '0.72rem', fontWeight: 500 }}>Selalu ada buat dengerin</div>
+          </div>
+        </button>
 
         {plan === 'premium' && daysRemaining !== null && (
           <div
@@ -694,33 +706,49 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
             🎟️ Kode redeem?
           </button>
         )}
-
-        <button
-          onClick={() => setShowMenu(true)}
-          aria-label="Menu"
-          style={{
-            flexShrink: 0, width: 32, height: 32, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-            color: '#fff', fontSize: '1.1rem', fontWeight: 700,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', lineHeight: 1,
-          }}
-        >
-          ⋮
-        </button>
       </div>
 
+      {/* ── MENU GABUNGAN — persis di bawah nama Diah Anna. Berisi semua
+          navigasi (Home/Journey/Rekomendasi/Profil) DAN aksi (Ajak Teman,
+          Kode Redeem, Keluar) dalam satu tempat — tidak lagi kepencar antara
+          titik-3 dan halaman Profil terpisah. ────────────────────────── */}
       {showMenu && (
         <>
           <div onClick={() => setShowMenu(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 40 }} />
           <div style={{
-            position: 'absolute', top: 60, right: 12, zIndex: 41,
+            position: 'absolute', top: 68, left: 16, zIndex: 41,
             background: '#1C1626', border: '1px solid rgba(139,92,246,0.25)',
-            borderRadius: 14, overflow: 'hidden', minWidth: 200,
+            borderRadius: 14, overflow: 'hidden', minWidth: 220,
             boxShadow: '0 12px 32px rgba(0,0,0,0.4)',
           }}>
+            <div style={{ padding: '9px 16px 6px', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.5px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase' }}>
+              Menu
+            </div>
             {[
-              { label: '👤  Profil & Pengaturan', onClick: () => navigate('/profile') },
+              { label: '🏠  Home',        onClick: () => navigate('/dashboard') },
+              { label: '🗺️  Journey',      onClick: () => navigate('/journey') },
+              { label: '🌿  Rekomendasi',  onClick: () => navigate('/opportunities') },
+              { label: '👤  Profil',       onClick: () => navigate('/profile') },
+            ].map((item, i) => (
+              <button
+                key={i}
+                onClick={() => { setShowMenu(false); item.onClick() }}
+                style={{
+                  display: 'block', width: '100%', textAlign: 'left',
+                  padding: '12px 16px', background: 'none', border: 'none',
+                  color: 'rgba(255,255,255,0.88)',
+                  fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                }}
+              >
+                {item.label}
+              </button>
+            ))}
+
+            <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '4px 0' }} />
+            <div style={{ padding: '9px 16px 6px', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.5px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase' }}>
+              Lainnya
+            </div>
+            {[
               { label: '🎟️  Kode Redeem', onClick: () => setShowRedeemModal(true) },
               { label: '📤  Ajak Teman', onClick: () => setShowShareApp(true) },
               { label: '🚪  Keluar', onClick: async () => { await supabase.auth.signOut(); navigate('/') }, danger: true },
@@ -730,8 +758,7 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
                 onClick={() => { setShowMenu(false); item.onClick() }}
                 style={{
                   display: 'block', width: '100%', textAlign: 'left',
-                  padding: '13px 16px', background: 'none', border: 'none',
-                  borderTop: i > 0 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                  padding: '12px 16px', background: 'none', border: 'none',
                   color: item.danger ? '#FB7185' : 'rgba(255,255,255,0.88)',
                   fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                 }}
