@@ -515,12 +515,34 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
     greetingFiredRef.current = true
     const firstName = (user.user_metadata?.name || user.user_metadata?.full_name || '').split(' ')[0]
 
+    // USER BENAR-BENAR BARU (belum ada ringkasan/pola RSI sama sekali di
+    // IndexedDB) — sapaan langsung ditampilkan LOKAL & INSTAN, tanpa nunggu
+    // roundtrip ke server dulu. Nggak ada apa pun yang perlu dipersonalisasi
+    // buat user baru, jadi nunggu network cuma bikin Diah Anna kelihatan
+    // "pasif"/telat muncul padahal harusnya langsung ada begitu chat dibuka.
+    const isBrandNewUser = !localMemoryRef.current.summary && (localMemoryRef.current.rsiPatterns || []).length === 0
+    if (isBrandNewUser) {
+      const instantGreeting = `Halo ${firstName || 'Sobat'} 👋 Aku Diah Anna. Cerita aja apa yang lagi kamu pikirin — aku dengerin.`
+      pushBot(instantGreeting)
+      setCoachHistory([
+        { role: 'user',      content: '[SYSTEM] Sesi baru dimulai.', text: '[SYSTEM] Sesi baru dimulai.' },
+        { role: 'assistant', content: instantGreeting,               text: instantGreeting },
+      ])
+      return
+    }
+
+    // User lama (ada memori) — sapaan digenerate AI biar nyambung natural
+    // dari obrolan/pola sebelumnya, ini yang worth ditunggu network-nya.
     apiFetch('/api/career-coach', { action: 'init-chat', userId: user.id, localMemory: localMemoryRef.current })
       .then(data => {
         pushBot(data.openingMessage)
+        // Prepend (bukan overwrite) — kalau user sempat ngetik & kirim pesan
+        // SEBELUM sapaan ini kelar di-generate, pesan itu jangan sampai
+        // ketimpa hilang dari coachHistory (konteks yang dikirim ke AI).
         setCoachHistory([
           { role: 'user',      content: '[SYSTEM] Sesi baru dimulai.', text: '[SYSTEM] Sesi baru dimulai.' },
           { role: 'assistant', content: data.openingMessage,           text: data.openingMessage },
+          ...coachHistoryRef.current,
         ])
       })
       .catch(() => {
