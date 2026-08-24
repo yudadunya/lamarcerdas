@@ -43,22 +43,27 @@ function openRouterHeaders() {
 // tapi DITURUNKAN jadi fallback-only setelah kejadian nyata: router itu acak
 // milih model gratis apa saja yang lagi tersedia, dan salah satu yang kepilih
 // ternyata nge-dump proses "mikir" (reasoning) mentah-mentah ke jawaban akhir
-// yang dilihat user — termasuk analisis pribadi soal user itu sendiri, dalam
-// bahasa Inggris. Random model selection = kualitas & bahasa jawaban jadi
-// nggak konsisten antar-request, nggak bisa diterima buat produk beneran.
+// yang dilihat user. Primary dipindah ke openai/gpt-oss-20b:free (satu model
+// tetap, bukan random).
 //
-// Sekarang PRIMARY-nya openai/gpt-oss-20b:free — satu model spesifik yang
-// sudah terbukti stabil sepanjang sesi ini (nggak pernah bikin request error/
-// bocor reasoning). `openrouter/free` dipasang di urutan fallback PALING
-// belakang saja — buat jaga-jaga kalau openai/gpt-oss-20b:free kena rate
-// limit, bukan jadi pilihan utama.
-//
-// Selain itu, SEMUA request sekarang eksplisit minta reasoning DIKECUALIKAN
-// dari output (lihat `reasoning: { exclude: true }` di callOpenRouter/
-// callOpenRouterStructured) — supaya kalaupun model yang kepilih punya mode
-// reasoning, prosesnya nggak ikut nampil ke user.
+// UPDATE (24 Agu 2026): openai/gpt-oss-20b:free TERNYATA MASIH bisa bocor
+// reasoning mentah + ngasih jawaban ngaco/nggak koheren sesekali — walau
+// `reasoning: { exclude: true }` sudah dipasang (rupanya tidak semua upstream
+// provider di balik slug ":free" konsisten menghormati parameter ini). Dua
+// perbaikan sekaligus:
+//   1. PREMIUM tidak lagi disamakan dengan FREE. User premium bayar buat
+//      kualitas & keandalan — sekarang pakai model berbayar asli (Claude
+//      Haiku/Sonnet lewat OpenRouter), bukan model gratis 20B yang sama.
+//   2. Ditambah SAFETY NET di callOpenRouter/callOpenRouterStructured: kalau
+//      output dari model manapun (termasuk fallback) kedeteksi kayak bocoran
+//      reasoning mentah (lihat looksLikeLeakedReasoning di bawah), request
+//      otomatis DIULANG paksa lewat fallback berikutnya — bukan langsung
+//      ditampilkan ke user apa adanya.
 const FREE_NAMED  = process.env.OPENROUTER_MODEL_FREE_NAMED  || 'openai/gpt-oss-20b:free'
 const FREE_ROUTER = process.env.OPENROUTER_MODEL_FREE_ROUTER || 'openrouter/free'
+
+const PREMIUM_FAST  = process.env.OPENROUTER_MODEL_PREMIUM_FAST  || 'anthropic/claude-haiku-4.5'
+const PREMIUM_SMART = process.env.OPENROUTER_MODEL_PREMIUM_SMART || 'anthropic/claude-sonnet-5'
 
 const MODELS = {
   free: {
@@ -66,8 +71,11 @@ const MODELS = {
     smart: { model: FREE_NAMED, fallbacks: [FREE_ROUTER] },
   },
   premium: {
-    fast:  { model: FREE_NAMED, fallbacks: [FREE_ROUTER] },
-    smart: { model: FREE_NAMED, fallbacks: [FREE_ROUTER] },
+    // Fallback ke model FREE_NAMED juga (bukan cuma sesama paid) — kalau
+    // provider paid lagi down total, user premium tetap dapat balasan
+    // (kualitas lebih rendah sementara) daripada error total.
+    fast:  { model: PREMIUM_FAST,  fallbacks: [PREMIUM_SMART, FREE_NAMED] },
+    smart: { model: PREMIUM_SMART, fallbacks: [PREMIUM_FAST, FREE_NAMED] },
   },
 }
 
@@ -75,6 +83,25 @@ function pickModelConfig(plan, tier) {
   const planKey = plan === 'premium' ? 'premium' : 'free'
   const tierKey = tier === 'smart' ? 'smart' : 'fast'
   return MODELS[planKey][tierKey]
+}
+
+// ── Deteksi bocoran reasoning mentah / jawaban yang jelas-jelas ngaco ───────
+// Heuristik pola khas chain-of-thought yang "lolos" ke output akhir — kalimat
+// pembuka analitis dalam Bahasa Inggris, narasi "user bilang X, jadi aku
+// harus...", dsb. Ini bukan filter sempurna, tapi cukup buat nangkep kasus
+// paling jelas (persis kayak contoh nyata yang pernah kejadian).
+const REASONING_LEAK_PATTERNS = [
+  /^(okay|ok,|alright|let me think|let's think|first,? i need|i need to (think|consider|respond))/i,
+  /according to the (persona|rules|system|guidelines)/i,
+  /\b(he|she|the user) (said|asked|wants|is asking)\b[\s\S]{0,80}\b(let me|i should|i need|maybe he|maybe she)\b/i,
+  /\bmy previous (message|response)\b/i,
+  /^(possible responses?|draft:|alternative:)/i,
+]
+
+function looksLikeLeakedReasoning(text) {
+  if (!text) return false
+  const sample = text.slice(0, 500)
+  return REASONING_LEAK_PATTERNS.some(p => p.test(sample))
 }
 
 // ── Normalize messages ───────────────────────────────────────────────────────
@@ -90,30 +117,51 @@ function normalizeMessages(messages) {
 // ── Panggilan chat biasa (teks bebas) ────────────────────────────────────────
 async function callOpenRouter({ system, messages, maxTokens, model, fallbacks = [] }) {
   const normalized = normalizeMessages(messages)
-  const body = {
-    model,
-    max_tokens: maxTokens,
-    messages: [{ role: 'system', content: system }, ...normalized],
-    // Penting: kalau model yang kepilih (termasuk lewat fallback/router)
-    // punya mode reasoning, JANGAN pernah ikut tampil di jawaban akhir —
-    // ini yang bikin bocoran "proses mikir" mentah nyampe ke chat user.
-    reasoning: { exclude: true },
-  }
-  // Fallback bawaan OpenRouter: satu request, dicoba berurutan di sisi mereka.
-  if (fallbacks.length > 0) body.models = [model, ...fallbacks]
 
-  const res = await fetch(OPENROUTER_URL, {
-    method: 'POST',
-    headers: openRouterHeaders(),
-    body: JSON.stringify(body),
-  })
-  if (!res.ok) {
-    const errText = await res.text()
-    throw new Error(`[OpenRouter] ${res.status}: ${errText.slice(0, 300)}`)
+  async function callWithModel(modelToUse, remainingFallbacks) {
+    const body = {
+      model: modelToUse,
+      max_tokens: maxTokens,
+      messages: [{ role: 'system', content: system }, ...normalized],
+      // Penting: kalau model yang kepilih (termasuk lewat fallback/router)
+      // punya mode reasoning, JANGAN pernah ikut tampil di jawaban akhir —
+      // ini yang bikin bocoran "proses mikir" mentah nyampe ke chat user.
+      reasoning: { exclude: true },
+    }
+    if (remainingFallbacks.length > 0) body.models = [modelToUse, ...remainingFallbacks]
+
+    const res = await fetch(OPENROUTER_URL, {
+      method: 'POST',
+      headers: openRouterHeaders(),
+      body: JSON.stringify(body),
+    })
+    if (!res.ok) {
+      const errText = await res.text()
+      throw new Error(`[OpenRouter] ${res.status}: ${errText.slice(0, 300)}`)
+    }
+    const data = await res.json()
+    const text = data.choices?.[0]?.message?.content
+    if (!text) throw new Error(`[OpenRouter] Respons kosong (model: ${data.model || modelToUse})`)
+    return text
   }
-  const data = await res.json()
-  const text = data.choices?.[0]?.message?.content
-  if (!text) throw new Error(`[OpenRouter] Respons kosong (model: ${data.model || model})`)
+
+  const text = await callWithModel(model, fallbacks)
+
+  // Safety net: kalau output kedeteksi bocoran reasoning/ngaco DAN masih ada
+  // fallback tersisa, paksa ulang SEKALI lewat fallback pertama (skip model
+  // primary yang baru kebukti bermasalah) — daripada nampilin apa adanya ke
+  // user. Kalau fallback JUGA bocor, ya sudah, tampilkan (lebih baik daripada
+  // infinite retry) — kemungkinan ini sangat kecil karena dua model beda.
+  if (looksLikeLeakedReasoning(text) && fallbacks.length > 0) {
+    console.warn(`[ai] Kedeteksi bocoran reasoning dari ${model}, retry paksa lewat fallback ${fallbacks[0]}`)
+    try {
+      return await callWithModel(fallbacks[0], fallbacks.slice(1))
+    } catch (e) {
+      console.warn('[ai] Fallback retry juga gagal, pakai hasil model asal:', e.message)
+      return text
+    }
+  }
+
   return text
 }
 
@@ -154,6 +202,12 @@ async function callOpenRouterStructured({ system, prompt, schema, maxTokens, mod
   const data = await res.json()
   const text = data.choices?.[0]?.message?.content
   if (!text) throw new Error(`[OpenRouter] Respons kosong (model: ${data.model || model})`)
+  if (looksLikeLeakedReasoning(text)) {
+    // Untuk structured output, bocoran reasoning hampir pasti bikin
+    // JSON.parse gagal di bawah juga — tapi tetap log eksplisit biar jelas
+    // akar masalahnya di server log, bukan cuma "gagal parse JSON".
+    console.warn(`[ai] Structured output dari ${model} kedeteksi kayak bocoran reasoning.`)
+  }
   try {
     return JSON.parse(text)
   } catch {
