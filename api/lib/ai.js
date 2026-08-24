@@ -159,8 +159,15 @@ async function callOpenRouter({ system, messages, maxTokens, model, fallbacks = 
     // FREE_NAMED belum dicoba (bukan model utama, bukan salah satu
     // fallback), paksa satu percobaan terakhir ke model gratis — daripada
     // premium user dapat error total gara-gara saldo OpenRouter kosong.
-    const alreadyTriedFree = model === FREE_NAMED || fallbacks.includes(FREE_NAMED)
-    if (e.status === 402 && !alreadyTriedFree) {
+    // PENTING: sebelumnya dicek juga `fallbacks.includes(FREE_NAMED)` untuk
+    // skip retry ini — logikanya salah. FREE_NAMED memang ADA di array
+    // `fallbacks` yang dikirim ke OpenRouter, tapi OpenRouter TERBUKTI tidak
+    // otomatis lanjut ke entry berikutnya di array itu untuk error 402
+    // (kredit habis) — beda dari error "model/provider down" yang memang
+    // dirancang buat auto-fallback. Jadi satu-satunya alasan valid buat skip
+    // retry manual ini adalah kalau model yang BARU DICOBA memang sudah
+    // FREE_NAMED itu sendiri (berarti beneran tidak ada lagi yang bisa dicoba).
+    if (e.status === 402 && model !== FREE_NAMED) {
       console.warn(`[ai] Kredit OpenRouter habis buat model ${model}, darurat pindah ke ${FREE_NAMED}`)
       text = await callWithModel(FREE_NAMED, [])
     } else {
@@ -236,8 +243,15 @@ async function callOpenRouterStructured({ system, prompt, schema, maxTokens, mod
     // Sama seperti callOpenRouter: kredit habis (402) itu account-wide, jadi
     // semua model BERBAYAR di rantai fallback bakal kena masalah sama —
     // paksa satu percobaan terakhir ke model gratis.
-    const alreadyTriedFree = model === FREE_NAMED || fallbacks.includes(FREE_NAMED)
-    if (e.status === 402 && !alreadyTriedFree) {
+    // PENTING: sebelumnya dicek juga `fallbacks.includes(FREE_NAMED)` untuk
+    // skip retry ini — logikanya salah. FREE_NAMED memang ADA di array
+    // `fallbacks` yang dikirim ke OpenRouter, tapi OpenRouter TERBUKTI tidak
+    // otomatis lanjut ke entry berikutnya di array itu untuk error 402
+    // (kredit habis) — beda dari error "model/provider down" yang memang
+    // dirancang buat auto-fallback. Jadi satu-satunya alasan valid buat skip
+    // retry manual ini adalah kalau model yang BARU DICOBA memang sudah
+    // FREE_NAMED itu sendiri (berarti beneran tidak ada lagi yang bisa dicoba).
+    if (e.status === 402 && model !== FREE_NAMED) {
       console.warn(`[ai] Kredit OpenRouter habis buat model ${model} (structured), darurat pindah ke ${FREE_NAMED}`)
       text = await callWithModel(FREE_NAMED, [])
     } else {
