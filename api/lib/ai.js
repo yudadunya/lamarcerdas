@@ -137,7 +137,9 @@ async function callOpenRouter({ system, messages, maxTokens, model, fallbacks = 
     })
     if (!res.ok) {
       const errText = await res.text()
-      throw new Error(`[OpenRouter] ${res.status}: ${errText.slice(0, 300)}`)
+      const err = new Error(`[OpenRouter] ${res.status}: ${errText.slice(0, 300)}`)
+      err.status = res.status // dipakai buat deteksi 402 (kredit habis) di bawah
+      throw err
     }
     const data = await res.json()
     const text = data.choices?.[0]?.message?.content
@@ -145,7 +147,26 @@ async function callOpenRouter({ system, messages, maxTokens, model, fallbacks = 
     return text
   }
 
-  const text = await callWithModel(model, fallbacks)
+  let text
+  try {
+    text = await callWithModel(model, fallbacks)
+  } catch (e) {
+    // Safety net kredit habis (402): array `models` bawaan OpenRouter
+    // ternyata TIDAK selalu fallback otomatis untuk error kehabisan saldo
+    // (beda dari error "model/provider down" yang memang dirancang buat
+    // itu) — karena kredit itu account-wide, semua model BERBAYAR di rantai
+    // fallback bakal kena masalah yang sama. Kalau ini terjadi DAN
+    // FREE_NAMED belum dicoba (bukan model utama, bukan salah satu
+    // fallback), paksa satu percobaan terakhir ke model gratis — daripada
+    // premium user dapat error total gara-gara saldo OpenRouter kosong.
+    const alreadyTriedFree = model === FREE_NAMED || fallbacks.includes(FREE_NAMED)
+    if (e.status === 402 && !alreadyTriedFree) {
+      console.warn(`[ai] Kredit OpenRouter habis buat model ${model}, darurat pindah ke ${FREE_NAMED}`)
+      text = await callWithModel(FREE_NAMED, [])
+    } else {
+      throw e
+    }
+  }
 
   // Safety net: kalau output kedeteksi bocoran reasoning/ngaco DAN masih ada
   // fallback tersisa, paksa ulang SEKALI lewat fallback pertama (skip model
@@ -176,32 +197,54 @@ async function callOpenRouterStructured({ system, prompt, schema, maxTokens, mod
     ? `\n\nWAJIB balas HANYA dengan JSON valid yang PERSIS mengikuti struktur berikut (semua field di "required" WAJIB ada, jangan ada yang terlewat):\n${JSON.stringify(schema, null, 2)}`
     : ''
 
-  const body = {
-    model,
-    max_tokens: maxTokens,
-    messages: [
-      { role: 'system', content: system + schemaInstruction },
-      { role: 'user', content: prompt },
-    ],
-    response_format: { type: 'json_object' },
-    // Sama seperti callOpenRouter — reasoning yang bocor ke content juga akan
-    // bikin JSON.parse di bawah gagal total, bukan cuma soal tampilan.
-    reasoning: { exclude: true },
-  }
-  if (fallbacks.length > 0) body.models = [model, ...fallbacks]
+  async function callWithModel(modelToUse, remainingFallbacks) {
+    const body = {
+      model: modelToUse,
+      max_tokens: maxTokens,
+      messages: [
+        { role: 'system', content: system + schemaInstruction },
+        { role: 'user', content: prompt },
+      ],
+      response_format: { type: 'json_object' },
+      // Sama seperti callOpenRouter — reasoning yang bocor ke content juga
+      // akan bikin JSON.parse di bawah gagal total, bukan cuma soal tampilan.
+      reasoning: { exclude: true },
+    }
+    if (remainingFallbacks.length > 0) body.models = [modelToUse, ...remainingFallbacks]
 
-  const res = await fetch(OPENROUTER_URL, {
-    method: 'POST',
-    headers: openRouterHeaders(),
-    body: JSON.stringify(body),
-  })
-  if (!res.ok) {
-    const errText = await res.text()
-    throw new Error(`[OpenRouter] ${res.status}: ${errText.slice(0, 300)}`)
+    const res = await fetch(OPENROUTER_URL, {
+      method: 'POST',
+      headers: openRouterHeaders(),
+      body: JSON.stringify(body),
+    })
+    if (!res.ok) {
+      const errText = await res.text()
+      const err = new Error(`[OpenRouter] ${res.status}: ${errText.slice(0, 300)}`)
+      err.status = res.status
+      throw err
+    }
+    const data = await res.json()
+    const text = data.choices?.[0]?.message?.content
+    if (!text) throw new Error(`[OpenRouter] Respons kosong (model: ${data.model || modelToUse})`)
+    return text
   }
-  const data = await res.json()
-  const text = data.choices?.[0]?.message?.content
-  if (!text) throw new Error(`[OpenRouter] Respons kosong (model: ${data.model || model})`)
+
+  let text
+  try {
+    text = await callWithModel(model, fallbacks)
+  } catch (e) {
+    // Sama seperti callOpenRouter: kredit habis (402) itu account-wide, jadi
+    // semua model BERBAYAR di rantai fallback bakal kena masalah sama —
+    // paksa satu percobaan terakhir ke model gratis.
+    const alreadyTriedFree = model === FREE_NAMED || fallbacks.includes(FREE_NAMED)
+    if (e.status === 402 && !alreadyTriedFree) {
+      console.warn(`[ai] Kredit OpenRouter habis buat model ${model} (structured), darurat pindah ke ${FREE_NAMED}`)
+      text = await callWithModel(FREE_NAMED, [])
+    } else {
+      throw e
+    }
+  }
+
   if (looksLikeLeakedReasoning(text)) {
     // Untuk structured output, bocoran reasoning hampir pasti bikin
     // JSON.parse gagal di bawah juga — tapi tetap log eksplisit biar jelas
