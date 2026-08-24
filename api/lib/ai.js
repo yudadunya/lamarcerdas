@@ -14,15 +14,23 @@
  *  sudah TIDAK dipakai lagi oleh file ini — boleh dihapus dari Vercel env
  *  vars kalau tidak dipakai file lain.)
  *
- * FALLBACK: OpenRouter punya fitur bawaan `models: [primary, fallback1, ...]`
- * di satu request — kalau model pertama down/rate-limited/kena moderasi,
- * OpenRouter otomatis coba model berikutnya di server mereka. Makanya kode
- * di file ini jauh lebih sederhana dari sebelumnya (nggak perlu try/catch
- * manual berlapis-lapis buat tiap provider).
+ * FALLBACK (update 24 Agu 2026): sempat pakai fitur bawaan OpenRouter
+ * `models: [primary, fallback1, ...]` dalam satu request — TAPI ternyata
+ * fallback itu tidak konsisten jalan untuk semua jenis error (kredit habis,
+ * model didelist, dst — kadang jalan kadang enggak, jenis error yang beda
+ * ditangani beda-beda di sisi mereka dan tidak terdokumentasi jelas).
+ * Sekarang tiap model di rantai fallback dicoba lewat REQUEST TERPISAH,
+ * satu per satu, di kode ini sendiri (lihat loop `chain` di callOpenRouter/
+ * callOpenRouterStructured) — lebih verbose tapi predictable: apa pun jenis
+ * kegagalannya, selalu lanjut ke model berikutnya sampai ada yang berhasil
+ * atau rantai habis.
  *
  * GANTI MODEL: semua slug di bawah bisa di-override lewat env var tanpa ubah
- * kode (lihat MODELS). Kalau ada model yang 404/deprecated, cek slug terbaru
- * di https://openrouter.ai/models dan update env var terkait di Vercel.
+ * kode (lihat MODELS). Kalau ada model yang 404/deprecated/kredit habis, cek
+ * slug terbaru di https://openrouter.ai/models dan update env var terkait di
+ * Vercel — tapi sistemnya sudah otomatis fallback ke FREE_ROUTER
+ * (openrouter/free, auto-pilih model gratis yang lagi hidup) kalau semua
+ * model di rantai gagal, jadi tidak langsung down total sambil nunggu itu.
  */
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
@@ -118,18 +126,16 @@ function normalizeMessages(messages) {
 async function callOpenRouter({ system, messages, maxTokens, model, fallbacks = [] }) {
   const normalized = normalizeMessages(messages)
 
-  async function callWithModel(modelToUse, remainingFallbacks) {
+  async function callWithModel(modelToUse) {
     const body = {
       model: modelToUse,
       max_tokens: maxTokens,
       messages: [{ role: 'system', content: system }, ...normalized],
-      // Penting: kalau model yang kepilih (termasuk lewat fallback/router)
-      // punya mode reasoning, JANGAN pernah ikut tampil di jawaban akhir —
-      // ini yang bikin bocoran "proses mikir" mentah nyampe ke chat user.
+      // Penting: kalau model yang kepilih punya mode reasoning, JANGAN
+      // pernah ikut tampil di jawaban akhir — ini yang bikin bocoran
+      // "proses mikir" mentah nyampe ke chat user.
       reasoning: { exclude: true },
     }
-    if (remainingFallbacks.length > 0) body.models = [modelToUse, ...remainingFallbacks]
-
     const res = await fetch(OPENROUTER_URL, {
       method: 'POST',
       headers: openRouterHeaders(),
@@ -138,7 +144,7 @@ async function callOpenRouter({ system, messages, maxTokens, model, fallbacks = 
     if (!res.ok) {
       const errText = await res.text()
       const err = new Error(`[OpenRouter] ${res.status}: ${errText.slice(0, 300)}`)
-      err.status = res.status // dipakai buat deteksi 402 (kredit habis) di bawah
+      err.status = res.status
       throw err
     }
     const data = await res.json()
@@ -147,50 +153,47 @@ async function callOpenRouter({ system, messages, maxTokens, model, fallbacks = 
     return text
   }
 
-  let text
-  try {
-    text = await callWithModel(model, fallbacks)
-  } catch (e) {
-    // Safety net kredit habis (402): array `models` bawaan OpenRouter
-    // ternyata TIDAK selalu fallback otomatis untuk error kehabisan saldo
-    // (beda dari error "model/provider down" yang memang dirancang buat
-    // itu) — karena kredit itu account-wide, semua model BERBAYAR di rantai
-    // fallback bakal kena masalah yang sama. Kalau ini terjadi DAN
-    // FREE_NAMED belum dicoba (bukan model utama, bukan salah satu
-    // fallback), paksa satu percobaan terakhir ke model gratis — daripada
-    // premium user dapat error total gara-gara saldo OpenRouter kosong.
-    // PENTING: sebelumnya dicek juga `fallbacks.includes(FREE_NAMED)` untuk
-    // skip retry ini — logikanya salah. FREE_NAMED memang ADA di array
-    // `fallbacks` yang dikirim ke OpenRouter, tapi OpenRouter TERBUKTI tidak
-    // otomatis lanjut ke entry berikutnya di array itu untuk error 402
-    // (kredit habis) — beda dari error "model/provider down" yang memang
-    // dirancang buat auto-fallback. Jadi satu-satunya alasan valid buat skip
-    // retry manual ini adalah kalau model yang BARU DICOBA memang sudah
-    // FREE_NAMED itu sendiri (berarti beneran tidak ada lagi yang bisa dicoba).
-    if (e.status === 402 && model !== FREE_NAMED) {
-      console.warn(`[ai] Kredit OpenRouter habis buat model ${model}, darurat pindah ke ${FREE_NAMED}`)
-      text = await callWithModel(FREE_NAMED, [])
-    } else {
-      throw e
-    }
-  }
+  // Coba tiap model di rantai SATU PER SATU (request terpisah per model),
+  // bukan lewat parameter `models` bawaan OpenRouter — soalnya itu terbukti
+  // tidak konsisten fallback-nya untuk error tertentu (402 kredit habis,
+  // 404 model didelist, dst — kadang jalan, kadang enggak). Loop manual di
+  // sini menjamin SETIAP jenis kegagalan (bukan cuma satu jenis error
+  // tertentu) selalu lanjut ke model berikutnya di rantai.
+  //
+  // FREE_ROUTER (openrouter/free) SELALU ditambahkan di paling akhir sebagai
+  // jaring pengaman terakhir kalau belum ada di rantai — dia auto-pilih
+  // model gratis apa pun yang LAGI TERSEDIA saat itu (roster model gratis
+  // OpenRouter sering rotasi/didelist tanpa pemberitahuan, jadi nge-hardcode
+  // satu nama model gratis spesifik sebagai satu-satunya andalan itu rapuh).
+  const chain = [model, ...fallbacks]
+  if (!chain.includes(FREE_ROUTER)) chain.push(FREE_ROUTER)
 
-  // Safety net: kalau output kedeteksi bocoran reasoning/ngaco DAN masih ada
-  // fallback tersisa, paksa ulang SEKALI lewat fallback pertama (skip model
-  // primary yang baru kebukti bermasalah) — daripada nampilin apa adanya ke
-  // user. Kalau fallback JUGA bocor, ya sudah, tampilkan (lebih baik daripada
-  // infinite retry) — kemungkinan ini sangat kecil karena dua model beda.
-  if (looksLikeLeakedReasoning(text) && fallbacks.length > 0) {
-    console.warn(`[ai] Kedeteksi bocoran reasoning dari ${model}, retry paksa lewat fallback ${fallbacks[0]}`)
+  let lastErr
+  for (let i = 0; i < chain.length; i++) {
+    const modelToUse = chain[i]
+    const isLastInChain = i === chain.length - 1
+    let text
     try {
-      return await callWithModel(fallbacks[0], fallbacks.slice(1))
+      text = await callWithModel(modelToUse)
     } catch (e) {
-      console.warn('[ai] Fallback retry juga gagal, pakai hasil model asal:', e.message)
-      return text
+      lastErr = e
+      console.warn(`[ai] Model ${modelToUse} gagal (${e.status || 'error'}: ${e.message.slice(0, 120)}), coba model berikutnya...`)
+      continue
     }
+
+    // Safety net bocoran reasoning/jawaban ngaco: kalau masih ada model lain
+    // di rantai, coba yang berikutnya dulu — daripada langsung ditampilkan
+    // ke user apa adanya.
+    if (looksLikeLeakedReasoning(text) && !isLastInChain) {
+      console.warn(`[ai] Kedeteksi bocoran reasoning dari ${modelToUse}, coba model berikutnya...`)
+      continue
+    }
+    return text
   }
 
-  return text
+  // Semua model di rantai gagal — lempar error dari percobaan TERAKHIR
+  // (paling informatif buat debugging, biasanya juga yang paling relevan).
+  throw lastErr
 }
 
 // ── Panggilan structured output (dipaksa balas JSON sesuai schema) ──────────
@@ -204,7 +207,7 @@ async function callOpenRouterStructured({ system, prompt, schema, maxTokens, mod
     ? `\n\nWAJIB balas HANYA dengan JSON valid yang PERSIS mengikuti struktur berikut (semua field di "required" WAJIB ada, jangan ada yang terlewat):\n${JSON.stringify(schema, null, 2)}`
     : ''
 
-  async function callWithModel(modelToUse, remainingFallbacks) {
+  async function callWithModel(modelToUse) {
     const body = {
       model: modelToUse,
       max_tokens: maxTokens,
@@ -217,7 +220,6 @@ async function callOpenRouterStructured({ system, prompt, schema, maxTokens, mod
       // akan bikin JSON.parse di bawah gagal total, bukan cuma soal tampilan.
       reasoning: { exclude: true },
     }
-    if (remainingFallbacks.length > 0) body.models = [modelToUse, ...remainingFallbacks]
 
     const res = await fetch(OPENROUTER_URL, {
       method: 'POST',
@@ -236,40 +238,42 @@ async function callOpenRouterStructured({ system, prompt, schema, maxTokens, mod
     return text
   }
 
-  let text
-  try {
-    text = await callWithModel(model, fallbacks)
-  } catch (e) {
-    // Sama seperti callOpenRouter: kredit habis (402) itu account-wide, jadi
-    // semua model BERBAYAR di rantai fallback bakal kena masalah sama —
-    // paksa satu percobaan terakhir ke model gratis.
-    // PENTING: sebelumnya dicek juga `fallbacks.includes(FREE_NAMED)` untuk
-    // skip retry ini — logikanya salah. FREE_NAMED memang ADA di array
-    // `fallbacks` yang dikirim ke OpenRouter, tapi OpenRouter TERBUKTI tidak
-    // otomatis lanjut ke entry berikutnya di array itu untuk error 402
-    // (kredit habis) — beda dari error "model/provider down" yang memang
-    // dirancang buat auto-fallback. Jadi satu-satunya alasan valid buat skip
-    // retry manual ini adalah kalau model yang BARU DICOBA memang sudah
-    // FREE_NAMED itu sendiri (berarti beneran tidak ada lagi yang bisa dicoba).
-    if (e.status === 402 && model !== FREE_NAMED) {
-      console.warn(`[ai] Kredit OpenRouter habis buat model ${model} (structured), darurat pindah ke ${FREE_NAMED}`)
-      text = await callWithModel(FREE_NAMED, [])
-    } else {
-      throw e
+  // Sama seperti callOpenRouter: rantai model dicoba satu per satu lewat
+  // request terpisah, apa pun jenis errornya, selalu berakhir di FREE_ROUTER
+  // sebagai jaring pengaman terakhir.
+  const chain = [model, ...fallbacks]
+  if (!chain.includes(FREE_ROUTER)) chain.push(FREE_ROUTER)
+
+  let lastErr
+  for (let i = 0; i < chain.length; i++) {
+    const modelToUse = chain[i]
+    const isLastInChain = i === chain.length - 1
+    let text
+    try {
+      text = await callWithModel(modelToUse)
+    } catch (e) {
+      lastErr = e
+      console.warn(`[ai] Model ${modelToUse} (structured) gagal (${e.status || 'error'}: ${e.message.slice(0, 120)}), coba model berikutnya...`)
+      continue
+    }
+
+    if (looksLikeLeakedReasoning(text) && !isLastInChain) {
+      console.warn(`[ai] Structured output dari ${modelToUse} kedeteksi kayak bocoran reasoning, coba model berikutnya...`)
+      continue
+    }
+
+    try {
+      return JSON.parse(text)
+    } catch {
+      lastErr = new Error(`[OpenRouter] Gagal parse JSON dari model ${modelToUse}: ${text.slice(0, 200)}`)
+      if (!isLastInChain) {
+        console.warn(`[ai] ${modelToUse} balas JSON tidak valid, coba model berikutnya...`)
+        continue
+      }
     }
   }
 
-  if (looksLikeLeakedReasoning(text)) {
-    // Untuk structured output, bocoran reasoning hampir pasti bikin
-    // JSON.parse gagal di bawah juga — tapi tetap log eksplisit biar jelas
-    // akar masalahnya di server log, bukan cuma "gagal parse JSON".
-    console.warn(`[ai] Structured output dari ${model} kedeteksi kayak bocoran reasoning.`)
-  }
-  try {
-    return JSON.parse(text)
-  } catch {
-    throw new Error(`[OpenRouter] Gagal parse JSON dari model: ${text.slice(0, 200)}`)
-  }
+  throw lastErr
 }
 
 // ── Retry helper — sengaja dipertahankan sebagai lapisan terakhir; fallback
