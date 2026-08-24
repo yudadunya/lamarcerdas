@@ -698,36 +698,6 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
             <div style={{ color: DA.headerSub, fontSize: '0.72rem', fontWeight: 500 }}>Selalu ada buat dengerin</div>
           </div>
         </button>
-
-        {plan === 'premium' && daysRemaining !== null && (
-          <div
-            title={daysRemaining <= 7 ? 'Paket Premium kamu akan segera berakhir' : 'Sisa masa aktif Premium'}
-            style={{
-              flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4,
-              padding: '5px 10px', borderRadius: 999, fontSize: '0.68rem', fontWeight: 700, color: '#fff',
-              background: daysRemaining <= 7 ? 'rgba(251,113,133,0.22)' : 'rgba(139,92,246,0.22)',
-              border: `1px solid ${daysRemaining <= 7 ? 'rgba(251,113,133,0.5)' : 'rgba(139,92,246,0.45)'}`,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            ⭐ {daysRemaining === 0 ? 'Hari ini terakhir' : `${daysRemaining} hari lagi`}
-          </div>
-        )}
-
-        {plan !== 'premium' && (
-          <button
-            onClick={() => setShowRedeemModal(true)}
-            title="Sudah punya kode redeem premium? Klik untuk aktivasi"
-            style={{
-              flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4,
-              padding: '5px 10px', borderRadius: 999, fontSize: '0.68rem', fontWeight: 700, color: '#fff',
-              background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.16)',
-              whiteSpace: 'nowrap', cursor: 'pointer',
-            }}
-          >
-            🎟️ Kode redeem?
-          </button>
-        )}
       </div>
 
       {/* ── MENU GABUNGAN — persis di bawah nama Diah Anna. Berisi semua
@@ -743,6 +713,19 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
             borderRadius: 14, overflow: 'hidden', minWidth: 220,
             boxShadow: '0 12px 32px rgba(0,0,0,0.4)',
           }}>
+            {plan === 'premium' && daysRemaining !== null && (
+              <div
+                title={daysRemaining <= 7 ? 'Paket Premium kamu akan segera berakhir' : 'Sisa masa aktif Premium'}
+                style={{
+                  padding: '11px 16px', display: 'flex', alignItems: 'center', gap: 6,
+                  fontSize: '0.78rem', fontWeight: 700,
+                  color: daysRemaining <= 7 ? '#FB7185' : '#C4B5FD',
+                  borderBottom: '1px solid rgba(255,255,255,0.08)',
+                }}
+              >
+                ⭐ Premium — {daysRemaining === 0 ? 'hari ini terakhir' : `${daysRemaining} hari lagi`}
+              </div>
+            )}
             <div style={{ padding: '9px 16px 6px', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.5px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase' }}>
               Menu
             </div>
@@ -771,7 +754,7 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
               Lainnya
             </div>
             {[
-              { label: '🎟️  Kode Redeem', onClick: () => setShowRedeemModal(true) },
+              ...(plan !== 'premium' ? [{ label: '🎟️  Kode Redeem', onClick: () => setShowRedeemModal(true) }] : []),
               { label: '📤  Ajak Teman', onClick: () => setShowShareApp(true) },
               { label: '🚪  Keluar', onClick: async () => {
                   await supabase.auth.signOut()
