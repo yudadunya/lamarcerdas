@@ -94,22 +94,41 @@ function pickModelConfig(plan, tier) {
 }
 
 // ── Deteksi bocoran reasoning mentah / jawaban yang jelas-jelas ngaco ───────
-// Heuristik pola khas chain-of-thought yang "lolos" ke output akhir — kalimat
-// pembuka analitis dalam Bahasa Inggris, narasi "user bilang X, jadi aku
-// harus...", dsb. Ini bukan filter sempurna, tapi cukup buat nangkep kasus
-// paling jelas (persis kayak contoh nyata yang pernah kejadian).
+// Heuristik pola khas chain-of-thought / echo instruksi yang "lolos" ke
+// output akhir — kalimat pembuka analitis dalam Bahasa Inggris, narasi "user
+// bilang X, jadi aku harus...", atau (ditemukan kasus baru 24 Agu 2026) model
+// lemah yang justru NGE-ECHO BALIK isi system prompt-nya sendiri ("Rules to
+// follow:", "Length: Max", dst) alih-alih benar-benar menjalankan tugasnya.
+// Ini bukan filter sempurna, tapi cukup buat nangkep kasus paling jelas
+// (persis kayak contoh-contoh nyata yang pernah kejadian).
 const REASONING_LEAK_PATTERNS = [
   /^(okay|ok,|alright|let me think|let's think|first,? i need|i need to (think|consider|respond))/i,
   /according to the (persona|rules|system|guidelines)/i,
   /\b(he|she|the user) (said|asked|wants|is asking)\b[\s\S]{0,80}\b(let me|i should|i need|maybe he|maybe she)\b/i,
   /\bmy previous (message|response)\b/i,
   /^(possible responses?|draft:|alternative:)/i,
+  // Echo instruksi (kasus baru): model narasiin ulang tugasnya alih-alih
+  // mengerjakannya.
+  /^the user wants\b/i,
+  /rules?\s+to\s+follow\s*:/i,
+  /\bnot applicable\b/i,
+  /^(length|format|tone|style)\s*:/im,
+  /\b(new user|new session)\b.{0,40}\b(greeting|opening|sapaan)\b/i,
 ]
 
 function looksLikeLeakedReasoning(text) {
   if (!text) return false
   const sample = text.slice(0, 500)
-  return REASONING_LEAK_PATTERNS.some(p => p.test(sample))
+  if (REASONING_LEAK_PATTERNS.some(p => p.test(sample))) return true
+
+  // Heuristik struktural tambahan: obrolan/sapaan natural nggak akan punya
+  // banyak baris gaya "Label: penjelasan" — itu ciri khas instruksi/aturan
+  // yang di-echo balik mentah-mentah, bukan kalimat chat biasa. 2+ baris
+  // kayak gitu dalam satu balasan udah cukup mencurigakan.
+  const labelLines = (sample.match(/^[A-Z][A-Za-z ]{2,40}:\s/gm) || []).length
+  if (labelLines >= 2) return true
+
+  return false
 }
 
 // ── Normalize messages ───────────────────────────────────────────────────────

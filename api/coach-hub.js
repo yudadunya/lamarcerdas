@@ -648,7 +648,9 @@ ATURAN PENTING:
 - JANGAN buka dengan "Halo [nama] 👋\n\nAku masih ingat..." template kaku — itu terasa robotic.
 - Kalau ada memori sesi sebelumnya, mulai dari situ secara natural — kayak teman yang nyambung dari obrolan kemarin, sebut hal konkret yang pernah diceritakan (bukan istilah karier seperti "progress" atau "target").
 - Kalau belum ada memori (user baru/sesi pertama), cukup sapa hangat dan tanya gimana kabarnya/apa yang lagi dipikirkan — jangan berpura-pura sudah kenal.
-- Maksimal 2-3 kalimat. Natural, seperti chat WhatsApp ke teman.`,
+- Maksimal 2-3 kalimat. Natural, seperti chat WhatsApp ke teman.
+
+WAJIB: Balas HANYA dengan teks sapaannya, dalam Bahasa Indonesia. JANGAN menjelaskan instruksi ini, JANGAN menulis ulang aturan di atas, JANGAN menambahkan catatan/analisis/meta-commentary apa pun sebelum atau sesudah sapaannya — output kamu langsung dipakai sebagai pesan chat ke user, apa adanya.`,
           prompt: `Nama: ${structuralMemory.name}
 Memori sesi terakhir: ${memoryContext || 'Baru mulai, belum ada memori sesi sebelumnya.'}
 
