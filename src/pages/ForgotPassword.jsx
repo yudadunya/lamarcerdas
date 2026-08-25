@@ -49,7 +49,10 @@ export default function ForgotPassword() {
   return (
     <div style={styles.page}>
       <div style={styles.card}>
-        <Link to="/" style={styles.logo}>Lamar<span style={{ color: 'var(--green)' }}>Cerdas</span></Link>
+         <Link to="/" style={{ ...styles.logo, display: 'flex', alignItems: 'center', gap: '8px' }}>
+           <img src="/verneks_icon_1.png" alt="Verneks" width="28" height="28" style={{ objectFit: 'contain' }} />
+           <span>Verneks</span>
+         </Link>
         <h1 style={styles.title}>Lupa Password?</h1>
         <p style={styles.sub}>Tenang, kita kirim link reset ke email kamu.</p>
 

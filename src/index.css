@@ -1,40 +1,40 @@
 :root {
-  /* WA Color Palette */
-  --wa-green: #25D366;
-  --wa-green-dark: #128C7E;
-  --wa-green-deeper: #075E54;
-  --wa-teal: #34B7F1;
-  --wa-bg: #ECE5DD;
-  --wa-chat-bg: #E5DDD5;
-  --wa-header: #075E54;
-  --wa-header-light: #128C7E;
-  --wa-bubble-out: #DCF8C6;
+  /* Verneks brand palette: blue-purple, calm, and clear */
+  --wa-green: #22A8F2;
+  --wa-green-dark: #1674C9;
+  --wa-green-deeper: #113E80;
+  --wa-teal: #6745E8;
+  --wa-bg: #F5F8FE;
+  --wa-chat-bg: #EEF3FC;
+  --wa-header: #08111F;
+  --wa-header-light: #142A4E;
+  --wa-bubble-out: #E8E0FF;
   --wa-bubble-in: #FFFFFF;
   --wa-bubble-out-text: #111;
-  --wa-dark: #111B21;
-  --wa-gray: #667781;
-  --wa-gray-light: #F0F2F5;
-  --wa-border: #E9EDEF;
-  --wa-tick: #53BDEB;
-  --wa-read: #53BDEB;
+  --wa-dark: #111E34;
+  --wa-gray: #657386;
+  --wa-gray-light: #F1F5FB;
+  --wa-border: #DDE6F3;
+  --wa-tick: #22A8F2;
+  --wa-read: #22A8F2;
   --wa-panel: #FFFFFF;
   --wa-input-bg: #FFFFFF;
   --wa-hover: #F5F6F6;
-  --wa-selected: #D9FDD3;
+  --wa-selected: #E9F0FF;
   --wa-bottom-nav: #FFFFFF;
   --wa-icon: #54656F;
-  --wa-active-tab: #075E54;
-  --wa-red: #EA0038;
+  --wa-active-tab: #6745E8;
+  --wa-red: #D6455D;
 
-  /* Legacy compat for other components */
-  --green: #25D366;
-  --green-light: #34B7F1;
-  --green-dark: #128C7E;
-  --cream: #ECE5DD;
-  --dark: #111B21;
-  --gray: #667781;
-  --gray-light: #F0F2F5;
-  --border: #E9EDEF;
+  /* Shared aliases for older components */
+  --green: #22A8F2;
+  --green-light: #6745E8;
+  --green-dark: #1674C9;
+  --cream: #F5F8FE;
+  --dark: #111E34;
+  --gray: #657386;
+  --gray-light: #F1F5FB;
+  --border: #DDE6F3;
   --font-display: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-body: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }

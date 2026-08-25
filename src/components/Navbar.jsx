@@ -20,8 +20,9 @@ export default function Navbar({ user }) {
   return (
     <nav style={styles.nav}>
       <div style={styles.container}>
-        <Link to="/" style={styles.logo}>
-          Lamar<span style={styles.logoAccent}>Cerdas</span>
+        <Link to="/" style={{ ...styles.logo, display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img src="/verneks_icon_1.png" alt="Verneks" width="28" height="28" style={{ objectFit: 'contain' }} />
+          <span>Verneks</span>
         </Link>
 
         {user && (

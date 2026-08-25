@@ -41,7 +41,7 @@ export default function Login() {
           Verneks
         </div>
         <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', marginTop: '6px' }}>
-          Your AI Career Coach
+           Teman cerita AI yang siap mendengarkan
         </div>
       </div>
 

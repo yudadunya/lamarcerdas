@@ -26,7 +26,7 @@ export default function BottomNav({ isPremium = false }) {
     <nav style={{
       position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
       width: '100%', maxWidth: 480,
-      background: 'rgba(20,16,27,0.97)',
+       background: 'rgba(8,17,31,0.97)',
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
       borderTop: '1px solid rgba(139,92,246,0.14)',
@@ -63,7 +63,7 @@ export default function BottomNav({ isPremium = false }) {
             {active && (
               <span style={{
                 position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
-                width: 28, height: 2, background: 'linear-gradient(90deg,#8B5CF6,#FB7185)',
+                 width: 28, height: 2, background: 'linear-gradient(90deg,#6745E8,#22A8F2)',
                 borderRadius: '0 0 3px 3px',
               }} />
             )}

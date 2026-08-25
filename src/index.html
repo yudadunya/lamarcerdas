@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <!-- ═══ GLOBAL & STATIC ONLY — tidak berubah per halaman ═══════════════ -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+    <meta name="theme-color" content="#08111F" />
+    <meta name="author" content="Verneks — YudVi Nexa Labs" />
+
+    <link rel="icon" type="image/png" href="/icons/favicon.png" />
+    <link rel="apple-touch-icon" href="/icons/favicon1.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Verneks" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- ═══ GOOGLE ANALYTICS TAG ════════════════════════════════════════ -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1HWTF155KZ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-1HWTF155KZ');
+    </script>
+
+    <!-- ═══ FALLBACK OG/TWITTER — khusus social bot non-JS (WhatsApp, Telegram, X) ═══
+         useSEO() akan override ini secara dinamis untuk browser/Googlebot yang render JS.
+         Tag ini WAJIB tetap ada — tanpa ini, link preview di WhatsApp/Telegram kosong
+         karena bot tersebut tidak menjalankan JavaScript sama sekali. ═══════════════ -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Verneks" />
+    <meta property="og:locale" content="id_ID" />
+    <meta property="og:title" content="Verneks | Kepalamu Lagi Penuh? Cerita Saja." />
+    <meta property="og:description" content="Kepalamu lagi penuh? Cerita saja ke Diah Anna. Teman cerita AI yang mendengarkan tanpa menghakimi dan membantu kamu menata pikiran." />
+    <meta property="og:image" content="https://verneks.my.id/icons/icon-512x512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:url" content="https://verneks.my.id/" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Verneks | Kepalamu Lagi Penuh? Cerita Saja." />
+    <meta name="twitter:description" content="Kepalamu lagi penuh? Cerita saja ke Diah Anna. Teman cerita AI yang mendengarkan tanpa menghakimi dan membantu kamu menata pikiran." />
+    <meta name="twitter:image" content="https://verneks.my.id/icons/icon-512x512.png" />
+
+    <!-- Title/description fallback minimal — langsung di-override useSEO() saat React mount -->
+    <title>Verneks | Kepalamu Lagi Penuh? Cerita Saja.</title>
+    <meta name="description" content="Kepalamu lagi penuh? Cerita saja ke Diah Anna. Teman cerita AI yang mendengarkan tanpa menghakimi dan membantu kamu menata pikiran. Mulai ngobrol gratis." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://verneks.my.id/" />
+
+    <!-- ═══ SEMUA JSON-LD (Organization, WebSite, SoftwareApplication, FAQ, Breadcrumb, dst)
+         SEKARANG DIHASILKAN OLEH useSEO() — lihat src/seo/useSEO.js
+         Single Source of Truth: satu halaman = satu pemanggilan useSEO() = satu set schema.
+         JANGAN tambah JSON-LD statis di sini lagi. ═══════════════════════════════════ -->
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // ── Dulu ada script di sini yang (1) unregister service worker +
+      // hapus semua cache di SETIAP load, dan (2) hapus key sesi Supabase
+      // (`sb-*`) dari localStorage kalau `expires_at`-nya (expiry ACCESS
+      // TOKEN, defaultnya cuma 1 jam) sudah lewat waktu sekarang.
+      //
+      // Itu penyebab bug "logout sendiri" yang selama ini dikira soal
+      // browser/device: expires_at itu memang WAJAR lewat kalau user tidak
+      // buka app >1 jam (siapa pun, device apa pun) — Supabase client
+      // (GoTrueJS) sudah didesain untuk otomatis refresh access token pakai
+      // refresh_token begitu halaman dibuka lagi, SELAMA sesi refresh_token
+      // itu sendiri tidak dihapus. Script ini menghapus seluruh key
+      // (termasuk refresh_token-nya) SEBELUM React/Supabase client sempat
+      // jalan sama sekali — jadi refresh-nya tidak pernah kejadian, dan user
+      // kelihatan "logout otomatis" padahal sesinya sebenarnya masih valid.
+      //
+      // Bagian unregister SW + clear cache juga sudah ada versi yang benar
+      // (sekali per versi app, pakai flag `lc_sw_cleared_version`) di
+      // `src/App.jsx` — jadi tidak perlu diulang di sini secara mentah.
+      //
+      // Kalau ke depannya butuh cara untuk "paksa logout semua sesi lama"
+      // (misal abis migrasi besar), lakukan itu lewat Supabase (revoke
+      // refresh token di server / `supabase.auth.admin.signOut`), BUKAN
+      // dengan menghapus localStorage secara membabi buta di sini — karena
+      // client tidak bisa membedakan "access token expired tapi refresh
+      // token masih sah" dari "sesi beneran sudah mati".
+    </script>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

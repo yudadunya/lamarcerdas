@@ -2,13 +2,13 @@
   "name": "Verneks",
   "short_name": "Verneks",
   "id": "/",
-  "description": "Verneks — Teman curhat AI: cerita soal overthinking, kesehatan mental, hubungan, dan self-care bersama Diah Anna, kapan saja.",
+  "description": "Kepalamu lagi penuh? Cerita saja ke Diah Anna, teman cerita AI yang membantu kamu menata pikiran tanpa menghakimi.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#075E54",
-  "theme_color": "#075E54",
+  "background_color": "#08111F",
+  "theme_color": "#08111F",
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
