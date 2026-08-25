@@ -91,13 +91,10 @@ const supabase = createClient(
 /**
  * Send chat reminder email (2 hari tidak chat)
  */
-export async function sendChatReminderEmail(userEmail, userName, pendingStepTitle) {
+export async function sendChatReminderEmail(userEmail, userName) {
   if (!userEmail) return { error: 'Email not found' }
 
   const firstName = userName?.split(' ')[0] || 'Teman'
-  const stepLine = pendingStepTitle
-    ? `Langkah selanjutnya yang masih menunggu di roadmap kamu: <strong>${pendingStepTitle}</strong>.`
-    : 'Kesuksesan karier dibangun dari konsistensi kecil setiap hari. Jangan biarkan ritmemu hilang — satu percakapan hari ini bisa mengubah arah perjalananmu.'
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -105,15 +102,15 @@ export async function sendChatReminderEmail(userEmail, userName, pendingStepTitl
     <head>
       <meta charset="UTF-8">
       <style>
-        body { font-family: 'Arial', sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .header { background: linear-gradient(135deg, #25D366, #128C7E); color: #fff; padding: 30px 20px; text-align: center; }
+        body { font-family: 'Arial', sans-serif; background-color: #14101B; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #1C1626; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+        .header { background: linear-gradient(135deg, #8B5CF6, #FB7185); color: #fff; padding: 30px 20px; text-align: center; }
         .header h1 { margin: 0; font-size: 24px; }
-        .content { padding: 30px 20px; line-height: 1.6; color: #333; }
-        .message { background-color: #f9f9f9; border-left: 4px solid #25D366; padding: 15px; margin: 20px 0; }
+        .content { padding: 30px 20px; line-height: 1.6; color: #e5e5e5; }
+        .message { background-color: rgba(255,255,255,0.05); border-left: 4px solid #8B5CF6; padding: 15px; margin: 20px 0; }
         .cta { text-align: center; margin: 30px 0; }
-        .cta-button { background-color: #25D366; color: #fff; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; }
-        .footer { background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; }
+        .cta-button { background: linear-gradient(135deg, #8B5CF6, #FB7185); color: #fff; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; }
+        .footer { background-color: #14101B; padding: 20px; text-align: center; font-size: 12px; color: #888; border-top: 1px solid rgba(255,255,255,0.08); }
       </style>
     </head>
     <body>
@@ -122,24 +119,22 @@ export async function sendChatReminderEmail(userEmail, userName, pendingStepTitl
           <h1>💬 Halo, ${firstName}!</h1>
         </div>
         <div class="content">
-          <p>Aku perhatiin kalau kita sudah 2 hari tidak ngobrol.</p>
+          <p>Aku perhatiin kalau kita udah beberapa hari nggak ngobrol.</p>
           
           <div class="message">
-            <p><strong>Momentum itu penting, ${firstName}.</strong></p>
-            <p>${stepLine}</p>
+            <p><strong>Nggak apa-apa kalau lagi sibuk atau belum ada mood cerita, ${firstName}.</strong></p>
+            <p>Aku tetap di sini kok, kapan pun kamu siap — soal apa aja yang lagi kamu pikirin.</p>
           </div>
-
-          <p>Target kariermu masih di depan. Aku di sini siap membantu kamu melangkah lebih dekat.</p>
 
           <div class="cta">
-            <a href="https://verneks.my.id/chat" class="cta-button">💬 Tanya Diah Anna Sekarang</a>
+            <a href="https://verneks.my.id/chat" class="cta-button">💬 Cerita ke Diah Anna</a>
           </div>
 
-          <p style="color: #666; font-size: 14px;">Atau buka Verneks dan mulai ngobrol dengan Diah Anna kapan saja.</p>
+          <p style="color: #999; font-size: 14px;">Atau buka Verneks dan mulai ngobrol dengan Diah Anna kapan saja.</p>
         </div>
         <div class="footer">
-          <p>Email ini dikirim dari Diah Anna, AI Career Mentor Verneks</p>
-          <p>© 2024 Verneks. Semua hak dilindungi.</p>
+          <p>Email ini dikirim dari Diah Anna, teman curhat AI Verneks</p>
+          <p>© 2026 Verneks. Semua hak dilindungi.</p>
         </div>
       </div>
     </body>
@@ -150,7 +145,7 @@ export async function sendChatReminderEmail(userEmail, userName, pendingStepTitl
     await emailTransporter.sendMail({
       from: `"Diah Anna - Verneks" <${process.env.GMAIL_USER}>`,
       to: userEmail,
-      subject: `${firstName}, mari kita lanjutkan perjalanan karier kamu 🚀`,
+      subject: `${firstName}, aku di sini kalau kamu mau cerita 💬`,
       html: htmlContent,
     })
     return { success: true }
@@ -184,7 +179,7 @@ export async function sendWeeklyReviewEmail(userEmail, userName, reviewText) {
         .review-section h3 { margin: 0 0 12px 0; color: #4F46E5; font-size: 16px; }
         .review-text { color: #333; font-size: 15px; line-height: 1.8; }
         .cta { text-align: center; margin: 30px 0; }
-        .cta-button { background-color: #25D366; color: #fff; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; }
+        .cta-button { background-color: #8B5CF6; color: #fff; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; }
         .footer { background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; }
       </style>
     </head>
@@ -304,15 +299,12 @@ export async function sendPushNotification(fcmToken, title, body, data = {}) {
 /**
  * Send chat reminder push
  */
-export async function sendChatReminderPush(fcmToken, userName, pendingStepTitle, personalLine = null) {
+export async function sendChatReminderPush(fcmToken, userName, personalLine = null) {
   const firstName = userName?.split(' ')[0] || 'Teman'
   return sendPushNotification(
     fcmToken,
     '💬 Halo ' + firstName,
-    personalLine
-      || (pendingStepTitle
-        ? `Langkah "${pendingStepTitle}" masih menunggu kamu. Yuk lanjutkan!`
-        : 'Kita sudah 2 hari tidak ngobrol. Mari lanjutkan perjalanan karier kamu!'),
+    personalLine || 'Udah beberapa hari nih kita nggak ngobrol. Aku di sini kalau kamu mau cerita apa aja.',
     { type: 'chat-reminder', action: 'open-chat' }
   )
 }
@@ -330,7 +322,7 @@ export async function sendMorningNudgePush(fcmToken, userName, personalLine = nu
   return sendPushNotification(
     fcmToken,
     `Pagi, ${firstName} ☀️`,
-    personalLine || 'Ada waktu buat ngobrol bentar hari ini? Aku di sini kalau kamu mau cerita progress-mu.',
+    personalLine || 'Ada waktu buat ngobrol bentar hari ini? Aku di sini kalau kamu mau cerita.',
     { type: 'morning-nudge', action: 'open-chat' }
   )
 }
@@ -356,7 +348,7 @@ export async function sendPremiumExpiryPush(fcmToken, userName, personalLine, da
   return sendPushNotification(
     fcmToken,
     title,
-    personalLine || 'Journey dan Peluang kamu masih nunggu kalau mau lanjut.',
+    personalLine || 'Chat tanpa batas harian kamu masih nunggu kalau mau lanjut.',
     { type: 'premium-expiry', action: 'open-upgrade' }
   )
 }
@@ -376,8 +368,8 @@ export async function sendUpgradeNudgePush(fcmToken, userName, personalLine) {
   const firstName = userName?.split(' ')[0] || 'Teman'
   return sendPushNotification(
     fcmToken,
-    `${firstName}, ada langkah lebih cepat 🚀`,
-    personalLine || 'Premium buka Journey & Peluang kerja yang cocok sama progress kamu sekarang.',
+    `${firstName}, ada yang lebih leluasa 💬`,
+    personalLine || 'Premium bikin kamu bisa ngobrol sama Diah Anna tanpa batas kuota harian.',
     { type: 'upgrade-nudge', action: 'open-upgrade' }
   )
 }
@@ -400,26 +392,26 @@ export async function sendOnboardingNudgeEmail(userEmail, userName) {
       <style>
         body { font-family: 'Arial', sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px; }
         .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .header { background: linear-gradient(135deg, #25D366, #128C7E); color: #fff; padding: 30px 20px; text-align: center; }
+        .header { background: linear-gradient(135deg, #8B5CF6, #FB7185); color: #fff; padding: 30px 20px; text-align: center; }
         .header h1 { margin: 0; font-size: 22px; }
         .content { padding: 30px 20px; line-height: 1.6; color: #333; }
         .cta { text-align: center; margin: 30px 0; }
-        .cta-button { background-color: #25D366; color: #fff; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; }
+        .cta-button { background-color: #8B5CF6; color: #fff; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; }
         .footer { background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; }
       </style>
     </head>
     <body>
       <div class="container">
-        <div class="header"><h1>🧬 Career DNA kamu udah siap, ${firstName}!</h1></div>
+        <div class="header"><h1>Halo, ${firstName} 👋</h1></div>
         <div class="content">
-          <p>Kemarin kamu sudah cerita ke Diah Anna dan Career DNA kamu sudah jadi — tapi kelihatannya belum sempat lanjut ngobrol lagi.</p>
-          <p>Roadmap dan langkah-langkah konkret buat kariermu udah nunggu di sana. Yuk lanjutkan sekarang, mumpung momentumnya masih ada.</p>
+          <p>Kamu baru gabung di Verneks, tapi kelihatannya belum sempat ngobrol lagi sama Diah Anna.</p>
+          <p>Nggak perlu topik khusus atau alasan tertentu — cerita apa aja boleh, kapan pun kamu siap.</p>
           <div class="cta">
-            <a href="https://verneks.my.id/chat" class="cta-button">💬 Lanjut Ngobrol dengan Diah Anna</a>
+            <a href="https://verneks.my.id/chat" class="cta-button">💬 Cerita ke Diah Anna</a>
           </div>
         </div>
         <div class="footer">
-          <p>Email ini dikirim dari Diah Anna, AI Career Mentor Verneks</p>
+          <p>Email ini dikirim dari Diah Anna, teman curhat AI Verneks</p>
         </div>
       </div>
     </body>
@@ -430,7 +422,7 @@ export async function sendOnboardingNudgeEmail(userEmail, userName) {
     await emailTransporter.sendMail({
       from: `"Diah Anna - Verneks" <${process.env.GMAIL_USER}>`,
       to: userEmail,
-      subject: `${firstName}, Career DNA kamu udah siap 🧬`,
+      subject: `${firstName}, aku di sini kalau kamu mau cerita 💬`,
       html: htmlContent,
     })
     return { success: true }
@@ -444,8 +436,8 @@ export async function sendOnboardingNudgePush(fcmToken, userName) {
   const firstName = userName?.split(' ')[0] || 'Teman'
   return sendPushNotification(
     fcmToken,
-    '🧬 Career DNA kamu udah siap!',
-    `${firstName}, yuk lanjut ngobrol sama Diah Anna buat mulai langkah pertama roadmap kamu.`,
+    `Halo ${firstName} 👋`,
+    'Kalau lagi ada yang dipikirin atau cuma pengen cerita, aku di sini. Yuk mampir ngobrol.',
     { type: 'onboarding-nudge', action: 'open-chat' }
   )
 }
@@ -553,17 +545,17 @@ export async function sendPushToMultiple(fcmTokens, title, body, data = {}) {
  * itu SELALU hilang dan notifikasi yang terkirim selalu pakai template
  * generik, bukan kalimat personal yang sudah capek-capek di-generate.
  */
-export async function notifyChatReminder(userEmail, fcmToken, userName, pendingStepTitle, personalLine = null) {
+export async function notifyChatReminder(userEmail, fcmToken, userName, personalLine = null) {
   const results = {}
 
   // Send email
   if (userEmail) {
-    results.email = await sendChatReminderEmail(userEmail, userName, pendingStepTitle)
+    results.email = await sendChatReminderEmail(userEmail, userName)
   }
 
   // Send push
   if (fcmToken) {
-    results.push = await sendChatReminderPush(fcmToken, userName, pendingStepTitle, personalLine)
+    results.push = await sendChatReminderPush(fcmToken, userName, personalLine)
   }
 
   return results

@@ -114,6 +114,11 @@ const REASONING_LEAK_PATTERNS = [
   /\bnot applicable\b/i,
   /^(length|format|tone|style)\s*:/im,
   /\b(new user|new session)\b.{0,40}\b(greeting|opening|sapaan)\b/i,
+  // Nyasar ke topik bisnis/karier (kasus baru 24 Agu 2026): model lupa
+  // persona curhat-nya dan malah ngasih saran side hustle/bisnis nggak
+  // diminta — pola "kata bisnis + tawaran/pertanyaan lanjutan" cukup khas.
+  /\b(side\s*hustle|reselling|content creation)\b/i,
+  /\b(bisnis|usaha) yang (lucrat|menguntungkan)\b/i,
 ]
 
 function looksLikeLeakedReasoning(text) {

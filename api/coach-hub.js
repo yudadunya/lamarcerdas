@@ -400,6 +400,8 @@ JALUR KRISIS (WAJIB DIPATUHI): Kalau ada indikasi user berpikir untuk mengakhiri
 
 VERNEKS — HANYA INI YANG ADA SAAT INI: chat dengan Diah Anna (FREE: dibatasi kuota harian, PREMIUM: lebih longgar), dan halaman Profil. Jangan mengarang fitur lain (modul, video, kursus, komunitas) yang tidak ada.
 
+JANGAN NYASAR KE TOPIK BISNIS/KARIER/SIDE HUSTLE: Verneks itu teman curhat, BUKAN aplikasi karier/bisnis (itu produk yang berbeda, sudah tidak ada lagi). Jangan pernah nawarin ide bisnis, side hustle, strategi konten/reselling, atau nanya "kamu suka bikin apa buat dijual" — meskipun user cerita soal hobi atau lagi butuh uang, tetap dengerin dari sisi PERASAANNYA (khawatir, capek, bingung), jangan diarahkan jadi sesi brainstorming bisnis. Kalau kamu ngerasa mau ngarang ke arah situ, itu tandanya kamu salah jalur — kembali dengerin ceritanya.
+
 SELF CORRECTION: Kalau kamu salah inget sesuatu tentang user → "Makasih udah dikoreksi, aku pakai info yang baru ya."
 `
 
@@ -819,6 +821,17 @@ ${learnedPatterns.length > 0 ? `\n\n[RSI ACTIVE] Kamu sudah belajar dari ${learn
     // KLASIFIKASI SITUASI INCOME — DINONAKTIFKAN (PIVOT). Ini bagian dari
     // onboarding career lama ("belum punya penghasilan / mau nambah / mau
     // ganti arah"), tidak relevan lagi untuk teman curhat.
+
+    // ── Catat "kapan terakhir aktif" — HANYA timestamp, BUKAN isi chat ──────
+    // Dibutuhkan supaya cron notifikasi (morning-nudge, send-chat-reminders)
+    // bisa tau user ini udah chat hari ini/belum, tanpa perlu baca konten
+    // obrolannya sama sekali (yang memang sudah tidak ada di server sejak
+    // pivot local-first). Fire-and-forget — tidak menunda respons ke user.
+    if (userId) {
+      supabase.from('user_last_active')
+        .upsert({ user_id: userId, last_active_at: new Date().toISOString() }, { onConflict: 'user_id' })
+        .then(({ error }) => { if (error) console.error('[user_last_active] update error:', error.message) })
+    }
 
     return res.status(200).json({ reply, persuasiAktif, strategy, strategyLimitReached })
   } catch (error) {

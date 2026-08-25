@@ -93,178 +93,80 @@ export default async function handler(req, res) {
 
   // ── WEEKLY REVIEW ────────────────────────────────────────────────────────
   if (job === 'weekly-review') {
-    function getWeekStart() {
-      const d = new Date(); const day = d.getDay()
-      const diff = day === 0 ? -6 : 1 - day
-      d.setDate(d.getDate() + diff); d.setHours(0,0,0,0)
-      return d.toISOString().split('T')[0]
-    }
-
-    const weekStart   = getWeekStart()
-    const sevenDaysAgo = new Date(Date.now() - 7 * 86400000)
-
-    const { data: users, error } = await supabase
-      .from('user_career_profiles')
-      .select('user_id, nama, target_posisi, career_readiness, gps_steps, running_insight, running_insight_updated_at')
-      .not('career_readiness', 'is', null).limit(50)
-
-    if (error) return res.status(500).json({ error: error.message })
-    if (!users?.length) return res.status(200).json({ success: true, processed: 0 })
-
-    // Fetch semua auth users untuk kirim email
-    const { data: { users: authUsers } } = await supabase.auth.admin.listUsers()
-
-    const results = []
-    for (const user of users) {
-      try {
-        const [eventsRes, capsulesRes, sessionsRes] = await Promise.all([
-          supabase.from('career_events')
-            .select('event_type, event_payload').eq('user_id', user.user_id)
-            .gte('created_at', sevenDaysAgo.toISOString()),
-          supabase.from('memory_capsule_log')
-            .select('capsule_text').eq('user_id', user.user_id)
-            .gte('capsule_date', sevenDaysAgo.toISOString().slice(0,10))
-            .order('capsule_date', { ascending: false }),
-          supabase.from('user_session_notes')
-            .select('id', { count: 'exact', head: true }).eq('user_id', user.user_id)
-            .gte('session_date', sevenDaysAgo.toISOString().slice(0,10)),
-        ])
-
-        const events   = eventsRes.data || []
-        const capsules = capsulesRes.data || []
-        const sessionsCount = sessionsRes.count || 0
-        if (events.length === 0 && capsules.length === 0) continue
-
-        const milestonesDone = events.filter(e => e.event_type === 'milestone_completed')
-        const doneCount  = (user.gps_steps || []).filter(s => s.done).length
-        const totalCount = (user.gps_steps || []).length
-
-        const summary = await generateText({
-          system: 'Kamu adalah Diah Anna, AI career coach. Tulis catatan refleksi mingguan 2-4 kalimat, hangat dan personal. Bahasa Indonesia natural.',
-          prompt: `Nama: ${user.nama || 'User'}\nTarget: ${user.target_posisi || '-'}\nProgress: ${doneCount}/${totalCount} step\nMilestone: ${milestonesDone.map(m => m.event_payload?.title).join(', ') || 'tidak ada'}\nRingkasan sesi:\n${capsules.map(c => `- ${c.capsule_text}`).join('\n') || '(tidak ada)'}`,
-          maxTokens: 150, tier: 'fast',
-        })
-
-        // FIX: milestones_done & sessions_count sudah lama dihitung di atas
-        // (dipakai buat prompt AI) tapi tidak pernah ditulis ke kolomnya
-        // sendiri — jadi selalu diam di default 0 walau datanya sudah ada.
-        // readiness_delta SENGAJA belum diisi (tetap default 0): tidak ada
-        // histori career_readiness minggu lalu yang tersimpan di mana pun
-        // buat dibandingkan — perlu snapshot tracking terpisah kalau mau
-        // angka ini akurat, bukan sekadar dikira-kira.
-        await supabase.from('user_weekly_reviews').upsert({
-          user_id: user.user_id, week_start: weekStart, review_text: summary.trim(),
-          milestones_done: milestonesDone.length, sessions_count: sessionsCount,
-        }, { onConflict: 'user_id,week_start' })
-
-        // Kirim email + push notification setelah review di-generate
-        try {
-          const authUser = authUsers?.find(u => u.id === user.user_id)
-          const fcmToken = await getUserFcmToken(user.user_id)
-          if (authUser?.email || fcmToken) {
-            await notifyWeeklyReview(authUser?.email, fcmToken, user.nama || 'User', summary.trim())
-          }
-        } catch (notifErr) {
-          console.error(`[weekly-review notify failed for ${user.user_id}]`, notifErr)
-        }
-
-        // Update running_insight kalau belum diupdate minggu ini
-        const alreadyUpdated = user.running_insight_updated_at
-          && new Date(user.running_insight_updated_at) >= sevenDaysAgo
-        if (!alreadyUpdated) {
-          try {
-            const newInsight = await generateText({
-              system: 'Susun running insight 4 kalimat max tentang user ini untuk AI coach. Bahasa Indonesia, padat.',
-              prompt: `Insight lama:\n${user.running_insight || '(belum ada)'}\n\nObservasi baru:\n${capsules.map(c => `- ${c.capsule_text}`).join('\n') || '(tidak ada)'}`,
-              maxTokens: 200, tier: 'fast',
-            })
-            await supabase.from('user_career_profiles').update({
-              running_insight: newInsight.trim(),
-              running_insight_updated_at: new Date().toISOString(),
-            }).eq('user_id', user.user_id)
-          } catch {}
-        }
-
-        results.push({ userId: user.user_id, status: 'generated' })
-      } catch (e) {
-        results.push({ userId: user.user_id, status: 'failed', error: e.message })
-      }
-    }
-
-    return res.status(200).json({
-      success: true, weekStart,
-      processed: results.length,
-      generated: results.filter(r => r.status === 'generated').length,
-    })
+    // ═══════════════════════════════════════════════════════════════════════════
+    // DINONAKTIFKAN (PIVOT — LOCAL-FIRST).
+    // Job ini seluruhnya dibangun di atas career_events, memory_capsule_log,
+    // dan user_session_notes — TIGA tabel yang sudah permanen kosong sejak
+    // fitur-fitur penulisnya dimatikan (alasan privasi, beberapa sesi lalu).
+    // Akibatnya baris `if (events.length === 0 && capsules.length === 0)
+    // continue` di bawah selalu true untuk SEMUA user — job ini sebenarnya
+    // sudah diam-diam tidak melakukan apa pun sejak saat itu, tanpa error,
+    // tanpa ada yang sadar.
+    //
+    // Daripada dipaksa "diperbaiki" jadi generik (yang risikonya jadi spam
+    // mingguan tanpa isi nyata), job ini dimatikan bersih sampai ada
+    // keputusan produk: apakah "refleksi mingguan" mau dihidupkan lagi
+    // dengan cara yang cocok arsitektur local-first (misal: dihitung di
+    // CLIENT dari IndexedDB, server cuma trigger notifikasinya tanpa pernah
+    // lihat isinya) — itu keputusan desain terpisah, bukan sekadar bug fix.
+    // ═══════════════════════════════════════════════════════════════════════════
+    return res.status(200).json({ success: true, skipped: true, reason: 'weekly_review_disabled_pending_local_first_redesign' })
   }
 
   // ── SEND CHAT REMINDERS ──────────────────────────────────────────────────
   if (job === 'send-chat-reminders') {
     const twoDaysAgo = new Date(Date.now() - 2 * 86400000).toISOString()
 
-    // Ambil semua users yang tidak chat 2 hari terakhir
-    const { data: users, error: usersErr } = await supabase
-      .from('user_career_profiles')
-      .select('user_id, nama, gps_steps')
-      .not('user_id', 'is', null)
-      .limit(100)
-
+    // PIVOT — LOCAL-FIRST: sebelumnya query dari `user_career_profiles`
+    // (cuma keisi kalau user pernah selesai /discovery — sekarang bukan
+    // gerbang wajib lagi, jadi hampir semua user baru KEFILTER KELUAR dan
+    // nggak pernah dapat reminder ini sama sekali). Sekarang sumbernya
+    // langsung dari auth.users — SEMUA user terdaftar, tanpa syarat apa pun.
+    const { data: { users: authUsers }, error: usersErr } = await supabase.auth.admin.listUsers({ perPage: 100 })
     if (usersErr) return res.status(500).json({ error: usersErr.message })
-    if (!users?.length) return res.status(200).json({ success: true, sent: 0 })
+    if (!authUsers?.length) return res.status(200).json({ success: true, sent: 0 })
+
+    // "Kapan terakhir aktif" sekarang dari tabel user_last_active (cuma
+    // timestamp, diupdate tiap kali chat — lihat api/coach-hub.js). Tabel
+    // lama yang dipakai buat ini (user_session_notes) sudah permanen kosong
+    // sejak fitur yang nulisnya dimatikan (alasan privasi).
+    const { data: activityRows } = await supabase
+      .from('user_last_active')
+      .select('user_id, last_active_at')
+    const lastActiveMap = new Map((activityRows || []).map(r => [r.user_id, r.last_active_at]))
 
     const results = []
-    const { data: { users: authUsers } } = await supabase.auth.admin.listUsers()
+    const WARM_FALLBACKS = [
+      'Udah beberapa hari nih kita nggak ngobrol. Aku di sini kalau kamu mau cerita apa aja.',
+      'Cuma mau bilang, aku masih di sini kok kalau kamu butuh tempat cerita.',
+      'Nggak ada topik khusus — cuma pengen bilang aku selalu ada kalau kamu mau ngobrol.',
+    ]
 
-    for (const profile of users) {
+    for (const authUser of authUsers) {
       try {
-        // Cek last chat
-        const { data: lastChat } = await supabase
-          .from('user_session_notes')
-          .select('created_at')
-          .eq('user_id', profile.user_id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle()
+        const lastActive = lastActiveMap.get(authUser.id)
+        if (lastActive && new Date(lastActive) >= new Date(twoDaysAgo)) {
+          results.push({ userId: authUser.id, status: 'skipped', reason: 'recently_active' })
+          continue
+        }
 
-        // Kalau tidak ada chat atau chat > 2 hari, kirim email + push
-        if (!lastChat || new Date(lastChat.created_at) < new Date(twoDaysAgo)) {
-          const authUser = authUsers.find(u => u.id === profile.user_id)
-          const fcmToken = await getUserFcmToken(profile.user_id)
-          // Cari langkah GPS pertama yang belum dicentang — bikin reminder-nya
-          // konkret ("langkah X belum selesai") bukan cuma ajakan generik.
-          const pendingStep = (profile.gps_steps || []).find(s => !s.done && s.title && s.title !== '—')
+        const fcmToken = await getUserFcmToken(authUser.id)
+        const userName = authUser.user_metadata?.full_name?.trim() || authUser.email?.split('@')[0] || 'Teman'
+        const personalLine = WARM_FALLBACKS[Math.floor(Math.random() * WARM_FALLBACKS.length)]
 
-          // Ambil topik obrolan terakhir / misi aktif — biar reminder-nya terasa
-          // Diah Anna beneran inget percakapan sebelumnya, bukan notifikasi
-          // generik "yuk chat lagi". (Logic-nya sekarang di getPersonalContext,
-          // dipakai bareng dengan job morning-nudge di bawah.)
-          let personalLine = null
-          const contextText = await getPersonalContext(profile.user_id, pendingStep?.title)
-          if (contextText) {
-            try {
-              personalLine = await generateText({
-                system: 'Kamu Diah Anna, AI career coach. Tulis SATU kalimat pendek (maks 20 kata) gaya chat WhatsApp buat notifikasi reminder — hangat, personal, jangan kaku/formal. Jangan pakai salam pembuka, langsung ke isi.',
-                prompt: `${contextText}\n\nTulis 1 kalimat reminder yang merujuk itu, ajak lanjut ngobrol/cerita progressnya.`,
-                maxTokens: 60, tier: 'fast',
-              })
-              personalLine = personalLine?.trim().replace(/^"|"$/g, '') || null
-            } catch (aiErr) {
-              console.error(`[send-chat-reminders personalLine failed for ${profile.user_id}]`, aiErr)
-            }
+        if (authUser.email || fcmToken) {
+          const notifyResult = await notifyChatReminder(authUser.email, fcmToken, userName, personalLine)
+          const ok = notifyResult.email?.success || notifyResult.push?.success
+          if (ok) {
+            results.push({ userId: authUser.id, status: 'sent', detail: notifyResult })
+          } else {
+            results.push({ userId: authUser.id, status: 'failed', detail: notifyResult })
           }
-
-          if (authUser?.email || fcmToken) {
-            const notifyResult = await notifyChatReminder(authUser?.email, fcmToken, profile.nama?.trim() || authUser?.user_metadata?.full_name?.trim() || authUser?.email?.split('@')[0] || 'Teman', pendingStep?.title, personalLine)
-            const ok = notifyResult.email?.success || notifyResult.push?.success
-            if (ok) {
-              results.push({ userId: profile.user_id, status: 'sent', detail: notifyResult })
-            } else {
-              results.push({ userId: profile.user_id, status: 'failed', detail: notifyResult })
-            }
-          }
+        } else {
+          results.push({ userId: authUser.id, status: 'skipped', reason: 'no_email_or_fcm' })
         }
       } catch (e) {
-        results.push({ userId: profile.user_id, status: 'failed', error: e.message })
+        results.push({ userId: authUser.id, status: 'failed', error: e.message })
       }
     }
 
@@ -281,40 +183,47 @@ export default async function handler(req, res) {
     const h24 = new Date(Date.now() - 24 * 3600 * 1000)
     const h48 = new Date(Date.now() - 48 * 3600 * 1000)
 
-    // User yang profil-nya (= selesai Discovery) dibuat/diupdate 24-48 jam
-    // lalu. Window 24 jam (bukan cutoff sesaat) supaya cron harian ini pasti
-    // "menangkap" tiap user tepat sekali, walau jadwal cron sedikit meleset.
-    const { data: users, error: usersErr } = await supabase
-      .from('user_career_profiles')
-      .select('user_id, nama, last_updated')
-      .not('career_readiness', 'is', null)
-      .gte('last_updated', h48.toISOString())
-      .lte('last_updated', h24.toISOString())
-      .limit(100)
-
+    // PIVOT — LOCAL-FIRST: sebelumnya sumbernya user_career_profiles (cuma
+    // keisi kalau selesai /discovery — sekarang opsional, jadi nge-skip
+    // hampir semua user baru). Sekarang langsung dari auth.users, pakai
+    // waktu SIGNUP (created_at) sebagai penanda "user baru" — bukan lagi
+    // "kapan profil Discovery-nya dibuat".
+    const { data: { users: authUsers }, error: usersErr } = await supabase.auth.admin.listUsers({ perPage: 100 })
     if (usersErr) return res.status(500).json({ error: usersErr.message })
-    if (!users?.length) return res.status(200).json({ success: true, sent: 0 })
+
+    const candidates = (authUsers || []).filter(u => {
+      const created = new Date(u.created_at)
+      return created >= h48 && created <= h24
+    })
+    if (!candidates.length) return res.status(200).json({ success: true, sent: 0 })
+
+    // "Udah pernah chat belum" sekarang dari user_last_active (timestamp
+    // saja) — pengecekan lama baca user_session_notes yang sudah permanen
+    // kosong (selalu `false`, jadi dulu diam-diam SELALU ngirim nudge ini
+    // ke semua orang di window waktu itu, termasuk yang sudah aktif chat).
+    const { data: activityRows } = await supabase
+      .from('user_last_active')
+      .select('user_id')
+      .in('user_id', candidates.map(u => u.id))
+    const alreadyActiveSet = new Set((activityRows || []).map(r => r.user_id))
 
     const results = []
-    const { data: { users: authUsers } } = await supabase.auth.admin.listUsers()
-
-    for (const profile of users) {
+    for (const authUser of candidates) {
       try {
-        // Skip kalau sudah pernah chat coaching sungguhan (>=1 session note)
-        const { data: existingNote } = await supabase
-          .from('user_session_notes')
-          .select('id').eq('user_id', profile.user_id).limit(1).maybeSingle()
-        if (existingNote) continue
+        if (alreadyActiveSet.has(authUser.id)) {
+          results.push({ userId: authUser.id, status: 'skipped', reason: 'already_chatted' })
+          continue
+        }
 
-        const authUser = authUsers.find(u => u.id === profile.user_id)
-        const fcmToken = await getUserFcmToken(profile.user_id)
-        if (authUser?.email || fcmToken) {
-          const notifyResult = await notifyOnboardingNudge(authUser?.email, fcmToken, profile.nama?.trim() || authUser?.user_metadata?.full_name?.trim() || authUser?.email?.split('@')[0] || 'Teman')
+        const fcmToken = await getUserFcmToken(authUser.id)
+        const userName = authUser.user_metadata?.full_name?.trim() || authUser.email?.split('@')[0] || 'Teman'
+        if (authUser.email || fcmToken) {
+          const notifyResult = await notifyOnboardingNudge(authUser.email, fcmToken, userName)
           const ok = notifyResult.email?.success || notifyResult.push?.success
-          results.push({ userId: profile.user_id, status: ok ? 'sent' : 'failed', detail: notifyResult })
+          results.push({ userId: authUser.id, status: ok ? 'sent' : 'failed', detail: notifyResult })
         }
       } catch (e) {
-        results.push({ userId: profile.user_id, status: 'failed', error: e.message })
+        results.push({ userId: authUser.id, status: 'failed', error: e.message })
       }
     }
 
@@ -330,83 +239,72 @@ export default async function handler(req, res) {
   // ini jalan tiap pagi ke semua user — TAPI di-skip kalau user itu sudah chat
   // HARI INI, supaya tidak terasa spam ke user yang sebenarnya sudah aktif.
   if (job === 'morning-nudge') {
-    const today = new Date().toISOString().slice(0, 10)
-    // Bypass khusus testing manual: ?force=1 skip pengecekan "sudah chat
+    // Bypass khusus testing manual: ?force=1 skip pengecekan "sudah aktif
     // hari ini" — supaya kamu bisa re-test job ini berkali-kali di hari
     // yang sama tanpa nunggu besok. Aman dipakai publik-tanpa-abuse karena
     // endpoint ini sudah di-gate CRON_SECRET di atas (baris ~24) — orang
     // luar tidak bisa panggil ini sama sekali tanpa secret itu.
     const forceTest = req.query.force === '1'
+    const todayStart = new Date(); todayStart.setUTCHours(0, 0, 0, 0)
 
-    const { data: users, error: usersErr } = await supabase
-      .from('user_career_profiles')
-      .select('user_id, nama, gps_steps')
-      .not('career_readiness', 'is', null) // cuma user yang sudah selesai Discovery
-      .limit(100)
-
+    // PIVOT — LOCAL-FIRST: sumber user langsung dari auth.users (SEMUA user
+    // terdaftar), bukan lagi dari user_career_profiles yang mensyaratkan
+    // career_readiness (peninggalan gerbang /discovery yang sekarang
+    // opsional) — filter lama itu bikin semua user baru sejak pivot nggak
+    // pernah dapat notifikasi pagi sama sekali.
+    const { data: { users: authUsers }, error: usersErr } = await supabase.auth.admin.listUsers({ perPage: 100 })
     if (usersErr) return res.status(500).json({ error: usersErr.message })
-    if (!users?.length) return res.status(200).json({ success: true, sent: 0 })
+    if (!authUsers?.length) return res.status(200).json({ success: true, sent: 0 })
+
+    // "Udah aktif hari ini belum" sekarang dari user_last_active (timestamp
+    // saja) — pengecekan lama baca dari user_chat_history yang sudah
+    // permanen kosong sejak fitur penulisnya dimatikan (alasan privasi),
+    // yang tanpa disadari bikin morning-nudge ngirim ke SEMUA orang SETIAP
+    // HARI tanpa peduli mereka udah chat apa belum.
+    const { data: activityRows } = await supabase
+      .from('user_last_active')
+      .select('user_id, last_active_at')
+    const lastActiveMap = new Map((activityRows || []).map(r => [r.user_id, r.last_active_at]))
 
     const results = []
+    const WARM_FALLBACKS = [
+      'Ada waktu buat ngobrol bentar hari ini? Aku di sini kalau kamu mau cerita.',
+      'Pagi! Nggak perlu topik khusus, cerita apa aja boleh kalau lagi pengen.',
+      'Semoga hari ini baik-baik aja. Aku di sini kalau kamu mau mampir cerita.',
+    ]
 
-    for (const profile of users) {
+    for (const authUser of authUsers) {
       try {
-        // Skip kalau sudah ada sesi chat hari ini — jangan ganggu user yang
-        // memang sudah balik sendiri tanpa diingatkan. (Di-skip kalau
-        // forceTest aktif, khusus buat testing manual.)
         if (!forceTest) {
-          const { data: chatToday, error: chatTodayErr } = await supabase
-            .from('user_chat_history')
-            .select('user_id')
-            .eq('user_id', profile.user_id)
-            .eq('session_date', today)
-            .maybeSingle()
-          if (chatTodayErr) console.error(`[morning-nudge chatToday check failed for ${profile.user_id}]`, chatTodayErr.message)
-          if (chatToday) {
-            results.push({ userId: profile.user_id, status: 'skipped', reason: 'already_chatted_today' })
+          const lastActive = lastActiveMap.get(authUser.id)
+          if (lastActive && new Date(lastActive) >= todayStart) {
+            results.push({ userId: authUser.id, status: 'skipped', reason: 'already_active_today' })
             continue
           }
         }
 
-        const fcmToken = await getUserFcmToken(profile.user_id)
+        const fcmToken = await getUserFcmToken(authUser.id)
         if (!fcmToken) {
-          results.push({ userId: profile.user_id, status: 'skipped', reason: 'no_active_fcm_token' })
+          results.push({ userId: authUser.id, status: 'skipped', reason: 'no_active_fcm_token' })
           continue
         }
 
-        const pendingStep = (profile.gps_steps || []).find(s => !s.done && s.title && s.title !== '—')
-        const contextText = await getPersonalContext(profile.user_id, pendingStep?.title)
+        const userName = authUser.user_metadata?.full_name?.trim() || authUser.email?.split('@')[0] || 'Teman'
+        // Konten sekarang dari pool pesan hangat yang sudah ditulis manual
+        // (bukan generate AI per-user lagi) — lebih murah, dan menghindari
+        // risiko AI ngarang keluar dari karakter Diah Anna (pernah kejadian:
+        // notifikasi/balasan nyasar jadi nada "business/career coach").
+        const personalLine = WARM_FALLBACKS[Math.floor(Math.random() * WARM_FALLBACKS.length)]
 
-        let personalLine = null
-        try {
-          personalLine = await generateText({
-            system: `Kamu Diah Anna, AI career coach yang hangat dan suportif. Tulis SATU kalimat pendek (maks 18 kata) untuk notifikasi ajakan ngobrol pagi hari, gaya chat WhatsApp.
-
-ATURAN PENTING:
-- Nadanya ajakan santai dari teman, BUKAN reminder tugas atau tagihan.
-- JANGAN pakai kata "harus", "wajib", "jangan lupa", "yuk segera", atau kata perintah/menuntut lainnya.
-- JANGAN bikin user merasa bersalah karena belum chat.
-- Boleh singgung progress/topik terakhir kalau relevan, tapi framing-nya rasa ingin tahu/dukungan, bukan menagih kelanjutan.
-- Satu emoji opsional, tidak wajib.`,
-            prompt: contextText
-              ? `${contextText}\n\nTulis 1 kalimat ajakan pagi yang hangat, boleh merujuk konteks di atas kalau natural.`
-              : `User belum ada konteks obrolan spesifik. Tulis 1 kalimat ajakan pagi yang hangat dan umum, seperti menyapa teman di pagi hari.`,
-            maxTokens: 50, tier: 'fast',
-          })
-          personalLine = personalLine?.trim().replace(/^"|"$/g, '') || null
-        } catch (aiErr) {
-          console.error(`[morning-nudge personalLine failed for ${profile.user_id}]`, aiErr)
-        }
-
-        const notifyResult = await notifyMorningNudge(fcmToken, profile.nama?.trim() || authUser?.user_metadata?.full_name?.trim() || authUser?.email?.split('@')[0] || 'Teman', personalLine)
+        const notifyResult = await notifyMorningNudge(fcmToken, userName, personalLine)
         const ok = notifyResult.push?.success
         results.push({
-          userId: profile.user_id,
+          userId: authUser.id,
           status: ok ? 'sent' : 'failed',
           reason: ok ? undefined : (notifyResult.push?.error || 'unknown_push_error'),
         })
       } catch (e) {
-        results.push({ userId: profile.user_id, status: 'failed', reason: e.message })
+        results.push({ userId: authUser.id, status: 'failed', reason: e.message })
       }
     }
 
@@ -461,27 +359,37 @@ ATURAN PENTING:
 
         const { data: profile } = await supabase
           .from('user_career_profiles')
-          .select('nama, gps_steps, career_readiness')
+          .select('nama')
           .eq('user_id', sub.user_id)
           .maybeSingle()
 
-        const doneSteps  = (profile?.gps_steps || []).filter(s => s.done).length
-        const totalSteps = (profile?.gps_steps || []).length
+        // FIX: `authUser` dipakai di sini sebelumnya tapi TIDAK PERNAH
+        // didefinisikan di scope job ini — ReferenceError tiap kali
+        // `profile?.nama` kosong (yang sekarang jadi kasus umum untuk user
+        // local-first yang belum pernah isi Discovery). Ambil langsung dari
+        // Supabase Auth buat fallback nama yang benar.
+        let userName = profile?.nama?.trim()
+        if (!userName) {
+          const { data: authData } = await supabase.auth.admin.getUserById(sub.user_id)
+          userName = authData?.user?.user_metadata?.full_name?.trim() || authData?.user?.email?.split('@')[0] || 'Teman'
+        }
 
+        // PIVOT: framing loss-aversion sekarang soal kuota chat harian &
+        // kualitas balasan (fitur premium yang beneran ada), bukan lagi
+        // "progress GPS Karier" / akses "Journey & Peluang" yang sudah tidak
+        // jadi selling point utama produk ini.
         let personalLine = null
         try {
           personalLine = await generateText({
-            system: `Kamu Diah Anna, AI career coach. Tulis SATU kalimat pendek (maks 20 kata) untuk notifikasi push soal Premium yang ${daysUntilExpiry < 0 ? 'baru saja habis masa aktifnya' : 'akan segera habis masa aktifnya'}.
+            system: `Kamu Diah Anna, teman curhat AI di Verneks. Tulis SATU kalimat pendek (maks 20 kata) untuk notifikasi push soal Premium yang ${daysUntilExpiry < 0 ? 'baru saja habis masa aktifnya' : 'akan segera habis masa aktifnya'}.
 
 ATURAN PENTING — PERSUASIF TAPI HALUS:
-- Fokus ke apa yang akan/sudah HILANG (loss aversion) — progress, akses Journey/Peluang, momentum — BUKAN daftar fitur atau harga.
+- Fokus ke apa yang akan/sudah HILANG (loss aversion) — kuota chat harian yang lebih luas, kualitas balasan yang lebih baik — BUKAN daftar fitur teknis atau harga.
 - JANGAN pakai bahasa hard-sell ("promo terbatas!", "jangan lewatkan!", tanda seru berlebihan, huruf kapital semua).
 - JANGAN pakai kata "harus" atau menekan — framingnya "sayang kalau", bukan "wajib".
-- Kalau ada data progress spesifik, sebut itu (contoh: "udah selesai 4 dari 6 langkah") — konkret jauh lebih persuasif dari generik.
-- Satu emoji opsional, tidak wajib.`,
-            prompt: totalSteps > 0
-              ? `User sudah menyelesaikan ${doneSteps}/${totalSteps} langkah GPS Karier (career readiness ${profile?.career_readiness || 0}%). Tulis 1 kalimat yang merujuk progress ini.`
-              : `Belum ada data progress spesifik. Tulis 1 kalimat umum yang tetap halus soal Journey & Peluang yang akan/sudah tidak bisa diakses.`,
+- Satu emoji opsional, tidak wajib.
+- WAJIB: balas HANYA kalimatnya, tanpa penjelasan/meta-commentary apa pun.`,
+            prompt: `Tulis 1 kalimat yang halus soal kuota chat harian yang lebih luas yang akan/sudah tidak bisa diakses lagi.`,
             maxTokens: 60, tier: 'fast',
           })
           personalLine = personalLine?.trim().replace(/^"|"$/g, '') || null
@@ -489,7 +397,7 @@ ATURAN PENTING — PERSUASIF TAPI HALUS:
           console.error(`[premium-expiry-reminder personalLine failed for ${sub.user_id}]`, aiErr)
         }
 
-        const notifyResult = await notifyPremiumExpiry(fcmToken, profile?.nama?.trim() || authUser?.user_metadata?.full_name?.trim() || authUser?.email?.split('@')[0] || 'Teman', personalLine, daysUntilExpiry)
+        const notifyResult = await notifyPremiumExpiry(fcmToken, userName, personalLine, daysUntilExpiry)
         const ok = notifyResult.push?.success
         results.push({
           userId: sub.user_id, daysUntilExpiry,
@@ -516,81 +424,93 @@ ATURAN PENTING — PERSUASIF TAPI HALUS:
   // Jadwal MINGGUAN (bukan harian) — sengaja jarang, supaya halus dan tidak
   // berubah jadi tekanan terus-menerus yang bisa bikin user malah defensif.
   if (job === 'free-upgrade-nudge') {
-    const { data: users, error: usersErr } = await supabase
-      .from('user_career_profiles')
-      .select('user_id, nama, gps_steps, career_readiness, depth_score')
-      .not('career_readiness', 'is', null) // sudah selesai Discovery
-      .limit(150)
-
+    // PIVOT — LOCAL-FIRST: sebelumnya sumbernya user_career_profiles
+    // (mensyaratkan career_readiness, peninggalan gerbang /discovery yang
+    // sekarang opsional — nge-skip hampir semua user baru) DAN "engagement"
+    // diukur dari depth_score, yang juga sudah permanen berhenti terisi
+    // sejak fitur penulisnya (handleEndSession) dimatikan. Sekarang sumber
+    // user dari auth.users langsung, dan "engaged" diukur dari ADA-TIDAKNYA
+    // baris di user_last_active (= pernah chat minimal sekali).
+    const { data: { users: authUsers }, error: usersErr } = await supabase.auth.admin.listUsers({ perPage: 150 })
     if (usersErr) return res.status(500).json({ error: usersErr.message })
-    if (!users?.length) return res.status(200).json({ success: true, processed: 0 })
+    if (!authUsers?.length) return res.status(200).json({ success: true, processed: 0 })
+
+    const { data: activityRows } = await supabase
+      .from('user_last_active')
+      .select('user_id')
+      .in('user_id', authUsers.map(u => u.id))
+    const everChattedSet = new Set((activityRows || []).map(r => r.user_id))
+
+    const { data: subsAll } = await supabase
+      .from('subscriptions')
+      .select('user_id, plan, status, expires_at')
+      .in('user_id', authUsers.map(u => u.id))
+    const subMap = new Map()
+    for (const s of subsAll || []) {
+      // Kalau ada beberapa baris per user, simpan yang paling baru dibuat —
+      // asumsikan hasil query sudah cukup, tidak perlu sort ketat di sini
+      // untuk job non-kritikal seperti ini.
+      if (!subMap.has(s.user_id)) subMap.set(s.user_id, s)
+    }
 
     const results = []
 
-    for (const profile of users) {
+    for (const authUser of authUsers) {
       try {
         // Skip user yang sedang/pernah premium — job ini KHUSUS free murni.
-        const { data: sub } = await supabase
-          .from('subscriptions')
-          .select('plan, status, expires_at')
-          .eq('user_id', profile.user_id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle()
-
+        const sub = subMap.get(authUser.id)
         const isPremiumNow = sub?.plan === 'premium' && sub?.status === 'active'
           && (!sub.expires_at || new Date(sub.expires_at) > new Date())
         if (isPremiumNow) {
-          results.push({ userId: profile.user_id, status: 'skipped', reason: 'currently_premium' })
+          results.push({ userId: authUser.id, status: 'skipped', reason: 'currently_premium' })
           continue
         }
 
-        // Cuma target user yang cukup engaged (depth_score >= 20) — nudge ke
-        // user yang baru daftar & belum aktif sama sekali biasanya konversinya
+        // Cuma target user yang pernah chat minimal sekali — nudge ke user
+        // yang baru daftar & belum aktif sama sekali biasanya konversinya
         // rendah dan terasa lebih kayak spam ke user yang belum kenal produknya.
-        if ((profile.depth_score || 0) < 20) {
-          results.push({ userId: profile.user_id, status: 'skipped', reason: 'not_engaged_enough' })
+        if (!everChattedSet.has(authUser.id)) {
+          results.push({ userId: authUser.id, status: 'skipped', reason: 'not_engaged_enough' })
           continue
         }
 
-        const fcmToken = await getUserFcmToken(profile.user_id)
+        const fcmToken = await getUserFcmToken(authUser.id)
         if (!fcmToken) {
-          results.push({ userId: profile.user_id, status: 'skipped', reason: 'no_active_fcm_token' })
+          results.push({ userId: authUser.id, status: 'skipped', reason: 'no_active_fcm_token' })
           continue
         }
 
-        const doneSteps  = (profile.gps_steps || []).filter(s => s.done).length
-        const totalSteps = (profile.gps_steps || []).length
+        const userName = authUser.user_metadata?.full_name?.trim() || authUser.email?.split('@')[0] || 'Teman'
 
+        // PIVOT: value framing sekarang soal ngobrol lebih leluasa tanpa
+        // batas kuota harian, bukan lagi "progress GPS Karier" / "Journey".
         let personalLine = null
         try {
           personalLine = await generateText({
-            system: `Kamu Diah Anna, AI career coach. Tulis SATU kalimat pendek (maks 20 kata) untuk notifikasi push mengajak user FREE upgrade ke Premium.
+            system: `Kamu Diah Anna, teman curhat AI di Verneks. Tulis SATU kalimat pendek (maks 20 kata) untuk notifikasi push mengajak user FREE upgrade ke Premium.
 
 ATURAN PENTING — PERSUASIF TAPI HALUS:
-- Framing-nya VALUE/PROGRESS — apa yang bisa mereka DAPAT dan bagaimana itu mempercepat progress mereka SEKARANG, bukan daftar fitur generik atau harga.
+- Framing-nya VALUE — bisa ngobrol lebih leluasa tanpa batas kuota harian, bukan daftar fitur teknis atau harga.
 - JANGAN hard-sell, JANGAN tanda seru berlebihan, JANGAN kata "harus"/"wajib".
-- Kalau ada data progress, jadikan itu jembatan (contoh: "udah 60% menuju target — Journey bisa bantu percepat sisanya").
-- Satu emoji opsional.`,
-            prompt: totalSteps > 0
-              ? `User career readiness ${profile.career_readiness || 0}%, sudah selesai ${doneSteps}/${totalSteps} langkah GPS Karier. Tulis 1 kalimat ajakan upgrade yang merujuk progress ini.`
-              : `Belum ada progress spesifik. Tulis 1 kalimat ajakan upgrade yang halus dan umum.`,
+- Satu emoji opsional.
+- WAJIB: balas HANYA kalimatnya, tanpa penjelasan/meta-commentary apa pun.`,
+            prompt: `Tulis 1 kalimat ajakan upgrade yang halus, framing-nya bisa ngobrol lebih leluasa tanpa batas kuota harian.`,
             maxTokens: 60, tier: 'fast',
           })
           personalLine = personalLine?.trim().replace(/^"|"$/g, '') || null
         } catch (aiErr) {
-          console.error(`[free-upgrade-nudge personalLine failed for ${profile.user_id}]`, aiErr)
+          console.error(`[free-upgrade-nudge personalLine failed for ${authUser.id}]`, aiErr)
         }
 
-        const notifyResult = await notifyUpgradeNudge(fcmToken, profile.nama?.trim() || authUser?.user_metadata?.full_name?.trim() || authUser?.email?.split('@')[0] || 'Teman', personalLine)
+        const notifyResult = await notifyUpgradeNudge(fcmToken, userName, personalLine)
         const ok = notifyResult.push?.success
         results.push({
-          userId: profile.user_id,
+          userId: authUser.id,
           status: ok ? 'sent' : 'failed',
           reason: ok ? undefined : (notifyResult.push?.error || 'unknown_push_error'),
         })
       } catch (e) {
-        results.push({ userId: profile.user_id, status: 'failed', reason: e.message })
+        results.push({ userId: authUser.id, status: 'failed', reason: e.message })
       }
     }
 
