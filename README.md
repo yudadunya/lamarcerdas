@@ -1,404 +1,121 @@
 # Verneks
 
-> **Karier Jangan Asal.**
+> **Kepalamu Lagi Penuh? Cerita Saja.**
 >
-> Kenali Dirimu. Tentukan Arahmu. Bangun Masa Depanmu.
+> Teman curhat AI yang mendengarkan tanpa menghakimi dan membantumu menata pikiran.
 
 ---
 
-# Apa itu Verneks?
+## Apa Itu Verneks?
 
-**Verneks** adalah Human Career Companion berbasis AI yang membantu seseorang mengenal dirinya, menentukan arah karier, dan membangun masa depannya dengan lebih sadar.
+**Verneks** adalah ruang aman untuk curhat dan mengelola perasaan. Di dalamnya ada **Diah Anna**—teman ngobrol AI yang hangat, tidak menghakimi, dan selalu ada kapan pun kamu butuh.
 
-Kami percaya bahwa sebagian besar penyesalan karier bukan terjadi karena seseorang kurang pintar atau kurang mampu.
+Kami percaya bahwa kadang yang paling kamu butuhkan bukanlah solusi instan, melainkan tempat untuk mengeluarkan isi kepala dan didengar dengan tenang.
 
-Tetapi karena keputusan besar dibuat sebelum benar-benar mengenal dirinya.
+Verneks hadir untuk hari-hari ketika:
 
-Karena itu Verneks tidak hanya membantu membuat CV yang lebih baik atau mempersiapkan interview.
-
-Verneks membangun fondasi yang lebih dalam:
-
-- mengenal diri
-- memahami potensi
-- menentukan arah
-- mengambil keputusan
-- berkembang secara berkelanjutan
-
-Semua fitur Verneks hanyalah alat untuk mencapai tujuan tersebut.
+- pikiran terasa penuh dan tidak ada yang bisa diajak bicara,
+- kamu ingin curhat tapi takut merepotkan teman,
+- atau kamu hanya butuh ruang untuk merenung tanpa dihakimi.
 
 ---
 
-# Filosofi
+## Filosofi
 
-Teknologi akan terus berubah.
+> AI terbaik bukanlah AI yang membuatmu bergantung, melainkan AI yang membantumu semakin mampu mengambil keputusan sendiri.
 
-Model AI akan terus berganti.
+Kami membangun Verneks dengan prinsip bahwa teknologi harus memberdayakan, bukan menggantikan, hubungan manusia. Diah Anna adalah teman ngobrol, bukan pengganti psikolog, terapis, atau orang-orang terdekatmu.
 
-Tetapi manusia akan selalu membutuhkan kemampuan untuk mengenal dirinya dan mengambil keputusan yang lebih baik.
-
-Kami percaya:
-
-> AI terbaik bukan AI yang membuat manusia bergantung.
-
-Tetapi AI yang membuat manusia semakin mampu mengambil keputusan sendiri.
-
-Jika suatu hari pengguna tidak lagi membutuhkan Diah Anna untuk mengambil keputusan karier yang baik, maka kami percaya Diah Anna telah berhasil menjalankan tugasnya.
+Jika suatu hari kamu tidak lagi membutuhkan Diah Anna untuk menata pikiran, maka kami merasa telah berhasil menjalankan tugas.
 
 ---
 
-# Human Core
+## Inti Produk: Diah Anna
 
-Di pusat Verneks terdapat **Diah Anna**.
+Diah Anna bukan sekadar chatbot.
 
-Diah Anna bukan chatbot.
+- Dia **mendengarkan dulu**—tidak terburu-buru memberi solusi.
+- Dia **memvalidasi perasaanmu**—mengakui apa yang kamu rasakan sebelum membahas apa pun.
+- Dia **membantu kamu berpikir jernih**—bukan mengambil alih keputusan, tapi menemanimu menemukan sudut pandang baru.
 
-Diah Anna bukan career coach tradisional.
-
-Diah Anna adalah Human Career Companion.
-
-Ia tidak mengambil keputusan untuk pengguna.
-
-Ia membantu pengguna memahami dirinya sendiri sehingga mampu mengambil keputusan yang lebih sadar.
+> Diah Anna adalah AI, dan dia terbuka soal itu. Dia tidak berpura-pura menjadi manusia.
 
 ---
 
-# Product Vision
+## Fitur Utama
 
-Hari ini Verneks membantu perjalanan karier.
+### 💬 Chat dengan Diah Anna
+- Obrolan santai seperti WhatsApp dengan teman dekat.
+- Diah Anna ingat cerita-ceritamu sebelumnya (disimpan di perangkatmu, bukan di server).
+- **Gratis** (15 pesan/hari) atau **Premium** (tanpa batas).
 
-Besok Verneks membantu perjalanan hidup.
+### 🧠 Diri Kamu (DNA)
+- Analisis pola emosional dari obrolanmu.
+- 6 Trait Diri: Kesadaran Diri, Ketahanan, Coping Kreatif, Keterbukaan, Komunikasi Emosi, dan Empati.
+- Insight personal tentang kekuatan dan area yang bisa dikembangkan.
 
-Karier hanyalah awal.
+### 🗺️ Journey (Perjalanan Self-Care)
+- Peta langkah-langkah kecil menuju keseimbangan emosional.
+- Milestone yang bisa kamu tandai selesai.
+- Disesuaikan dengan kondisi dan kebutuhanmu.
 
----
+### 🌿 Rekomendasi Aktivitas
+- Saran aktivitas nyata yang cocok dengan mood dan polamu.
+- Contoh: journaling, olahraga ringan, quality time, dll.
+- Tersedia untuk pengguna Premium.
 
-# Product Architecture
-
-Verneks dibangun dengan pendekatan modular.
-
-```
-Human Core
-        │
-        ▼
-Diah Anna
-        │
- ┌──────┼───────────────┐
- │      │               │
- ▼      ▼               ▼
-Career GPS      Career Genome      Decision Engine
- │
- ├──────────────┬──────────────┬──────────────┐
- ▼              ▼              ▼
-CV Review   ATS Checker   Interview Coach
- │
- ▼
-Career Growth
-```
-
-Seluruh fitur berasal dari Human Core.
-
-Bukan sebaliknya.
+### 📚 Blog
+- Bacaan santai seputar overthinking, kesehatan mental, hubungan, dan self-care.
+- Ditulis dengan gaya teman, bukan jurnal ilmiah.
+- Dilengkapi FAQ yang informatif.
 
 ---
 
-# Tech Stack
+## Privasi: Data Kamu, Di Perangkatmu
 
-## Frontend
+**Ini adalah janji utama Verneks.**
 
-- React 19
-- Vite
+- Semua riwayat chat, ringkasan, dan pola perilaku yang Diah Anna pelajari tentangmu **disimpan secara lokal di perangkatmu** (IndexedDB).
+- Kami tidak pernah menyimpan isi curhatmu di server.
+- Saat kamu mengirim pesan, teks diproses sementara oleh AI untuk menghasilkan balasan, lalu dilupakan.
+- Kamu bisa menghapus semua data lokal kapan saja.
+
+> Kami tidak pernah membaca, menyimpan, atau menjual ceritamu. Privasi adalah fondasi kami.
+
+---
+
+## Model Bisnis (Freemium)
+
+| Paket | Harga | Fitur |
+|-------|-------|-------|
+| **Gratis** | Rp0 | 15 chat/hari, DNA, Blog, panduan dasar |
+| **Premium** | Rp99.000 / 30 hari | Chat tanpa batas, Journey lengkap, Rekomendasi aktivitas, insight mingguan |
+
+---
+
+## Teknologi
+
+### Frontend
+- React 19 + Vite
 - React Router
-- Tailwind CSS
+- CSS Modules / Tailwind (tergantung implementasi)
 
-## Backend
+### Backend
+- Vercel Serverless Functions (Node.js)
 
-- Vercel Serverless Functions
+### AI Engine
+- OpenRouter (gateway ke berbagai model AI: Claude, Gemini, dll.)
+- Fallback otomatis untuk menjaga ketersediaan
 
-## AI
+### Database & Authentication
+- Supabase (hanya untuk autentikasi Google dan manajemen subscription)
 
-- Claude Sonnet (Anthropic)
+### Penyimpanan Lokal
+- IndexedDB (untuk chat history dan memori lokal)
 
-## Database & Authentication
-
-- Supabase
-
-## Deployment
-
+### Deployment
 - Vercel
 
 ---
 
-# Current Features
-
-## Human Career Companion
-
-Pendamping karier berbasis AI yang membantu pengguna:
-
-- mengenal diri
-- menemukan arah
-- membangun roadmap
-- melakukan refleksi
-- mengambil keputusan karier
-
----
-
-## Career Tools
-
-- CV Review AI
-- ATS Checker
-- JD Matcher
-- Mock Interview
-- Salary Negotiation
-- LinkedIn Optimizer
-- Cover Letter Generator
-
----
-
-# Repository Structure
-
-```
-verneks/
-
-├── api/
-│   ├── career-coach.js
-│   ├── cv-review.js
-│   ├── ats-checker.js
-│   └── interview.js
-│
-├── docs/
-│   ├── MANIFESTO.md
-│   ├── HUMAN_CORE_OS.md
-│   ├── PRODUCT_PRINCIPLES.md
-│   ├── ENGINEERING_GUIDE.md
-│   ├── GTM_BIBLE.md
-│   └── ROADMAP.md
-│
-├── prompts/
-│
-├── src/
-│   ├── components/
-│   ├── layouts/
-│   ├── pages/
-│   ├── hooks/
-│   ├── services/
-│   ├── lib/
-│   └── assets/
-│
-├── public/
-│
-├── package.json
-│
-└── README.md
-```
-
----
-
-# Local Development
-
-## Clone Repository
-
-```bash
-git clone https://github.com/<username>/verneks.git
-
-cd verneks
-```
-
----
-
-## Install Dependencies
-
-```bash
-npm install
-```
-
----
-
-## Environment
-
-```bash
-cp .env.example .env
-```
-
-Isi environment variable:
-
-```
-ANTHROPIC_API_KEY=
-
-VITE_SUPABASE_URL=
-
-VITE_SUPABASE_ANON_KEY=
-```
-
----
-
-## Run Development
-
-```bash
-npm run dev
-```
-
----
-
-## Build
-
-```bash
-npm run build
-```
-
----
-
-## Preview
-
-```bash
-npm run preview
-```
-
----
-
-# Deployment
-
-Deploy menggunakan Vercel.
-
-Hubungkan repository ke Vercel.
-
-Tambahkan seluruh Environment Variables.
-
-Deploy.
-
----
-
-# Engineering Principles
-
-Seluruh engineer wajib memahami prinsip berikut.
-
-## Human First
-
-Bangun manusia terlebih dahulu.
-
-Baru bangun fitur.
-
----
-
-## Simplicity
-
-Jika ada dua solusi,
-
-pilih yang lebih sederhana.
-
----
-
-## Trust
-
-Jangan membuat fitur yang mengurangi kepercayaan pengguna.
-
----
-
-## Privacy
-
-Seluruh percakapan pengguna dianggap sangat pribadi.
-
----
-
-## AI Ethics
-
-AI tidak mengambil keputusan hidup pengguna.
-
-AI membantu pengguna berpikir lebih jernih.
-
----
-
-## Long-Term Thinking
-
-Jangan membuat fitur demi retention jika bertentangan dengan Human Core.
-
-Seluruh keputusan engineering harus selaras dengan filosofi Verneks.
-
----
-
-# Roadmap
-
-## Phase 1
-
-- Landing Page
-- Authentication
-- Human Career Companion
-- CV Review
-
----
-
-## Phase 2
-
-- ATS Checker
-- JD Matcher
-- Mock Interview
-- Career GPS
-
----
-
-## Phase 3
-
-- Career Genome
-- Salary Negotiation
-- LinkedIn Optimizer
-- Cover Letter
-
----
-
-## Phase 4
-
-- Decision Intelligence
-- Long-Term Career Memory
-- Career Reflection
-- Personal Growth Engine
-
----
-
-# Documentation
-
-Seluruh dokumentasi proyek berada pada folder:
-
-```
-docs/
-```
-
-Dokumen utama:
-
-- MANIFESTO.md
-- HUMAN_CORE_OS.md
-- PRODUCT_PRINCIPLES.md
-- ENGINEERING_GUIDE.md
-- GTM_BIBLE.md
-- ROADMAP.md
-
-README hanya berfungsi sebagai pintu masuk.
-
----
-
-# Contributing
-
-Sebelum membuat Pull Request:
-
-1. Baca MANIFESTO.md
-2. Baca HUMAN_CORE_OS.md
-3. Pastikan perubahan tidak bertentangan dengan Product Principles.
-4. Pastikan pengalaman pengguna tetap Human First.
-
----
-
-# License
-
-MIT License
-
----
-
-# Closing
-
-Verneks bukan sekadar aplikasi karier.
-
-Kami sedang membangun generasi yang mampu mengenal dirinya, menentukan arahnya, dan membangun masa depannya dengan lebih sadar.
-
----
-
-**Karier Jangan Asal.**
-
-**Kenali Dirimu. Tentukan Arahmu. Bangun Masa Depanmu.**
+## Struktur Repository
