@@ -118,4 +118,11 @@ Diah Anna bukan sekadar chatbot.
 
 ---
 
-## Struktur Repository
+Penutup
+Verneks adalah ruang kecil untukmu yang sedang mencari ketenangan di tengah hiruk-pikuk hari.
+
+Kami tidak menjanjikan solusi ajaib. Kami hanya ingin menjadi teman yang mendengarkan, tanpa syarat.
+
+Kepalamu lagi penuh? Cerita saja ke Diah Anna.
+
+
