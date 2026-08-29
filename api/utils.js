@@ -602,84 +602,8 @@ Urutkan dari match tertinggi. Aktivitas harus realistis dan bisa langsung dicoba
   }
 
   // ── REFRESH PROFILE (backfill user lama tanpa 'summary') ─────────────────
-  // Dipakai Dashboard.jsx untuk regenerate summary/mentor_message/motivasi
-  // buat user lama yang profilnya dibuat sebelum field ini ada. Konteksnya
-  // diambil dari data yang SUDAH tersimpan (profil + memory capsule terakhir)
-  // — bukan raw chat history — supaya tetap ringan dan konsisten dengan pola
-  // memory context yang dipakai coach-hub.js.
-  if (action === 'refresh-profile') {
-    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
-
-    const { userId } = req.body
-    if (!userId) return res.status(400).json({ error: 'Missing userId' })
-
-    try {
-      const [{ data: profile }, { data: capsules }] = await Promise.all([
-        supabase.from('user_career_profiles').select('*').eq('user_id', userId).maybeSingle(),
-        supabase.from('memory_capsule_log').select('capsule_text').eq('user_id', userId)
-          .neq('capsule_text', '[no new insight]')
-          .order('capsule_date', { ascending: false }).limit(10),
-      ])
-
-      if (!profile?.target_posisi) {
-        return res.status(400).json({ error: 'Profil belum cukup lengkap untuk di-refresh' })
-      }
-
-      const capsuleContext = (capsules || []).map(c => `- ${c.capsule_text}`).join('\n') || '(belum ada catatan sesi)'
-
-      const prompt = `Data profil user:
-- Nama: ${profile.nama || '-'}
-- Target posisi: ${profile.target_posisi}
-- Posisi saat ini: ${profile.posisi_saat_ini || '-'}
-- Industri: ${profile.industri || '-'}
-- Hambatan: ${profile.hambatan || '-'}
-- Motivasi (kalau sudah ada): ${profile.motivasi || 'belum diketahui'}
-
-Catatan sesi coaching terakhir:
-${capsuleContext}
-
-Output HANYA JSON valid (tanpa markdown, tanpa teks lain):
-{
-  "summary": "2-3 paragraf narasi briefing untuk career coach: siapa user ini, di mana posisinya sekarang, apa yang dia mau, tantangan utama. Bahasa Indonesia natural. Gunakan \\n literal untuk ganti paragraf, JANGAN newline asli.",
-  "mentor_message": "pesan personal dari Diah Anna, 3-4 kalimat, hangat, akui kekuatan & hambatan user",
-  "motivasi": "1 kalimat motivasi terdalam user berdasarkan konteks di atas${profile.motivasi ? ' (boleh sama dengan yang sudah ada kalau masih relevan)' : ''}"
-}`
-
-      const raw = await generateText({
-        system: 'Kamu adalah Diah Anna, AI career coach Verneks. Output HANYA JSON valid.',
-        prompt,
-        maxTokens: 700,
-        tier: 'fast',
-      })
-
-      const clean = raw.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/, '').trim()
-      let parsed
-      try {
-        parsed = JSON.parse(clean)
-      } catch (e) {
-        console.error('[refresh-profile] JSON parse failed:', raw.slice(0, 300))
-        return res.status(500).json({ error: 'Gagal memproses hasil refresh.' })
-      }
-
-      const updated = {
-        summary:        parsed.summary        || profile.summary,
-        mentor_message: parsed.mentor_message  || profile.mentor_message,
-        motivasi:       profile.motivasi       || parsed.motivasi, // jangan timpa motivasi yang sudah ada dari user
-      }
-
-      const { error: updateErr } = await supabase
-        .from('user_career_profiles')
-        .update({ ...updated, last_updated: new Date().toISOString() })
-        .eq('user_id', userId)
-
-      if (updateErr) return res.status(500).json({ error: updateErr.message })
-
-      return res.status(200).json({ success: true, updated })
-    } catch (e) {
-      console.error('[refresh-profile] error:', e.message)
-      return res.status(500).json({ error: 'Gagal refresh profil.' })
-    }
-  }
+  // (action 'refresh-profile' dihapus — satu-satunya pemanggilnya,
+  // Dashboard.jsx, sudah dihapus sejak pivot ke Diah Anna teman curhat.)
 
   // ── ADMIN (dipakai AdminPanel.jsx di /adm-lc) ────────────────────────────
   // Password diverifikasi di server setiap request (bukan disimpan di client

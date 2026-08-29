@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import ShareCard from '../components/ShareCard'
 import ShareAppModal from '../components/ShareAppModal'
 import {
@@ -98,21 +98,21 @@ const DEFAULT_SUBSCRIPTION = {
 // bergantung ke variabel --wa-* lama (yang masih dipakai halaman lain) supaya
 // redesign ini nggak nyebar tak terduga ke bagian app yang belum di-pivot.
 const DA = {
-  chatBg:        '#08111F',
+  chatBg:        '#14101B',
   chatBgImage:   'radial-gradient(circle at 15% 0%, rgba(139,92,246,0.10) 0%, transparent 45%), radial-gradient(circle at 85% 100%, rgba(251,113,133,0.08) 0%, transparent 45%)',
-  headerBg:      'rgba(8,17,31,0.92)',
+  headerBg:      'rgba(20,16,27,0.92)',
   headerBorder:  'rgba(255,255,255,0.08)',
   headerSub:     'rgba(255,255,255,0.5)',
   avatarRing:    'rgba(139,92,246,0.55)',
   avatarGlow:    'rgba(139,92,246,0.35)',
-  bubbleUser:    'linear-gradient(135deg, #6745E8 0%, #22A8F2 100%)',
+  bubbleUser:    'linear-gradient(135deg, #8B5CF6 0%, #FB7185 100%)',
   bubbleBot:     'rgba(255,255,255,0.06)',
   bubbleBotBorder: 'rgba(255,255,255,0.08)',
   bubbleBotText: 'rgba(255,255,255,0.92)',
-  inputBarBg:    'rgba(8,17,31,0.96)',
+  inputBarBg:    'rgba(20,16,27,0.96)',
   inputBg:       'rgba(255,255,255,0.07)',
   inputBorder:   'rgba(255,255,255,0.12)',
-  sendGrad:      'linear-gradient(135deg, #6745E8 0%, #22A8F2 100%)',
+  sendGrad:      'linear-gradient(135deg, #8B5CF6 0%, #FB7185 100%)',
 }
 
 
@@ -155,7 +155,7 @@ function RedeemCodeModal({ userId, onClose }) {
       <div style={{
         position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
         width: '100%', maxWidth: 480,
-         background: '#08111F',
+        background: '#14101B',
         border: '1px solid rgba(139,92,246,0.22)',
         borderRadius: '22px 22px 0 0',
         zIndex: 1001,
@@ -199,7 +199,7 @@ function RedeemCodeModal({ userId, onClose }) {
                   onClick={submit}
                   style={{
                     padding: '12px 18px', borderRadius: 10,
-                    background: redeemCode.length < 12 ? 'rgba(103,69,232,0.25)' : 'linear-gradient(135deg,#6745E8,#22A8F2)',
+                    background: redeemCode.length < 12 ? 'rgba(139,92,246,0.25)' : 'linear-gradient(135deg,#8B5CF6,#FB7185)',
                     color: '#fff', fontWeight: 700, fontSize: '0.85rem',
                     border: 'none', cursor: redeemCode.length < 12 ? 'not-allowed' : 'pointer',
                     whiteSpace: 'nowrap',
@@ -219,7 +219,7 @@ function RedeemCodeModal({ userId, onClose }) {
               <div style={{ fontSize: '1.6rem', marginBottom: 6 }}>🎉</div>
               <div style={{ color: '#34D399', fontWeight: 700, fontSize: '0.95rem' }}>Premium berhasil diaktifkan!</div>
               <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.78rem', marginTop: 4 }}>Berlaku 30 hari. Refresh halaman untuk mulai.</div>
-              <button onClick={() => window.location.reload()} style={{ marginTop: 12, padding: '10px 22px', borderRadius: 9, background: 'linear-gradient(135deg,#6745E8,#22A8F2)', color: '#fff', fontWeight: 700, fontSize: '0.85rem', border: 'none', cursor: 'pointer' }}>
+              <button onClick={() => window.location.reload()} style={{ marginTop: 12, padding: '10px 22px', borderRadius: 9, background: 'linear-gradient(135deg,#8B5CF6,#FB7185)', color: '#fff', fontWeight: 700, fontSize: '0.85rem', border: 'none', cursor: 'pointer' }}>
                 Refresh Sekarang
               </button>
             </div>
@@ -232,7 +232,6 @@ function RedeemCodeModal({ userId, onClose }) {
 
 export default function Chat({ user, chatMessages = [], setChatMessages, subscription = DEFAULT_SUBSCRIPTION }) {
   const navigate = useNavigate()
-  const location = useLocation()
   const { plan, loading: subLoading, checkUsage, isExpired, getDaysRemaining } = subscription
 
   // Sisa hari premium — dihitung dari expires_at, dipakai untuk badge navbar & reminder perpanjangan
@@ -475,31 +474,9 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
     setCoachHistory([...coachHistoryRef.current, entry]) // setCoachHistory sudah auto-save ke IndexedDB
   }, [pushBot, setCoachHistory])
 
-  // 1. Dashboard Mission Synchronization
-  useEffect(() => {
-    if (location.state?.triggerMission && user?.id) {
-      const mission = location.state.triggerMission;
-      const missionContext = `[SYSTEM SYNC]: User baru saja mengeksekusi Misi Harian dari Dashboard: "${mission}". Mulai percakapan dengan menanyakan kesiapan atau progres mereka mengenai misi ini secara taktis dan spesifik.`;
-      
-      const newHistory = [...coachHistory, { role: 'user', content: missionContext }];
-      setCoachHistory(newHistory);
-      setLoading(true);
-      
-      apiFetch('/api/career-coach', { messages: newHistory, userId: user.id, localMemory: localMemoryRef.current })
-        .then(data => {
-          pushBot(data.reply);
-          setCoachHistory([...newHistory, { role: 'assistant', content: data.reply }]);
-          setLoading(false);
-        })
-        .catch(() => {
-          pushBot(`Agenda kita saat ini terkunci pada misi: **${mission}**. Apa yang menjadi hambatan utamamu untuk menyelesaikannya hari ini?`);
-          setLoading(false);
-        });
-        
-      window.history.replaceState({}, document.title);
-      greetingFiredRef.current = true; // Skip normal greeting
-    }
-  }, [location.state, user?.id]);
+  // (Dashboard Mission Synchronization dihapus — halaman Dashboard sudah
+  // tidak ada lagi sejak diganti "Tentang Kamu" & "Jurnal Refleksi", jadi
+  // tidak ada lagi yang pernah men-set location.state.triggerMission.)
 
   // 2. (Onboarding popup dihapus — situasi income sekarang ditanya natural
   // oleh Diah Anna di dalam obrolan biasa, lihat instruksi system prompt di
@@ -687,7 +664,7 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
             }}/>
             <span style={{
               position: 'absolute', bottom: 0, right: 0, width: 11, height: 11, borderRadius: '50%',
-              background: '#34D399', border: '2px solid #08111F',
+              background: '#34D399', border: '2px solid #14101B',
             }} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -730,8 +707,8 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
               Menu
             </div>
             {[
-              { label: '🏠  Home',        onClick: () => navigate('/dashboard') },
-              { label: '🗺️  Journey',      onClick: () => navigate('/journey') },
+              { label: '💭  Tentang Kamu',  onClick: () => navigate('/tentang-kamu') },
+              { label: '📔  Jurnal Refleksi', onClick: () => navigate('/refleksi') },
               { label: '🌿  Rekomendasi',  onClick: () => navigate('/opportunities') },
               { label: '👤  Profil',       onClick: () => navigate('/profile') },
             ].map((item, i) => (

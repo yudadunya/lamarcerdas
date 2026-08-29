@@ -14,6 +14,10 @@
  *   - chatMessages   : { id, role, content, createdAt, sessionId }
  *   - summaries      : { id: 'rolling', text, updatedAt, coveredUntil }
  *   - settings       : { id: 'main', notifFrequency, notifEnabled, ... }
+ *   - journalEntries : { id, text, mood, createdAt } — Jurnal Refleksi, murni
+ *     tulisan pribadi user, TIDAK PERNAH dikirim ke server dalam bentuk
+ *     apa pun (beda dari chatMessages/summaries yang ikut jadi konteks
+ *     prompt ke AI) — ini ruang privat 100% di device.
  *
  * Kenapa summaries penting: Cerebras free tier context window kecil (~8k).
  * Kita TIDAK bisa kirim seluruh chat history. Solusinya: setiap N pesan,
@@ -23,8 +27,8 @@
  */
 
 const DB_NAME = 'diahanna_local_v1'
-const DB_VERSION = 1
-const STORES = ['genome', 'rsiPatterns', 'chatMessages', 'summaries', 'settings']
+const DB_VERSION = 2
+const STORES = ['genome', 'rsiPatterns', 'chatMessages', 'summaries', 'settings', 'journalEntries']
 
 let dbPromise = null
 
@@ -51,6 +55,10 @@ function openDB() {
       }
       if (!db.objectStoreNames.contains('settings')) {
         db.createObjectStore('settings', { keyPath: 'id' })
+      }
+      if (!db.objectStoreNames.contains('journalEntries')) {
+        const store = db.createObjectStore('journalEntries', { keyPath: 'id' })
+        store.createIndex('createdAt', 'createdAt', { unique: false })
       }
     }
     req.onsuccess = () => resolve(req.result)
@@ -201,4 +209,31 @@ export async function importBackup(backup) {
       t.onerror = () => reject(t.error)
     })
   }
+}
+
+// ── Jurnal Refleksi ────────────────────────────────────────────────────────
+// Tulisan pribadi user — beda dari chatMessages/summaries, ini TIDAK PERNAH
+// dikirim ke server dalam bentuk apa pun (tidak ikut jadi konteks prompt AI,
+// tidak dianalisis, tidak diringkas). Murni ruang privat di device.
+export async function addJournalEntry({ text, mood = null }) {
+  const entry = { id: crypto.randomUUID(), text, mood, createdAt: Date.now() }
+  await tx('journalEntries', 'readwrite', (store) => store.put(entry))
+  return entry
+}
+
+export async function updateJournalEntry(id, { text, mood }) {
+  const existing = await tx('journalEntries', 'readonly', (store) => reqToPromise(store.get(id)))
+  if (!existing) throw new Error('Entri jurnal tidak ditemukan')
+  const updated = { ...existing, text, mood, updatedAt: Date.now() }
+  await tx('journalEntries', 'readwrite', (store) => store.put(updated))
+  return updated
+}
+
+export async function deleteJournalEntry(id) {
+  return tx('journalEntries', 'readwrite', (store) => store.delete(id))
+}
+
+export async function getJournalEntries(limit = 100) {
+  const all = await tx('journalEntries', 'readonly', (store) => reqToPromise(store.getAll()))
+  return (all || []).sort((a, b) => b.createdAt - a.createdAt).slice(0, limit)
 }

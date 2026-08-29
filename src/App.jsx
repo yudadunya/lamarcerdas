@@ -14,12 +14,11 @@ const Chat         = lazy(() => import('./pages/Chat'))
 const Pricing      = lazy(() => import('./pages/Pricing'))
 const Blog         = lazy(() => import('./pages/Blog'))
 const BlogPost     = lazy(() => import('./pages/BlogPost'))
-const Journey      = lazy(() => import('./pages/Journey'))
 const Discovery    = lazy(() => import('./pages/Discovery'))
 const Paywall      = lazy(() => import('./pages/Paywall'))
 const GenomeResult = lazy(() => import('./pages/GenomeResult'))
-const Dashboard    = lazy(() => import('./pages/Dashboard'))
-const DNA          = lazy(() => import('./pages/DNA'))
+const TentangKamu  = lazy(() => import('./pages/TentangKamu'))
+const JurnalRefleksi = lazy(() => import('./pages/JurnalRefleksi'))
 const Opportunities = lazy(() => import('./pages/Opportunities'))
 const Profile      = lazy(() => import('./pages/Profile'))
 const AdminPanel   = lazy(() => import('./pages/AdminPanel'))
@@ -469,7 +468,7 @@ export default function App() {
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       justifyContent: 'center', height: '100vh', gap: '16px',
-       background: '#08111F',
+      background: '#14101B',
     }}>
       <img src="/verneks_icon_1.png" alt="Verneks" style={{ width: 56, height: 56, objectFit: 'contain' }} />
       <div style={{ color: '#fff', fontWeight: 700, fontSize: '1.4rem' }}>Verneks</div>
@@ -481,7 +480,7 @@ export default function App() {
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       justifyContent: 'center', height: '100vh', gap: '16px',
-       background: '#08111F',
+      background: '#14101B',
     }}>
       <img src="/verneks_icon_1.png" alt="Verneks" style={{ width: 56, height: 56, objectFit: 'contain' }} />
       <div style={{ color: '#fff', fontWeight: 700, fontSize: '1.4rem' }}>Verneks</div>
@@ -504,9 +503,8 @@ export default function App() {
         <Route path="/discovery"      element={<Discovery />} />
         <Route path="/genome-result"   element={<GenomeResult />} />
         <Route path="/paywall"          element={<Paywall />} />
-        <Route path="/dashboard"       element={<Dashboard user={user} loading={loading} subscription={subscription} />} />
-        <Route path="/journey"         element={<Journey user={user} loading={loading} subscription={subscription} />} />
-        <Route path="/dna"            element={<DNA user={user} loading={loading} subscription={subscription} />} />
+        <Route path="/tentang-kamu"    element={<TentangKamu user={user} loading={loading} />} />
+        <Route path="/refleksi"        element={<JurnalRefleksi user={user} loading={loading} />} />
         <Route path="/opportunities"  element={<Opportunities user={user} loading={loading} />} />
         <Route path="/profile"        element={<Profile user={user} loading={loading} subscription={subscription} />} />
         <Route path="/blog"          element={<Blog user={user} />} />
@@ -541,7 +539,6 @@ export default function App() {
         onClick={() => {
           const action = pushToast.data?.action
           if (action === 'open-chat') window.location.href = '/chat'
-          else if (action === 'open-journey') window.location.href = '/journey'
           else if (action === 'open-upgrade') window.dispatchEvent(new CustomEvent('show-upgrade'))
           setPushToast(null)
         }}

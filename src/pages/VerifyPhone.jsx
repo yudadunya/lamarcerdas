@@ -42,14 +42,14 @@ export default function VerifyPhone({ user }) {
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
-      navigate('/dashboard')
+      navigate('/chat')
     } catch (e) {
       setError(e.message || 'Kode salah atau expired.')
     }
     setLoading(false)
   }
 
-  const handleSkip = () => navigate('/dashboard')
+  const handleSkip = () => navigate('/chat')
 
   return (
     <div style={styles.page}>

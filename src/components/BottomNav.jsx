@@ -1,21 +1,21 @@
 import { Link, useLocation } from 'react-router-dom'
 
-// Free:    Home | Chat | DNA | Profile          (4 tab)
-// Premium: Home | Chat | Journey | Rekomendasi | Profile (5 tab)
+// Free:    Chat | Tentang Kamu | Refleksi | Profile        (4 tab)
+// Premium: Chat | Tentang Kamu | Refleksi | Rekomendasi | Profile (5 tab)
 export default function BottomNav({ isPremium = false }) {
   const location = useLocation()
 
   const freeTabs = [
-    { href: '/dashboard',  icon: '🏠', label: 'Home'    },
-    { href: '/chat',       icon: '💬', label: 'Chat'    },
-    { href: '/dna',        icon: '🧬', label: 'DNA'     },
-    { href: '/profile',    icon: '👤', label: 'Profil'  },
+    { href: '/chat',         icon: '💬', label: 'Curhat'      },
+    { href: '/tentang-kamu', icon: '💭', label: 'Tentang Kamu' },
+    { href: '/refleksi',     icon: '📔', label: 'Refleksi'    },
+    { href: '/profile',      icon: '👤', label: 'Profil'      },
   ]
 
   const premiumTabs = [
-    { href: '/dashboard',     icon: '🏠', label: 'Home'        },
     { href: '/chat',          icon: '💬', label: 'Curhat'      },
-    { href: '/journey',       icon: '🗺️', label: 'Journey'     },
+    { href: '/tentang-kamu',  icon: '💭', label: 'Tentang Kamu' },
+    { href: '/refleksi',      icon: '📔', label: 'Refleksi'    },
     { href: '/opportunities', icon: '🌿', label: 'Rekomendasi' },
     { href: '/profile',       icon: '👤', label: 'Profil'      },
   ]
@@ -26,7 +26,7 @@ export default function BottomNav({ isPremium = false }) {
     <nav style={{
       position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
       width: '100%', maxWidth: 480,
-       background: 'rgba(8,17,31,0.97)',
+      background: 'rgba(20,16,27,0.97)',
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
       borderTop: '1px solid rgba(139,92,246,0.14)',
@@ -63,7 +63,7 @@ export default function BottomNav({ isPremium = false }) {
             {active && (
               <span style={{
                 position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
-                 width: 28, height: 2, background: 'linear-gradient(90deg,#6745E8,#22A8F2)',
+                width: 28, height: 2, background: 'linear-gradient(90deg,#8B5CF6,#FB7185)',
                 borderRadius: '0 0 3px 3px',
               }} />
             )}

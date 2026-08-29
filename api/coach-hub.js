@@ -141,99 +141,10 @@ const PATTERN_ANALYSIS_SCHEMA = {
   required: ['new_patterns', 'strategy_adjustment', 'should_update_memory'],
 }
 
-async function analyzeAndLearnPatterns(userId, messages, aiResponse, careerProfile, existingPatterns, rsiVersion, supabase) {
-  try {
-    // Ambil hanya pesan user untuk analisis
-    const userMessages = messages.filter(m => m.role === 'user').map(m => m.content || m.text || '').join('\n')
-    
-    if (!userMessages || userMessages.length < 20) return // Terlalu pendek untuk dianalisis
-    
-    // [OPTIMIZATION #7] Compress user messages untuk RSI analysis — hemat token
-    const compressedUserMsgs = userMessages.slice(0, 2000) // Reduced from 3000
-    
-    // Minta AI menganalisis pola dari percakapan ini — schema dipaksa di level API,
-    // jadi tidak perlu lagi regex/bracket-repair untuk JSON yang terpotong.
-    let analysis
-    try {
-      analysis = await generateStructured({
-        system: 'Kamu adalah sistem analisis pola perilaku untuk Diah Anna. Tugasmu: mengidentifikasi pola berulang, preferensi komunikasi, atau wawasan baru tentang user dari percakapan coaching karir.',
-        prompt: `Profil User: ${careerProfile?.nama || 'Unknown'}, Target: ${careerProfile?.target_posisi || 'Unknown'}\n\nRiwayat Percakapan:\n${compressedUserMsgs}\n\nRespons AI:\n${aiResponse.slice(0, 800)}\n\nAnalisis apakah ada pola baru yang bisa dipelajari atau pola lama yang perlu disesuaikan confidence-nya.`,
-        schema: PATTERN_ANALYSIS_SCHEMA,
-        maxTokens: 1000,  // [OPTIMIZATION #8] Reduced from 1500 — RSI tidak butuh detail tinggi
-        tier: 'fast',   // Cerebras/DeepSeek — hemat, RSI tidak butuh model premium
-        plan: 'free'
-      })
-    } catch (e) {
-      console.error('[RSI] Semua provider gagal saat analisis pola:', e.message)
-      return
-    }
-
-    if (!analysis || !Array.isArray(analysis.new_patterns)) {
-      console.error('[RSI] Struktur tidak valid dari generateStructured')
-      return
-    }
-
-    if (analysis.new_patterns.length === 0) return // Tidak ada pola baru
-    
-    // Proses setiap pola yang ditemukan
-    for (const pattern of analysis.new_patterns) {
-      if (!pattern.type || !pattern.description) continue
-      
-      // Cek apakah pola serupa sudah ada
-      const similarPattern = existingPatterns.find(p => 
-        p.pattern_category === pattern.type && 
-        p.pattern_description.toLowerCase().includes(pattern.description.toLowerCase().slice(0, 30))
-      )
-      
-      if (similarPattern) {
-        // Update confidence + occurrence count
-        await supabase.from('ai_learned_patterns')
-          .update({ 
-            confidence_score:  Math.min(100, (similarPattern.confidence_score || 50) + 10),
-            occurrence_count:  (similarPattern.occurrence_count || 1) + 1,
-            last_observed_at:  new Date().toISOString(),
-          })
-          .eq('id', similarPattern.id)
-      } else {
-        // Insert pola baru
-        await supabase.from('ai_learned_patterns')
-          .insert({
-            user_id:             userId,
-            pattern_category:    pattern.type,
-            pattern_description: pattern.description,
-            confidence_score:    pattern.confidence || 50,
-            occurrence_count:    1,
-            last_observed_at:    new Date().toISOString(),
-          })
-      }
-    }
-    
-    // Log proses self-improvement
-    await supabase.from('ai_self_improvement_log')
-      .insert({
-        user_id: userId,
-        session_id: `chat_${Date.now()}`,
-        improvement_type: 'pattern_recognition',
-        before_state: { patterns_count: existingPatterns.length, rsi_version: rsiVersion },
-        after_state: { patterns_count: existingPatterns.length + (analysis.new_patterns?.length || 0), rsi_version: rsiVersion + 1 },
-        confidence_delta: analysis.new_patterns?.reduce((sum, p) => sum + (p.confidence || 0), 0) / (analysis.new_patterns?.length || 1),
-        notes: analysis.strategy_adjustment || ''
-      })
-    
-    // Update RSI version di profil user
-    await supabase.from('user_career_profiles')
-      .update({ 
-        rsi_version: rsiVersion + 1,
-        last_updated: new Date().toISOString()
-      })
-      .eq('user_id', userId)
-    
-    console.log(`[RSI] Learned ${analysis.new_patterns.length} new patterns for user ${userId}. New version: v${rsiVersion + 1}`)
-    
-  } catch (error) {
-    console.error('[RSI] Analysis error:', error.message)
-  }
-}
+// (Fungsi analyzeAndLearnPatterns dihapus — dead code, tidak pernah dipanggil
+// lagi sejak jalur local-first diaktifkan. Dulu menulis ke ai_learned_patterns,
+// ai_self_improvement_log, dan user_career_profiles — ketiganya bagian dari
+// era career-coach yang sudah tidak relevan.)
 
 // ── KEAMANAN: plan & usage TIDAK PERNAH dipercaya dari client ────────────────
 const LIMITS = {
@@ -533,33 +444,9 @@ async function handleCareerCoach(req, res) {
     return res.status(200).json({ success: true, deprecated: true, reason: 'Endpoint ini tidak lagi menyimpan apa pun ke server.' })
   }
 
-  if (action === 'toggle-milestone') {
-    const { userId, stepIndex, done } = req.body
-    if (!userId || stepIndex == null) return res.status(400).json({ error: 'Data tidak lengkap.' })
-    try {
-      const { data: profile } = await supabase.from('user_career_profiles').select('gps_steps, nama').eq('user_id', userId).maybeSingle()
-      const steps = profile?.gps_steps || []
-      if (!steps[stepIndex]) return res.status(400).json({ error: 'Step tidak ditemukan.' })
-      steps[stepIndex] = { ...steps[stepIndex], done }
-      await supabase.from('user_career_profiles').update({ gps_steps: steps, last_updated: new Date().toISOString() }).eq('user_id', userId)
-      if (done) {
-        await supabase.from('career_events').insert({ user_id: userId, event_type: 'milestone_completed', event_payload: { title: steps[stepIndex].title, step_index: stepIndex } })
-        // Push instan — dikirim langsung saat itu juga, bukan nunggu cron,
-        // supaya momentum positif user langsung direspons Diah Anna. Dibungkus
-        // try/catch sendiri: kalau push gagal (token tidak ada/Firebase down),
-        // toggle milestone-nya tetap harus sukses buat user.
-        try {
-          const fcmToken = await getUserFcmToken(userId)
-          if (fcmToken) await sendMilestoneCompletePush(fcmToken, profile?.nama || 'Teman', steps[stepIndex].title)
-        } catch (pushErr) {
-          console.error('[toggle-milestone push failed]', pushErr)
-        }
-      }
-      return res.status(200).json({ success: true, steps })
-    } catch (error) {
-      return res.status(500).json({ error: 'Gagal update milestone.' })
-    }
-  }
+  // (action 'toggle-milestone' dihapus — satu-satunya pemanggilnya,
+  // Journey.jsx, sudah dihapus. Fitur GPS Karier/milestone tidak dipakai
+  // lagi sejak pivot ke Diah Anna teman curhat.)
 
   // PIVOT — LOCAL-FIRST MEMORY, TANPA FALLBACK: Chat.jsx SELALU mengirim
   // `localMemory` (minimal objek default kosong) di setiap request, jadi
