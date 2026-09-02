@@ -153,6 +153,32 @@ export async function saveSummary(text) {
 // ── Settings (notifikasi, dsb) ────────────────────────────────────────────
 const DEFAULT_SETTINGS = { id: 'main', notifEnabled: true, notifFrequency: 'daily', notifTimeHour: 19 }
 
+const MAX_BACKUP_BYTES = 5 * 1024 * 1024
+
+/**
+ * Pure validation helpers kept exportable so they can be tested without a browser.
+ * Backup files are user-controlled input and must never be written directly to IDB.
+ */
+export function validateBackup(backup) {
+  if (!backup || typeof backup !== 'object' || Array.isArray(backup)) return false
+  if (!backup.data || typeof backup.data !== 'object' || Array.isArray(backup.data)) return false
+  if (backup.version != null && (!Number.isInteger(backup.version) || backup.version < 1 || backup.version > DB_VERSION)) return false
+  for (const name of STORES) {
+    if (backup.data[name] != null && !Array.isArray(backup.data[name])) return false
+  }
+  try {
+    return JSON.stringify(backup).length <= MAX_BACKUP_BYTES
+  } catch {
+    return false
+  }
+}
+
+export function normalizeBackup(backup) {
+  if (!validateBackup(backup)) throw new Error('Format backup tidak valid atau terlalu besar')
+  const data = Object.fromEntries(STORES.map((name) => [name, backup.data[name] || []]))
+  return { version: Number(backup.version) || 1, exportedAt: Number(backup.exportedAt) || Date.now(), data }
+}
+
 export async function getSettings() {
   const s = await tx('settings', 'readonly', (store) => reqToPromise(store.get('main')))
   return s || DEFAULT_SETTINGS
@@ -196,10 +222,10 @@ export async function exportBackup() {
 }
 
 export async function importBackup(backup) {
-  if (!backup?.data) throw new Error('Format backup tidak valid')
+  const normalized = normalizeBackup(backup)
   const db = await openDB()
   for (const name of STORES) {
-    const rows = backup.data[name] || []
+    const rows = normalized.data[name]
     await new Promise((resolve, reject) => {
       const t = db.transaction(name, 'readwrite')
       const store = t.objectStore(name)

@@ -64,7 +64,10 @@ function formatIncomeStrategy(strategy) {
 }
 
 async function apiFetch(url, body) {
-  const resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+  const { data: { session } } = await supabase.auth.getSession()
+  const headers = { 'Content-Type': 'application/json' }
+  if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`
+  const resp = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) })
   const text = await resp.text()
   let data
   try { data = JSON.parse(text) } catch { throw new Error(text.slice(0, 120)) }
@@ -400,9 +403,12 @@ export default function Chat({ user, chatMessages = [], setChatMessages, subscri
     if (msgs.filter(m => m.role === 'user').length < 3) return
     syncingMemoryRef.current = true
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const headers = { 'Content-Type': 'application/json' }
+      if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`
       const res = await fetch('/api/coach-hub', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           target: 'update-local-memory',
           userId: user.id,

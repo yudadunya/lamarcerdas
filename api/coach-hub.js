@@ -17,6 +17,7 @@ import { generateText, generateChat, generateStructured } from './lib/ai.js'
 import { createClient } from '@supabase/supabase-js'
 import { createHash } from 'crypto'
 import { getUserFcmToken, sendMilestoneCompletePush } from './lib/notifications.js'
+import { getAuthenticatedUser, isSameUser, unauthorized } from './lib/auth.js'
 
 // Satu client Supabase dipakai bersama oleh semua handler (service role,
 // fallback ke anon key kalau service role tidak ada — sama seperti
@@ -920,6 +921,15 @@ export default async function handler(req, res) {
     target = body?.target
   }
 
+  // User-facing chat endpoints must be bound to the Supabase session. This
+  // prevents a caller from submitting another user's ID to consume quota or
+  // access account-scoped data.
+  if (!target || target === 'career-coach' || target === 'update-local-memory') {
+    const authUser = await getAuthenticatedUser(req)
+    if (!authUser) return unauthorized(res)
+    req.authUser = authUser
+  }
+
   switch (target) {
     case 'chat-history':
       return handleChatHistory(req, res)
@@ -955,6 +965,7 @@ export default async function handler(req, res) {
  */
 async function handleUpdateLocalMemory(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+  if (!isSameUser(req.authUser, req.body?.userId)) return unauthorized(res)
 
   try {
     const { userId, plan = 'free', recentMessages, currentSummary, name } = req.body
